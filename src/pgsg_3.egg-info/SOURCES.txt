@@ -1,0 +1,16 @@
+README.md
+pyproject.toml
+src/pgsg_3/__init__.py
+src/pgsg_3.egg-info/PKG-INFO
+src/pgsg_3.egg-info/SOURCES.txt
+src/pgsg_3.egg-info/dependency_links.txt
+src/pgsg_3.egg-info/requires.txt
+src/pgsg_3.egg-info/top_level.txt
+src/pgsg_3/g_ingest/__init__.py
+src/pgsg_3/i_interp/__init__.py
+src/pgsg_3/m_model/__init__.py
+src/pgsg_3/m_model/pgsg_v2.py
+src/pgsg_3/p_prior/__init__.py
+src/pgsg_3/sigma_report/__init__.py
+src/pgsg_3/t_transform/__init__.py
+tests/test_smoke.py

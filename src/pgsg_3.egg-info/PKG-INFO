@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: pgsg-3
+Version: 0.1.0
+Summary: Gate regularization path for Prior-Guided Spectral Gating
+Requires-Python: >=3.10
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: pandas
+Requires-Dist: scikit-learn
+Requires-Dist: torch
+Requires-Dist: matplotlib
