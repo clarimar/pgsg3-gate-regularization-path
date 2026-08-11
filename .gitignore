@@ -1,0 +1,30 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+.env
+
+# dados: pesados e/ou de terceiros — não versionar
+data/raw/*
+data/processed/*
+!data/**/.gitkeep
+!data/**/README.md
+
+# saídas brutas de experimento
+results/**/*.csv
+results/**/*.npz
+results/**/*.pt
+!results/**/.gitkeep
+
+# figuras finais SÃO versionadas
+!results/figures/*.pdf
+!results/figures/*.png
+!findings/**
+
+# latex
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.synctex.gz
