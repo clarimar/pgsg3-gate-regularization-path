@@ -21,6 +21,26 @@ perda um termo λ · KL(g ‖ s):
 - λ → ∞  → congela o gate no prior.
 - λ intermediário → o objeto de estudo do pgsg_3.
 
+DOIS MODOS DE INICIALIZAÇÃO (`init_from_prior`)
+-----------------------------------------------
+A primeira varredura (2026-08-12, `results/sweep_nir/`) mostrou que, com
+θ₀ = logit(s), λ é praticamente inerte: ρ(g,s) vai de 0,9987 (λ=0) a
+0,9999 (λ=10) — varia pouco e na direção oposta à do H0. A razão é que a
+penalidade é redundante com a inicialização: o gate já parte de s e o
+gradiente do MSE não o afasta; um termo que puxa de volta para s não
+altera um equilíbrio que já está em s.
+
+O caminho de regularização informativo é o outro:
+
+    init_from_prior=True   θ₀ = logit(s).  λ = redundante (varredura 1).
+    init_from_prior=False  θ₀ = 0.         λ = ancoragem genuína.
+
+No segundo modo, λ interpola entre os dois extremos que pgsg_1 (R2) mediu
+com 10 sementes: λ=0 reproduz a condição não informada (ρ ≈ 0,03--0,28,
+Jaccard 0,09--0,57) e λ grande deve recuperar a condição de literatura
+(ρ ≈ 0,999, Jaccard ≈ 0,95). Os extremos do diagrama de fase ficam assim
+ancorados em resultado já publicado.
+
 POR QUE KL DE BERNOULLI
 -----------------------
 O gate é uma sigmoide independente por banda: Σᵢ gᵢ ≠ 1, logo g não é uma
@@ -160,16 +180,20 @@ class PGSGv3Model(PGSGv2Model):
     v2 mudar, ele falha.
     """
 
-    def __init__(self, *, lam: float = 0.0, **kwargs) -> None:
+    def __init__(
+        self, *, lam: float = 0.0, init_from_prior: bool = True, **kwargs
+    ) -> None:
         super().__init__(**kwargs)
         if lam < 0:
             raise ValueError(f"lam deve ser >= 0, recebido {lam}")
         self.lam = float(lam)
+        self.init_from_prior = bool(init_from_prior)
         self._kl_history: list[float] | None = None
 
     @property
     def name(self) -> str:
-        return f"PGSGv3(lam={self.lam:g})"
+        init = "lit" if self.init_from_prior else "zero"
+        return f"PGSGv3(lam={self.lam:g},init={init})"
 
     def _fit_impl(self, train, prior: np.ndarray | None) -> None:
         if self.lam > 0 and prior is None:
@@ -177,6 +201,11 @@ class PGSGv3Model(PGSGv2Model):
                 "lam > 0 exige um prior: a penalidade KL(gate‖prior) não tem "
                 "referência sem ele. Use lam=0 para a condição não-informada."
             )
+        if not self.init_from_prior and self.lam == 0 and prior is not None:
+            # não é erro, mas é fácil de fazer sem querer: nesta combinação o
+            # prior é ignorado por completo e o resultado é a condição não
+            # informada, com o prior guardado apenas para as métricas.
+            pass
 
         torch.manual_seed(self.seed)
         X = train.X.astype(np.float32)
@@ -194,8 +223,14 @@ class PGSGv3Model(PGSGv2Model):
         prior_t: torch.Tensor | None = None
         if prior is not None:
             s = np.clip(prior.astype(np.float64), _EPS, 1 - _EPS)
-            with torch.no_grad():
-                net.theta.copy_(torch.tensor(np.log(s / (1 - s)), dtype=torch.float32))
+            # o prior sempre serve de REFERÊNCIA para a penalidade; só entra
+            # na INICIALIZAÇÃO se init_from_prior=True. Separar os dois papéis
+            # é o que torna λ informativo (ver docstring do módulo).
+            if self.init_from_prior:
+                with torch.no_grad():
+                    net.theta.copy_(
+                        torch.tensor(np.log(s / (1 - s)), dtype=torch.float32)
+                    )
             prior_t = torch.tensor(s, dtype=torch.float32)
 
         X_tr, y_tr, X_val, y_val = _val_split(X, y_norm, _VAL_FRAC, self.seed)
@@ -271,6 +306,7 @@ class PGSGv3Model(PGSGv2Model):
             "val_losses": val_losses,
             "kl_history": kl_history,
             "lam": self.lam,
+            "init_from_prior": self.init_from_prior,
         }
 
     # ------------------------------------------------------------ análise

@@ -145,3 +145,52 @@ def test_historico_registra_kl_e_lam():
     assert h["lam"] == 0.01
     assert len(h["kl_history"]) == len(h["val_losses"])
     assert m.kl_final is not None
+
+
+# ------------------------------------------- init_from_prior (varredura 2)
+def test_init_zero_lam_zero_igual_a_sem_prior():
+    """init_from_prior=False com lam=0 ignora o prior por completo.
+
+    Deve ser idêntico à v2 sem prior — é a condição não informada de
+    pgsg_1, o extremo inferior do caminho de regularização.
+    """
+    ds = dados_sinteticos()
+    v2 = PGSGv2Model(hidden=8, max_epochs=15, patience=5, seed=5)
+    v2.fit(ds, prior=None)
+    v3 = PGSGv3Model(lam=0.0, init_from_prior=False,
+                     hidden=8, max_epochs=15, patience=5, seed=5)
+    v3.fit(ds, prior=prior_sintetico())
+    np.testing.assert_allclose(v3.gates, v2.gates, rtol=0, atol=0)
+
+
+def test_init_zero_lam_alto_aproxima_do_prior():
+    """Sem ancoragem inicial, λ grande deve puxar o gate PARA o prior.
+
+    Este é o caminho de regularização informativo: λ interpola entre a
+    condição não informada e a de literatura.
+    """
+    ds = dados_sinteticos()
+    prior = prior_sintetico()
+    solto = PGSGv3Model(lam=0.0, init_from_prior=False,
+                        hidden=8, max_epochs=60, patience=60, seed=2)
+    solto.fit(ds, prior=prior)
+    preso = PGSGv3Model(lam=50.0, init_from_prior=False,
+                        hidden=8, max_epochs=60, patience=60, seed=2)
+    preso.fit(ds, prior=prior)
+
+    rho_solto = float(np.corrcoef(solto.gates, prior)[0, 1])
+    rho_preso = float(np.corrcoef(preso.gates, prior)[0, 1])
+    assert rho_preso > rho_solto, (
+        f"lam=50 deveria aproximar o gate do prior: "
+        f"rho={rho_preso:.4f} vs {rho_solto:.4f} com lam=0"
+    )
+    assert preso.kl_final < solto.kl_final
+
+
+def test_init_from_prior_registrado_no_historico():
+    ds = dados_sinteticos()
+    m = PGSGv3Model(lam=0.1, init_from_prior=False,
+                    hidden=8, max_epochs=10, patience=10, seed=0)
+    m.fit(ds, prior=prior_sintetico())
+    assert m.train_history["init_from_prior"] is False
+    assert "init=zero" in m.name
