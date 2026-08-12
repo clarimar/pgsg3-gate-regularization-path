@@ -60,3 +60,13 @@ O modelo vendorizado `pgsg_v2.py` importa `pgsg_1.ingestion` e
 
 `pgsg_v3.py` procura nos caminhos usuais e falha com instrução explícita
 se não encontrar.
+
+## Dependência do pacote pgsg_1
+
+O modelo vendorizado `pgsg_v2.py` importa `pgsg_1.ingestion` e
+`pgsg_1.models.base`. Antes de rodar testes ou experimentos:
+
+    export PGSG1_ROOT=~/Dropbox/pgsg/pgsg_1/src
+
+`pgsg_v3.py` procura nos caminhos usuais e falha com instrução explícita
+se não encontrar.
