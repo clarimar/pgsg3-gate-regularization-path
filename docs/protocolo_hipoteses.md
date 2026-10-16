@@ -3,10 +3,16 @@
 Registrado ANTES de qualquer rodada, para que nenhum desfecho possa ser
 lido como racionalização posterior.
 
-Revisado em 2026-08-12 à luz da revisão R2 do pgsg_1, que mediu com 10
-sementes genuínas o que antes era conhecido apenas com réplicas
-degeneradas. O que mudou: a ambiguidade sobre o papel do prior deixou de
-existir, e as hipóteses abaixo puderam ser afiadas em consequência.
+Revisado em 2026-08-12 à luz da revisão R2 do trabalho de amostras
+pequenas, que mediu com 10 sementes genuínas o que antes era conhecido
+apenas com réplicas degeneradas.
+
+Revisado em 2026-10-16 (ADR-0002): o **protocolo de execução** mudou — split
+agrupado por fruto, orçamento de passos fixo, otimizador declarado, e uma
+referência de relevância não-circular. **As hipóteses e o critério de H0
+abaixo NÃO mudaram** e permanecem como foram pré-registrados. A
+concordância com o PLS calibrado, acrescentada em outubro, é exploratória e
+está identificada como tal na seção própria.
 
 ## Ponto de partida estabelecido (não é hipótese — é dado)
 
@@ -94,17 +100,37 @@ Os três são publicáveis e os três estavam previstos antes da execução.
 ## Protocolo de execução
 
 - Mínimo de **10 sementes por configuração**, com a semente do modelo
-  variando junto com a do cenário. Lição direta de pgsg_1: fixar
-  `seed=42` nas fábricas produziu réplicas idênticas no maior n e
-  intervalos de confiança de largura zero.
+  variando junto com a do cenário. Lição direta do trabalho de amostras
+  pequenas: fixar `seed=42` nas fábricas produziu réplicas idênticas no
+  maior n e intervalos de confiança de largura zero.
 - Dispersão reportada como desvio padrão sobre as sementes; comparações
   entre condições por teste pareado por semente (Wilcoxon), nunca por
   comparação de médias independentes.
-- Grade inicial de λ: {0, 1e-4, 1e-3, 1e-2, 1e-1, 1, 10}, logarítmica,
-  ancorada em λ=0 como controle exato da `PGSGv2Model`.
-- Demais hiperparâmetros fixos nos valores de pgsg_1 (hidden=32,
-  lr=1e-3, weight_decay=1e-4, max_epochs=500, patience=30,
+- Grade de λ: logarítmica, ancorada em λ=0 como controle exato da
+  `PGSGv2Model`, refinada entre 0,1 e 1 onde a transição ocorre.
+- **Split agrupado por fruto.** Os 1.448 espectros da safra 4 vêm de 725
+  frutos, 723 medidos duas vezes. Divisão por frutos inteiros.
+- **Orçamento de passos fixo.** Todas as configurações rodam o mesmo número
+  de épocas e o estado medido é o final, não o de melhor val_loss. Sem isso,
+  o deslocamento das bandas saturadas — proporcional ao número de passos —
+  confunde λ com contagem de passos.
+- **Otimizador declarado e varrido.** Adam (L2 acoplado) e AdamW
+  (desacoplado) produzem gates diferentes; a escolha é variável de desenho.
+- Demais hiperparâmetros fixos (hidden=32, lr=1e-3, weight_decay=1e-4,
   batch_size=256), para que λ seja a única variável.
+
+## Métrica exploratória (acrescentada em 2026-10-16)
+
+ρ(gate, prior) mede aderência ao ponto de partida, que λ controla por
+construção — ela não diz se o gate está **certo**. A concordância de Spearman
+entre o gate e os coeficientes absolutos de um PLS calibrado na partição de
+treino é uma referência derivada dos dados, não do prior.
+
+Esta métrica **não entra no critério de H0**, que foi fixado antes das
+rodadas. É reportada à parte, identificada como exploratória. A pergunta que
+ela abre — existe λ em que o gate concorda com a referência melhor do que em
+qualquer dos extremos? — é para ser pré-registrada antes de ser testada como
+hipótese, não decidida depois de olhar a curva.
 
 ## Regra de parada
 

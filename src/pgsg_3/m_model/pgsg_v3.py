@@ -58,6 +58,29 @@ e a média sobre p torna λ comparável entre modalidades com números de
 bandas muito diferentes (281 em NIR contra 1.870 em Raman) — sem isso, o
 mesmo λ teria efeitos ~6,6x distintos entre os dois ramos do estudo.
 
+CONTROLES ACRESCENTADOS EM 2026-10 (`optimizer`, `fixed_epochs`)
+----------------------------------------------------------------
+Dois resultados do programa tornaram obrigatórios dois controles que as
+varreduras de agosto/2026 não tinham.
+
+1. `optimizer`. "Prior Specification Bounds What Spectral Attention Can
+   Learn" mostra que, sob Adam com decaimento ACOPLADO (o termo L2 somado
+   ao gradiente antes da normalização dos momentos), o deslocamento de um
+   gate saturado é a integral da taxa de aprendizado — previsível sem
+   referência aos dados, com inclinação 9,80e-4 contra lr=1e-3. Sob AdamW
+   (decaimento desacoplado) o deslocamento cai para ordem 1e-3 no mesmo
+   orçamento, e a concordância do gate com uma referência operacional de
+   relevância sobe substancialmente. A forma do decaimento é, portanto,
+   variável de desenho, não detalhe de implementação.
+
+2. `fixed_epochs`. Com early stopping, o número de passos varia entre
+   sementes e entre valores de lambda (observado: 246--499). Como o
+   deslocamento das bandas saturadas é proporcional ao número de passos,
+   parte de qualquer efeito atribuído a lambda é contagem de passos. Com
+   `fixed_epochs=True` o laço roda exatamente `max_epochs` e devolve o
+   estado FINAL (não o de melhor val_loss), de modo que todas as
+   configurações compartilham o mesmo orçamento.
+
 DEPENDÊNCIA
 -----------
 `pgsg_v2.py` (vendorizado) importa `pgsg_1.ingestion` e
@@ -181,19 +204,25 @@ class PGSGv3Model(PGSGv2Model):
     """
 
     def __init__(
-        self, *, lam: float = 0.0, init_from_prior: bool = True, **kwargs
+        self, *, lam: float = 0.0, init_from_prior: bool = True,
+        optimizer: str = "adam", fixed_epochs: bool = False, **kwargs
     ) -> None:
         super().__init__(**kwargs)
         if lam < 0:
             raise ValueError(f"lam deve ser >= 0, recebido {lam}")
+        if optimizer not in ("adam", "adamw"):
+            raise ValueError(f"optimizer deve ser 'adam' ou 'adamw', recebido {optimizer!r}")
         self.lam = float(lam)
         self.init_from_prior = bool(init_from_prior)
+        self.optimizer = optimizer
+        self.fixed_epochs = bool(fixed_epochs)
         self._kl_history: list[float] | None = None
 
     @property
     def name(self) -> str:
         init = "lit" if self.init_from_prior else "zero"
-        return f"PGSGv3(lam={self.lam:g},init={init})"
+        budget = ",fixed" if self.fixed_epochs else ""
+        return f"PGSGv3(lam={self.lam:g},init={init},{self.optimizer}{budget})"
 
     def _fit_impl(self, train, prior: np.ndarray | None) -> None:
         if self.lam > 0 and prior is None:
@@ -239,7 +268,10 @@ class PGSGv3Model(PGSGv2Model):
         X_val_t = torch.from_numpy(X_val)
         y_val_t = torch.from_numpy(y_val).unsqueeze(1)
 
-        optimizer = torch.optim.Adam(
+        # Adam  -> L2 ACOPLADO (termo somado ao gradiente antes dos momentos)
+        # AdamW -> decaimento DESACOPLADO
+        cls = torch.optim.Adam if self.optimizer == "adam" else torch.optim.AdamW
+        optimizer = cls(
             net.parameters(), lr=self.lr, weight_decay=self.weight_decay
         )
         criterion = nn.MSELoss()
@@ -288,15 +320,21 @@ class PGSGv3Model(PGSGv2Model):
 
             if val_loss < best_val - 1e-8:
                 best_val = val_loss
-                best_state = copy.deepcopy(net.state_dict())
                 best_epoch = epoch
+                if not self.fixed_epochs:
+                    best_state = copy.deepcopy(net.state_dict())
                 no_improve = 0
             else:
                 no_improve += 1
-                if no_improve >= self.patience:
+                if not self.fixed_epochs and no_improve >= self.patience:
                     break
 
-        net.load_state_dict(best_state)
+        # Com orçamento fixo, best_epoch é registrado para diagnóstico mas NÃO
+        # seleciona o estado: todas as configurações devem compartilhar o mesmo
+        # número de passos, senão lambda fica confundido com contagem de passos.
+        n_steps_epochs = epoch + 1
+        if not self.fixed_epochs:
+            net.load_state_dict(best_state)
         self._net = net
         self._kl_history = kl_history or None
         self._train_history = {
@@ -307,6 +345,9 @@ class PGSGv3Model(PGSGv2Model):
             "kl_history": kl_history,
             "lam": self.lam,
             "init_from_prior": self.init_from_prior,
+            "optimizer": self.optimizer,
+            "fixed_epochs": self.fixed_epochs,
+            "n_epochs_run": n_steps_epochs,
         }
 
     # ------------------------------------------------------------ análise

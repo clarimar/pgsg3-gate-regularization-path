@@ -194,3 +194,82 @@ def test_init_from_prior_registrado_no_historico():
     m.fit(ds, prior=prior_sintetico())
     assert m.train_history["init_from_prior"] is False
     assert "init=zero" in m.name
+
+
+# ------------------------------- controles de protocolo (outubro/2026)
+def test_optimizer_invalido_rejeitado():
+    with pytest.raises(ValueError, match="optimizer deve ser"):
+        PGSGv3Model(optimizer="sgd")
+
+
+def test_adamw_difere_de_adam():
+    """A forma do decaimento muda o gate ajustado.
+
+    Sob Adam o L2 e acoplado (somado ao gradiente antes dos momentos) e
+    arrasta gates saturados a uma taxa fixada pelo lr; sob AdamW e
+    desacoplado. Se os dois produzissem o mesmo gate, o controle seria
+    inoperante e a varredura por otimizador nao teria sentido.
+    """
+    ds = dados_sinteticos()
+    prior = prior_sintetico()
+    kw = dict(hidden=8, max_epochs=40, patience=40, seed=1, fixed_epochs=True,
+              init_from_prior=True, lam=0.0)
+    a = PGSGv3Model(optimizer="adam", **kw)
+    a.fit(ds, prior=prior)
+    w = PGSGv3Model(optimizer="adamw", **kw)
+    w.fit(ds, prior=prior)
+    assert not np.allclose(a.gates, w.gates), "adam e adamw deram o mesmo gate"
+
+
+def test_fixed_epochs_roda_orcamento_exato():
+    ds = dados_sinteticos()
+    m = PGSGv3Model(lam=0.0, hidden=8, max_epochs=25, patience=1,
+                    fixed_epochs=True, seed=0)
+    m.fit(ds, prior=prior_sintetico())
+    h = m.train_history
+    assert h["n_epochs_run"] == 25, "patience=1 nao pode encurtar o orcamento fixo"
+    assert h["fixed_epochs"] is True
+    assert len(h["val_losses"]) == 25
+
+
+def test_fixed_epochs_usa_estado_final_nao_o_melhor():
+    """Com orcamento fixo o estado medido e o do ultimo passo.
+
+    Se devolvesse o de melhor val_loss, o numero de passos efetivo voltaria a
+    variar entre configuracoes e lambda ficaria confundido com contagem de
+    passos -- exatamente o que o controle existe para evitar.
+    """
+    rng = np.random.default_rng(0)
+    wl = np.linspace(900.0, 1300.0, P)
+    ruido = SpectralDataset(X=rng.normal(size=(N, P)), y=rng.normal(size=N),
+                            wavelengths=wl, metadata=dict(META))
+
+    # Ambas percorrem 300 epocas (patience nunca dispara); a unica diferenca e
+    # QUAL estado e devolvido. Alvo sem relacao com X faz val_loss subir cedo,
+    # garantindo que o melhor passo nao seja o ultimo.
+    kw = dict(lam=0.0, init_from_prior=False, hidden=8, lr=1e-2,
+              max_epochs=300, patience=10_000, seed=3)
+    fixo = PGSGv3Model(fixed_epochs=True, **kw)
+    fixo.fit(ruido, prior=prior_sintetico())
+    melhor = PGSGv3Model(fixed_epochs=False, **kw)
+    melhor.fit(ruido, prior=prior_sintetico())
+
+    assert fixo.train_history["n_epochs_run"] == 300
+    assert melhor.train_history["n_epochs_run"] == 300
+    assert melhor.train_history["best_epoch"] < 299, (
+        "cenario nao exercita o contraste: val_loss ainda caia no ultimo passo")
+    assert not np.allclose(fixo.gates, melhor.gates)
+
+
+def test_early_stopping_preservado_quando_nao_fixo():
+    ds = dados_sinteticos()
+    m = PGSGv3Model(lam=0.0, hidden=8, max_epochs=500, patience=3,
+                    fixed_epochs=False, seed=0)
+    m.fit(ds, prior=prior_sintetico())
+    assert m.train_history["n_epochs_run"] < 500
+
+
+def test_nome_registra_protocolo():
+    m = PGSGv3Model(lam=0.5, init_from_prior=False, optimizer="adamw",
+                    fixed_epochs=True)
+    assert "adamw" in m.name and "fixed" in m.name and "init=zero" in m.name
