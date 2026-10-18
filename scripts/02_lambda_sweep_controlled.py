@@ -148,6 +148,61 @@ def jaccard_medio(gates, decil: float = 0.10) -> float:
                           for a, b in itertools.combinations(topos, 2)]))
 
 
+# ----------------------------------------------------------- prior arms
+def permute_prior(prior: np.ndarray, mode: str, seed: int) -> np.ndarray:
+    """Control arms for the prior, used to separate chemistry from anchoring.
+
+    `literature` : the prior as published, unchanged.
+    `blocks`     : the contiguous elevated regions are relocated to random
+                   positions. Preserves the multiset of values, the number of
+                   blocks, each block's length and internal shape -- destroys
+                   only WHERE they sit. Tests whether contiguous emphasis
+                   anywhere works as well as emphasis on the right bands.
+    `shuffled`   : a full permutation. Destroys chemistry AND contiguity, so a
+                   collapse here cannot distinguish the two; it is the weaker
+                   control, reported alongside `blocks`.
+
+    The permutation is drawn once per PARTITION (seed = split seed) and shared
+    by every model seed, so that cross-seed Jaccard stays interpretable: with
+    a different prior per run the gates would differ for a trivial reason.
+    """
+    prior = np.asarray(prior, dtype=float)
+    if mode == "literature":
+        return prior.copy()
+    rng = np.random.default_rng(seed)
+    if mode == "shuffled":
+        return rng.permutation(prior)
+    if mode != "blocks":
+        raise ValueError(f"prior mode desconhecido: {mode!r}")
+
+    base = prior.min()
+    elevado = prior > base
+    # runs maximais de bandas elevadas
+    blocos, i, p = [], 0, len(prior)
+    while i < p:
+        if elevado[i]:
+            j = i
+            while j < p and elevado[j]:
+                j += 1
+            blocos.append(prior[i:j].copy())
+            i = j
+        else:
+            i += 1
+
+    novo = np.full(p, base)
+    ocupado = np.zeros(p, dtype=bool)
+    for b in sorted(blocos, key=len, reverse=True):   # maiores primeiro
+        for _ in range(10_000):
+            inicio = int(rng.integers(0, p - len(b) + 1))
+            if not ocupado[inicio:inicio + len(b)].any():
+                novo[inicio:inicio + len(b)] = b
+                ocupado[inicio:inicio + len(b)] = True
+                break
+        else:
+            raise SystemExit("nao foi possivel realocar os blocos sem sobreposicao")
+    return novo
+
+
 # ------------------------------------------------------------------ data
 def carregar_modulo(path: Path, nome: str):
     spec = importlib.util.spec_from_file_location(nome, path)
@@ -201,9 +256,9 @@ def preparar(pgsg1_root: Path, csv_path, split_seed: int, agrupado: bool):
 
     ds_tr = DS(X=X_tr, y=y_tr, wavelengths=wl_ef, metadata=dict(meta))
     ds_te = DS(X=X_te, y=y_te, wavelengths=wl_ef, metadata=dict(meta))
-    prior = np.asarray(mod.make_literature_prior(wl_ef))
+    prior_lit = np.asarray(mod.make_literature_prior(wl_ef))
     groups_tr = fruit[tr] if fruit is not None else None
-    return ds_tr, ds_te, np.asarray(y_te), prior, wl_ef, groups_tr, n_fruits, csv_path
+    return ds_tr, ds_te, np.asarray(y_te), prior_lit, wl_ef, groups_tr, n_fruits, csv_path
 
 
 # ------------------------------------------------------------------ main
@@ -225,6 +280,10 @@ def main() -> None:
     ap.add_argument("--batch-size", type=int, default=256)
     ap.add_argument("--decil", type=float, default=0.10)
     ap.add_argument("--pls-h-max", type=int, default=120)
+    ap.add_argument("--prior", choices=["literature", "blocks", "shuffled"],
+                    default="literature",
+                    help="braco de prior; 'blocks' e 'shuffled' sao controles "
+                         "que separam conteudo quimico de ancoragem pura")
     ap.add_argument("--out", default="results/ctl_adam")
     a = ap.parse_args()
 
@@ -234,13 +293,17 @@ def main() -> None:
     csv_arg = Path(os.path.expanduser(a.csv)) if a.csv else None
 
     head("Setup")
-    (tr, te, y_te, prior, wl, groups_tr,
+    (tr, te, y_te, prior_lit, wl, groups_tr,
      n_fruits, csv_path) = preparar(root, csv_arg, a.split_seed, a.split == "grouped")
     p = np.asarray(tr.X).shape[1]
+    # a permutacao usa a semente da PARTICAO, fixa entre as sementes de modelo
+    prior = permute_prior(prior_lit, a.prior, a.split_seed)
     print(f"csv       : {csv_path}")
     print(f"split     : {a.split}" + (f"  ({n_fruits} fruits)" if n_fruits else ""))
     print(f"train/test: {np.asarray(tr.X).shape} / {np.asarray(te.X).shape}   p={p}")
     print(f"init      : {a.init}   optimizer: {a.optimizer}   epochs: {a.epochs} (fixed)")
+    print(f"prior arm : {a.prior}" + ("" if a.prior == "literature" else
+          f"   (permutado com a semente da particao, {a.split_seed})"))
     print(f"lambdas   : {lambdas}")
     print(f"seeds     : {seeds}   ({len(lambdas) * len(seeds)} runs)")
 
@@ -254,8 +317,10 @@ def main() -> None:
     pls_r2 = r2(y_te, pls_pred)
     print(f"\nPLS-1se   : H={ref['h_1se']} (cvmin H={ref['h_cvmin']}, "
           f"grid max {ref['h_max_effective']})   test R2={pls_r2:.4f}")
-    print(f"prior vs PLS relevance: spearman={spearman(prior, relevance):+.4f}  "
-          "(how much the prior already agrees with the data)")
+    print(f"prior ({a.prior}) vs PLS relevance : {spearman(prior, relevance):+.4f}")
+    if a.prior != "literature":
+        print(f"prior (literature) vs PLS relevance: "
+              f"{spearman(prior_lit, relevance):+.4f}   <- teto do braco real")
 
     # ------------------------------------------------------------- run
     head("Running")
@@ -277,7 +342,7 @@ def main() -> None:
             g = np.asarray(m.gates)
             gates_por_lambda[lam].append(g)
             linhas.append({
-                "lam": lam, "seed": seed, "init": a.init,
+                "lam": lam, "seed": seed, "init": a.init, "prior_arm": a.prior,
                 "optimizer": a.optimizer, "epochs": a.epochs, "split": a.split,
                 "r2": r2(y_te, m.predict(te)),
                 "rho_prior": float(np.corrcoef(g, prior)[0, 1]),
@@ -307,7 +372,7 @@ def main() -> None:
     agreg = []
     for lam in lambdas:
         sub = [r for r in linhas if r["lam"] == lam]
-        reg = {"lam": lam, "init": a.init, "optimizer": a.optimizer,
+        reg = {"lam": lam, "init": a.init, "prior_arm": a.prior, "optimizer": a.optimizer,
                "epochs": a.epochs, "split": a.split, "k": len(sub)}
         for c in ("r2", "rho_prior", "agree_pls", "kl", "entropia",
                   "tv", "hoyer", "n_inert"):
@@ -324,7 +389,8 @@ def main() -> None:
 
     np.savez_compressed(
         out / "gates.npz",
-        prior=prior, wavelengths=wl, pls_relevance=relevance,
+        prior=prior, prior_literature=prior_lit, prior_arm=a.prior,
+        wavelengths=wl, pls_relevance=relevance,
         pls_h_1se=ref["h_1se"], pls_r2=pls_r2,
         lambdas=np.asarray(lambdas), seeds=np.asarray(seeds),
         **{f"gates_lam{lam:g}": np.stack(gates_por_lambda[lam]) for lam in lambdas},
