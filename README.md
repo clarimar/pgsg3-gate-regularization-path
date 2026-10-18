@@ -1,26 +1,41 @@
-# pgsg_3 — Gate Regularization Path
+# Initialization Is Not Regularization: Separating the Two Roles of a Spectral Prior
 
-Terceiro projeto do programa PGSG (Prior-Guided Spectral Gating).
+Repositório do trabalho sobre o caminho de regularização do gate, no programa
+PGSG (Prior-Guided Spectral Gating). Título fixado em 2026-10-16.
 
 ## Pergunta científica
 
-Como o peso da regularização KL (λ) governa a transição entre um gate que
-replica o prior e um gate orientado por dados — e onde nessa transição fica
-o melhor compromisso entre acurácia e interpretabilidade?
+Um prior espectral cumpre dois papéis ao mesmo tempo no desenho corrente:
+ponto de partida do gate e referência do que o gate deveria ser. Fundidos, o
+primeiro **isola** — a normalização pelo máximo converte o topo plano em um
+bloco de parâmetros que o gradiente não alcança. Separados, com o prior movido
+da inicialização para a função de perda com peso λ, o mesmo prior **informa**
+sem isolar.
+
+Quanto de ancoragem o gate precisa para significar alguma coisa, e isso pode
+ser medido contra uma referência que não seja o próprio prior?
 
 O enquadramento é **caminho de regularização**, não AutoML/NAS. A busca
 automática é método, não tese.
 
 ## Programa
 
-| projeto | eixo que varia            | estado          |
-| ------- | ------------------------- | --------------- |
-| pgsg_0  | arquitetura (fundador)    | aceito Chemolab |
-| pgsg_1  | escala (n)                | submetido       |
-| pgsg_2  | modalidade (NIR→Raman)    | submetido       |
-| pgsg_3  | hiperparâmetros (λ)       | **ativo**       |
-| pgsg_4  | múltiplos alvos           | reservado       |
-| pgsg_5  | incerteza                 | reservado       |
+Identificar os trabalhos por título ou assunto, nunca por número de pasta:
+a numeração já se deslocou uma vez e os números de repositório não coincidem
+com os de artigo.
+
+| assunto | estado (out/2026) |
+| --- | --- |
+| Fundador, NIR interpretável | publicado no Chemolab; corrigendum proposto ao editor |
+| Escala e amostras pequenas | **rejeitado**, não será ressubmetido |
+| Modalidades NIR→Raman (*Gate Topology and Reproducibility…*) | **aceito** no Chemolab |
+| **Caminho de regularização do gate (λ)** | **este repositório** |
+| Incerteza (*Prior Specification Bounds What Spectral Attention Can Learn*) | em submissão |
+| Multi-alvo | planejado |
+
+Consequência de manutenção: a arquitetura `PGSGv2Model` não tem publicação
+que a introduza, porque o manuscrito que faria isso foi rejeitado. Citar o
+artigo de modalidades para a arquitetura.
 
 ## Datasets
 
