@@ -381,7 +381,7 @@ def main() -> None:
 
     head("H12c - literature beats blocks on whole-spectrum agreement (lam=1)")
     print("Paired by seed, two-sided Wilcoxon. In NIR blocks equals or beats")
-    print("literature in 10/10 partitions.\n")
+    print("literature in 9 of the 10 partitions measured up to F003.\n")
     print(f"  {'partition':<10} {'lit':>9} {'blocks':>9} {'delta':>9} "
           f"{'p':>8}   H12c")
     k_c = 0

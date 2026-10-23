@@ -267,3 +267,12 @@ def test_constantes_vem_do_pre_registro():
     assert mod.LAM_FIXO == 1.0
     assert mod.ALPHA == 0.05
     assert mod.MIN_BANDAS_NIVEL == 10
+
+
+def test_nao_afirma_dez_de_dez():
+    """The raw metric favours blocks in 9 of the 10 partitions measured up to
+    F003, not 10: literature wins partition 3. The wrong count was propagated
+    into committed text once and must not come back."""
+    for nome in ("08_analise_condicional.py", "07_raman_lambda1.py"):
+        fonte = (RAIZ / "scripts" / nome).read_text()
+        assert "10/10" not in fonte, nome

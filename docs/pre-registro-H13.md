@@ -17,6 +17,31 @@ Posterior aos dados, e isto muda o quanto vale. O que motiva:
    10 das 10 partições (F002, F003). A explicação oferecida é que a métrica é
    dominada pela separação **entre** níveis do prior, que toda realocação
    reproduz por construção.
+
+   > **Correção de 2026-10-23, posterior ao fechamento deste documento.** O
+   > "10 das 10" acima está **errado** e é erro de contagem meu, não dos dados.
+   > Conferindo célula por célula: nas partições 0–4 a literatura supera
+   > `blocks` na partição 3 (+0,2757 contra +0,2045, p = 0,0020, que é a única
+   > célula em que H7-blocks foi suportada). Nas partições 5–9 `blocks` supera
+   > em 5/5. O número correto é **9 das 10**.
+   >
+   > Nas cinco partições desta rodada (10–14), medido depois, a literatura
+   > supera `blocks` na métrica crua em **3 de 5** (+0,3724/+0,3288;
+   > +0,3418/+0,1517; +0,2914/+0,2141, contra +0,2692/+0,3540 e
+   > +0,1843/+0,2932). Isso **enfraquece a premissa** de H13: nestas partições
+   > a métrica crua já distingue em 3/5, de modo que "a métrica crua não
+   > consegue ver" vale menos aqui do que nas dez anteriores.
+   >
+   > **Nenhum critério de H13 é alterado.** O erro está na motivação, não nos
+   > enunciados, e a secundária 2 — o Spearman cru nas mesmas cinco partições —
+   > foi declarada justamente para que a comparação crua-contra-condicionada
+   > seja feita nos mesmos dados. É ela que decide se condicionar acrescentou
+   > algo, e agora ela tem um alvo mais exigente do que eu supunha ao escrever
+   > este documento.
+   >
+   > O texto original fica como está. O mesmo erro saiu nas mensagens dos
+   > commits 8042bed e 4cd2119, que são história e não se corrigem; esta nota é
+   > o registro.
 2. Em Raman, com prior contínuo, a mesma métrica **distingue**: literatura
    supera `blocks` em 2 de 3 partições, e ρ(prior, referência) é +0,16 a +0,24
    na literatura contra ≈ 0 nos dois controles (F005). O sinal existe quando a

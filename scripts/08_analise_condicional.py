@@ -6,8 +6,9 @@ committed with this script before any sweep on `--split-seed 10..14`.
 
 The raw whole-spectrum Spearman between gate and |PLS coef| is insensitive to
 where the NIR prior points: relocated blocks equal or beat the literature prior
-in 10/10 partitions (F002, F003). With a continuous Raman prior the same metric
-does distinguish (F005). H13 asks whether removing the prior's own contribution
+in 9 of the 10 partitions measured up to F003 -- the exception is partition 3,
+where literature wins. With a continuous Raman prior the same metric does
+distinguish (F005). H13 asks whether removing the prior's own contribution
 reveals, in NIR, the signal Raman shows.
 
 Two forms of the same question, both reported, both pre-registered:
@@ -374,9 +375,11 @@ def main() -> None:
         print("H13b supported: with the prior's contribution removed, the")
         print("literature position does beat a relocated one in NIR. The raw")
         print("whole-spectrum Spearman was confounded by the prior, which is")
-        print("why blocks equalled or beat literature in 10/10 partitions on")
-        print("it, and it is the same signal Raman shows with a continuous")
-        print("prior (F005).")
+        print("why blocks equalled or beat literature in 9 of the 10 earlier")
+        print("partitions on it, and it is the same signal Raman shows with a")
+        print("continuous prior (F005). Compare against secondary 2 below: the")
+        print("raw metric on THESE five partitions is the honest baseline, and")
+        print("conditioning only added something if it beats that count.")
         if k_a < 4:
             print()
             print("But H13a NOT supported: the conditioned statistic is not")
