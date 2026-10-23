@@ -145,42 +145,83 @@ condições e nas duas modalidades. A ablação, como executada, compara prior
 contra ausência de prior, e por isso não separa conteúdo de ancoragem — que é
 o que os braços de controle deste trabalho fazem.
 
-## Terceira explicação mecânica proposta e descartada
+## O Jaccard NIR publicado é artefato de desempate
 
-Registrada pelo mesmo motivo que as duas anteriores.
+Confirmado por reexecução, `scripts/check_decile_ties.py` no repositório
+`pgsg_2`, reproduzindo o braço de literatura de H4 com as mesmas dez sementes,
+mesmo pré-processamento, mesma divisão e `q = p // 10 = 28`:
 
-**"O Jaccard NIR publicado é artefato de ordenação."** No gate NIR arquivado,
-as 34 bandas do platô têm valor **bit-idêntico** (0,99999380, amplitude
-0,0e+00, s(1−s) = 6,2×10⁻⁶ contra 0,133 fora) — a saturação por inicialização
-no prior de F001. Daí a hipótese de que `argsort` escolheria 28 entre 34
-valores iguais por ordem de índice, fixando o conjunto e inflando o Jaccard.
+| | |
+| --- | --- |
+| platô, em todas as 10 sementes | **1/34 valores distintos**, amplitude 0,0e+00 |
+| s(1−s) médio no platô | 4,7×10⁻⁶ a 6,9×10⁻⁶ |
+| decil dentro do platô | 28/28 |
+| Jaccard, empates como o sort os deixa | **0,9418** |
+| Jaccard, empates sorteados ao acaso (200 sorteios) | **0,7005 ± 0,0068** |
+| nível de chance, 28 em 34 sorteados duas vezes | 0,7000 |
+| figura publicada para este braço | 0,9418 |
 
-**Falsa, e pelo sinal oposto.** `np.argsort` usa quicksort por default e **não
-é estável**: um bloco empatado é ordenado pela partição e a seleção muda com os
-valores do entorno. Medido em gates sintéticos com platô totalmente empatado:
-J = 0,7301, contra nível de chance 0,7000 para 28 em 34 (núcleo comum 19/28,
-união 34). Com `kind='stable'` seria 1,0 por construção, mas não é o que o
-código usa.
+As 34 bandas do platô têm valor bit-idêntico em **todas** as sementes, logo o
+platô não carrega ordenação alguma, e as 28 bandas selecionadas saem todas
+dele. Quais 28 das 34 ficam é decidido pelo caminho de partição do introsort —
+e esse caminho depende dos valores **fora** do platô, que a métrica nunca
+seleciona. Medido, mantendo o platô como treinado e perturbando só o resto:
 
-Um platô empatado portanto **deprime** o Jaccard na direção do acaso. O número
-publicado, 0,9418, está muito acima de 0,70, logo nas dez execuções da ablação
-o platô carregava ordenação real. **Não há erro nos números publicados por esta
-via**, e a hipótese era descartável por aritmética antes de ser levantada.
+| sd fora do platô | Jaccard |
+| --- | --- |
+| 0 | 1,0000 |
+| 10⁻⁵ | 1,0000 |
+| 10⁻⁴ | 0,9678 |
+| 10⁻³ | 0,7812 |
+| 10⁻² | 0,7500 |
 
-Verificação direta disponível em `check_decile_ties.py` (repositório `pgsg_2`):
-reexecuta o braço de literatura de H4 e compara o Jaccard publicado com o
-mesmo cálculo tendo os empates exatos sorteados ao acaso.
+O 0,9418 publicado corresponde a sd ≈ 1,5×10⁻⁴, coerente com o
+`rho_pairwise = 0,9995` registrado no mesmo arquivo. Trocar apenas a regra de
+desempate — mesmos gates, mesmo q, mesma fórmula — leva a figura ao acaso.
 
-## O que fica estabelecido sem depender de modelo
+**A figura publicada de 0,9418 não mede seleção reprodutível de bandas.** Ela
+mede quão parecidos os gates são nas bandas que a métrica não seleciona, lido
+através do tratamento de empates do `argsort`. O número é exatamente
+reproduzível; é a sua interpretação que não se sustenta.
+
+A comparação honesta para o braço NIR seria 0,7005 contra 0,6002 de
+`prior=None` — e mesmo 0,7005 é o nível de chance que a própria restrição a 34
+bandas candidatas impõe, não evidência de estabilidade aprendida.
+
+### Trilha desta hipótese, registrada por ter errado duas vezes
+
+1. Levantada a partir do gate arquivado, com os empates exatos medidos.
+2. **Retratada** com base em gates sintéticos que deram J = 0,7301, perto do
+   acaso, de onde concluí que platô empatado deprimiria o Jaccard e que o
+   0,9418 era portanto incompatível com artefato.
+3. **Reinstaurada** pela reexecução real. O fixture sintético usava sd = 10⁻²
+   fora do platô, setenta vezes o valor real; na escala correta dá 0,97–1,00. O
+   número que o calibraria (`rho_pairwise = 0,9995`) estava no arquivo já lido.
+
+A retratação foi o erro mais grave da sequência, porque afirmou ausência de
+problema em resultado publicado. A lição é específica: fixture sintético
+precisa ser calibrado por quantidade medida, não por escala arbitrária.
+
+## O que fica estabelecido
 
 1. O prior NIR é uma escada de quatro níveis; 223 de 281 bandas no piso.
 2. O decil superior está contido no platô do prior em 15/15 células deste
-   trabalho e no gate NIR arquivado do artigo aceito. O Jaccard ordena
-   **apenas dentro do nível de topo do prior**.
-3. Isso é afirmação sobre o **escopo** da métrica, não sobre a correção de
-   nenhum resultado: a métrica não pode detectar se o nível de topo do prior é
-   o lugar certo para olhar, porque nunca olha fora dele.
-4. Vale para qualquer prior normalizado min–max cujo platô exceda `q`. Não
-   vale para o braço Raman do artigo aceito, cujo prior é contínuo — ali o
-   decil não é preso a platô, e as conclusões daquele braço não são tocadas
-   por nada aqui.
+   trabalho e no braço NIR do artigo aceito. O Jaccard ordena **apenas dentro
+   do nível de topo do prior**, e não pode detectar se aquele nível é o lugar
+   certo de olhar, porque nunca olha fora dele. Afirmação sobre o escopo da
+   métrica.
+3. No braço NIR do artigo aceito, essa restrição se agrava: por saturação na
+   inicialização, as 34 bandas do platô ficam bit-idênticas em todas as
+   sementes, de modo que o decil não ordena nada e o 0,9418 publicado vem do
+   desempate do `argsort`. Afirmação sobre a **interpretação** de um resultado
+   publicado, reproduzida por reexecução.
+4. Vale para prior normalizado min–max cujo platô exceda `q` **e** com o prior
+   na inicialização. Não vale, e nada aqui toca:
+   - o braço **Raman** do artigo aceito — prior contínuo, 545 valores
+     distintos, platô de 1 banda, decil 1/187 dentro dele; J = 0,9011 contra
+     0,6545 é medida real;
+   - nenhum **R²** de qualquer modalidade, em nenhum dos trabalhos;
+   - os números deste trabalho (`pgsg_3`), que usa θ₀ = 0 em vez do prior na
+     inicialização. Sem saturação, `inert = 0` em todo λ (F001), e
+     `05_diagnostico_jaccard.py` verifica ausência de empate exato entre gates
+     treinados em todas as células antes de reportar qualquer Jaccard.
