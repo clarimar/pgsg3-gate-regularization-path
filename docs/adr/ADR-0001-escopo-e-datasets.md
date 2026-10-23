@@ -86,6 +86,26 @@ pgsg_5.
    gates quase não correlacionados — que é precisamente o espaço que λ
    deve percorrer.
 
+   **Correção de 2026-10-23.** A coluna *Jaccard entre sementes* da linha
+   «prior de literatura» acima **não é medida de seleção de bandas**. Nos sete
+   tamanhos, o platô do prior tem **um único valor distinto** nos dez gates
+   (amplitude 0,0e+00; s(1−s) ≈ 10⁻⁶), e o decil superior sai 28/28 de dentro
+   dele, de modo que a sobreposição é a ordem de desempate do `np.argsort`:
+   sorteando os empates ao acaso, o valor cai a 0,7005 ± 0,0068 em **todas** as
+   células, que é o acaso exato de escolher 28 entre 34 (0,7000). Verificado por
+   `check_gates_r2.py`; mecanismo em `findings/F002`, medida em
+   `findings/F004`.
+
+   A linha «não informada» **não** é afetada: não há empate algum ali, e o seu
+   Jaccard cresce com o tamanho de treino (ρ = +0,9286, p = 0,0025), como uma
+   medida de estabilidade deve fazer. A coluna ρ(gate,prior) também não é
+   afetada nas duas linhas, porque usa os valores e não a sua ordem.
+
+   O texto original fica como estava, por ser registro de decisão. O que ele
+   estabelecia sobre acurácia equivalente e sobre o espaço que λ percorre
+   permanece válido; o que não permanece é a leitura da estabilidade como
+   propriedade do prior.
+
 ## Consequências
 
 O risco de dados é nulo (operadores e baselines já validados), e λ fica
