@@ -99,6 +99,20 @@ A análise reporta ρ_gs e o fator de amplificação por célula, para que o val
 parcial não seja lido ao pé da letra. O fator **não** é limiar: o critério é o
 deste documento e não menciona amplificação.
 
+> **Correção de 2026-10-23, posterior ao fechamento.** A tabela acima foi
+> calculada com **Pearson** ρ(gate, prior) = 0,9655, que é o que a varredura
+> reporta na coluna `rho(g,s)`. O parcial usa **Spearman**, e o valor medido é
+> **0,7058**, logo a amplificação real é **1,41×** e não 3,8×. A estatística é
+> muito melhor condicionada do que este documento alertava. Erro meu, e
+> favorável.
+>
+> E o 0,7058 **não é medida**: saiu idêntico nas cinco partições, em toda
+> semente e em todo braço. Quando o gate ordena as bandas estritamente por
+> nível do prior, o posto do prior é constante dentro de cada nível e a
+> correlação fica determinada pelos tamanhos dos níveis apenas — 223/7/17/34 dá
+> 0,7058. Os braços de controle preservam o multiset e compartilham o valor.
+> Registrado em `findings/F006` e fixado por teste.
+
 **Forma exata — dentro de um nível.** Spearman entre gate e referência restrito
 às bandas de um único nível do prior, onde o prior é constante e portanto
 contribui **zero** por construção. É a mesma estatística de H10, aplicada ao
@@ -161,6 +175,26 @@ literatura em ≥ 2 partições, então a insensibilidade da métrica crua em NI
 informação posicional, e a diferença em relação ao Raman está nos priors e não
 nas métricas. Esse resultado é mais forte que H13b suportada, porque explica a
 discrepância NIR/Raman sem apelar a propriedade de métrica.
+
+> **Retratação de 2026-10-23, posterior à execução.** A cláusula de refutação
+> acima **está errada** e a sua leitura é retirada. H13b condiciona na variável
+> que distingue os braços: com ρ_gs estruturalmente fixo, o parcial é
+> proporcional a ρ_gr − 0,7058·ρ_rs, de modo que **subtrai** um múltiplo da
+> correlação entre o prior de cada braço e a referência. Um braço cujo prior
+> aponta para a referência é penalizado; um cujo prior é anticorrelacionado tem
+> o termo **somado**. Medido na partição 13: literatura perde 0,1659 e `blocks`
+> ganha 0,0700.
+>
+> A estatística portanto **premia um prior que aponta para o lugar errado**, e
+> não pode testar se a posição do prior carrega conteúdo. Que `blocks` a supere
+> em 5/5 não autoriza concluir nada sobre o prior NIR.
+>
+> O critério e o veredito ficam como saíram — 0/5, não suportada — porque
+> emendar critério depois dos dados é o que este documento existe para impedir.
+> O que muda é a **interpretação**, e o erro é de desenho meu: escrevi uma
+> pergunta que a estatística escolhida não podia responder. As estatísticas que
+> podem são a crua (secundária 2) e as intra-nível (H13c, e H10b em F003).
+> Registrado em `findings/F006` e fixado por teste.
 
 ## H13c — o achado do piso, promovido a primário
 

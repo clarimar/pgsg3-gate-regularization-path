@@ -276,3 +276,71 @@ def test_nao_afirma_dez_de_dez():
     for nome in ("08_analise_condicional.py", "07_raman_lambda1.py"):
         fonte = (RAIZ / "scripts" / nome).read_text()
         assert "10/10" not in fonte, nome
+
+
+# ------------------------------- what H13b actually measures, and its flaw
+
+def test_spearman_gate_prior_e_constante_estrutural():
+    """When the gate orders bands strictly by prior level with no cross-level
+    overlap, rank(prior) is constant inside each level and Spearman(g, prior)
+    is fixed by the LEVEL SIZES alone. For 223/7/17/34 it is 0.7058, in every
+    seed, partition and arm. It is not a measurement, and reading it as one
+    was what made the pre-registration's amplification table wrong."""
+    pr = prior_degrau()
+    vistos = set()
+    for s in range(6):
+        r = np.random.default_rng(s)
+        g = np.empty(P)
+        for lo, hi, base in ((0, 223, 0.0), (223, 230, 1.0),
+                             (230, 247, 2.0), (247, 281, 3.0)):
+            g[lo:hi] = base + r.random(hi - lo) * 0.9
+        vistos.add(round(mod.spearman(g, pr), 10))
+    assert len(vistos) == 1
+    assert abs(vistos.pop() - 0.7058) < 1e-3
+
+
+def test_amplificacao_real_e_1_41_nao_3_8():
+    """The partial statistic uses SPEARMAN rho_gs = 0.7058 -> 1.41x, not the
+    PEARSON 0.9655 the sweep reports -> 3.84x. The pre-registration's table
+    used the wrong one; the real statistic is better conditioned."""
+    assert 1.0 / np.sqrt(1.0 - 0.7058 ** 2) == pytest.approx(1.41, abs=0.01)
+    assert 1.0 / np.sqrt(1.0 - 0.9655 ** 2) == pytest.approx(3.84, abs=0.01)
+
+
+def test_parcial_premia_prior_anticorrelacionado_com_a_referencia():
+    """The design flaw in H13b, as a test so it cannot be forgotten.
+
+    With rho_gs fixed, partial ∝ rho_gr - rho_gs * rho_rs. Two arms with the
+    SAME gate-reference correlation but priors of opposite sign against the
+    reference get different partial values, and the one whose prior points the
+    WRONG way scores higher. Conditioning on the prior cannot test whether the
+    prior's position carries content."""
+    rng = np.random.default_rng(0)
+    n = 2000
+    ref = rng.random(n)
+    base = rng.random(n)
+
+    def monta(sinal):
+        # prior correlated (+) or anticorrelated (-) with the reference,
+        # and a gate built so rho(gate, ref) is the same in both arms
+        s = np.clip(0.5 + sinal * 0.35 * (ref - 0.5) + rng.normal(0, 0.05, n),
+                    0, 1)
+        g = 0.6 * base + 0.4 * ref
+        return g, s
+
+    g_pos, s_pos = monta(+1.0)
+    g_neg, s_neg = monta(-1.0)
+    assert mod.spearman(g_pos, ref) == pytest.approx(
+        mod.spearman(g_neg, ref), abs=0.06)
+    assert mod.spearman(s_pos, ref) > 0.2
+    assert mod.spearman(s_neg, ref) < -0.2
+    # same gate-reference agreement, yet the anticorrelated prior wins
+    assert (mod.spearman_parcial(g_neg, ref, s_neg)
+            > mod.spearman_parcial(g_pos, ref, s_pos))
+
+
+def test_leitura_de_h13b_foi_retirada():
+    fonte = (RAIZ / "scripts" / "08_analise_condicional.py").read_text()
+    assert "THAT READING IS" in fonte
+    assert "carries no positional information'" in fonte
+    assert "rewards a prior that points the wrong" in fonte
