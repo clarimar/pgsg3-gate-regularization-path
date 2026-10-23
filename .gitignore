@@ -32,3 +32,9 @@ results/**/*.pt
 # clones e snapshots de outros trabalhos, que vivem em repos proprios
 pgsg4-bayesian-gating/
 *.zip
+
+# agregados de experimento: nao versionar, como os .csv e .npz
+results/**/*.json
+
+# agregados de experimento: nao versionar, como os .csv e .npz
+results/**/*.json
