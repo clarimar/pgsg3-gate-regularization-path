@@ -274,6 +274,10 @@ def main() -> None:
             prior = (prior_lit if arm == "literature"
                      else np.asarray(permute_prior(prior_lit, arm, sseed),
                                      float))
+            # the arm's OWN largest tie group, so the control arms are not
+            # reported against the literature prior's floor positions. For the
+            # literature arm the two coincide; H12a judges that arm only.
+            grupo_own = maior_grupo_empate(prior)
             for lam in LAMBDAS:
                 gates = []
                 for seed in seeds:
@@ -296,12 +300,16 @@ def main() -> None:
                 dentro_grupo = float(np.mean(
                     [len(set(topo(g, q).tolist()) & set(grupo.tolist())) / q
                      for g in gates]))
+                dentro_grupo_own = float(np.mean(
+                    [len(set(topo(g, q).tolist()) & set(grupo_own.tolist())) / q
+                     for g in gates]))
                 dentro_plato = float(np.mean(
                     [len(set(topo(g, q).tolist()) & set(plato.tolist())) / q
                      for g in gates]))
                 celulas[(sseed, arm, lam)] = {
                     "j_index": ji, "j_random": jr, "j_random_sd": jsd,
                     "delta_j": ji - jr, "in_tie_group": dentro_grupo,
+                    "in_tie_group_own": dentro_grupo_own,
                     "in_plateau": dentro_plato,
                     "agree": float(np.mean([r["agree"] for r in linhas
                                             if r["particao"] == sseed
@@ -315,7 +323,7 @@ def main() -> None:
                     "pls_at_boundary": bool(ref["at_boundary"]),
                 }
                 log(f"  {arm:<11} lam={lam:<4g} J={ji:.4f} "
-                    f"Jrnd={jr:.4f} in_group={dentro_grupo:.3f} "
+                    f"Jrnd={jr:.4f} in_own_group={dentro_grupo_own:.3f} "
                     f"agree={celulas[(sseed, arm, lam)]['agree']:+.4f}")
 
     if a.quick:
@@ -339,9 +347,13 @@ def main() -> None:
 
     # ------------------------------------------------------------- verdicts
     head("H12a - the decile is not pinned inside a tie group (lam=1)")
-    print(f"Fraction of the top-{q} inside the prior's largest group of equal")
-    print(f"values. H12a needs it below {LIM_H12A}. In NIR the decile sits")
-    print("1.000 inside the plateau in 15/15 cells.\n")
+    print(f"Fraction of the top-{q} inside the literature prior's largest")
+    print(f"group of equal values. H12a needs it below {LIM_H12A}. In NIR the")
+    print("decile sits 1.000 inside the plateau in 15/15 cells.")
+    print("H12a judges the literature arm, where this group IS its own prior's.")
+    print("For the control arms see in_own_group in the table further down: the")
+    print("relocated bumps land where the literature prior had floor, so a high")
+    print("in_group there says nothing about their own tie structure.\n")
     print(f"  {'partition':<10} {'tie group':>10} {'in group':>9} "
           f"{'in plateau':>11}   H12a")
     k_a = 0
@@ -387,13 +399,19 @@ def main() -> None:
 
     head("Reported alongside, no verdict")
     print(f"  {'partition':<10} {'arm':<11} {'rho(prior,ref)':>15} "
-          f"{'J lam=0':>9} {'J lam=1':>9} {'agree lam=0':>12}")
+          f"{'J lam=0':>9} {'J lam=1':>9} {'agree lam=0':>12} "
+          f"{'in_own_group':>13}")
     for s in particoes:
         for arm in ("literature", "blocks", "shuffled"):
             c0, c1 = celulas[(s, arm, 0.0)], celulas[(s, arm, 1.0)]
             print(f"  {s:<10} {arm:<11} {c1['prior_rho_ref']:>+15.4f} "
                   f"{c0['j_index']:>9.4f} {c1['j_index']:>9.4f} "
-                  f"{c0['agree']:>+12.4f}")
+                  f"{c0['agree']:>+12.4f} "
+                  f"{c1['in_tie_group_own']:>13.3f}")
+    print()
+    print("  agree and J at lam=0 are identical across arms by construction:")
+    print("  the prior does not enter the loss there. A difference would mean")
+    print("  the arms did not share the partition.")
 
     n = len(particoes)
     head("Pre-registered verdicts")

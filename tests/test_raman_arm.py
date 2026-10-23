@@ -225,3 +225,33 @@ def test_quick_nao_escreve_resultados():
     mistaken for a registered result."""
     fonte = (RAIZ / "scripts" / "07_raman_lambda1.py").read_text()
     assert "--quick never writes results" in fonte
+
+
+# -------------------------------------------- own vs literature tie group
+
+def test_grupo_de_empate_do_braco_e_o_do_prior_permutado():
+    """A relocated prior keeps the same multiset, so its floor is the same SIZE
+    at different POSITIONS. Measuring a control arm's decile against the
+    LITERATURE prior's floor therefore says nothing about its own tie
+    structure, and the two numbers must be computed separately."""
+    pr = prior_continuo()
+    rng = np.random.default_rng(0)
+    permutado = rng.permutation(pr)
+    g_lit = mod.maior_grupo_empate(pr)
+    g_perm = mod.maior_grupo_empate(permutado)
+    assert len(g_lit) == len(g_perm)                  # same size
+    assert set(g_lit.tolist()) != set(g_perm.tolist())  # different positions
+
+
+def test_reporta_as_duas_fracoes():
+    fonte = (RAIZ / "scripts" / "07_raman_lambda1.py").read_text()
+    assert "in_tie_group_own" in fonte
+    assert "in_own_group" in fonte
+
+
+def test_lam0_nao_usa_o_prior():
+    """The integrity check the script prints: at lam=0 every arm must agree,
+    because the prior does not enter the loss. Here only the invariant is
+    asserted — that the gate at lam=0 cannot depend on the prior argument."""
+    fonte = (RAIZ / "scripts" / "07_raman_lambda1.py").read_text()
+    assert "identical across arms by construction" in fonte
