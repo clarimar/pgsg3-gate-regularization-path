@@ -118,13 +118,69 @@ maneira honesta de refazer a pergunta é pré-registrar uma métrica intra-níve
 e executá-la em partições novas (`--split-seed 5..9`), de modo que o teste seja
 confirmatório e não a terceira leitura dos mesmos quinze diretórios.
 
+## Verificação no artigo aceito
+
+Feita sobre os arquivos arquivados do próprio `pgsg_2`, sem treinar nada.
+
+**NIR.** `nir_gate_v2_extraction.npz`: p = 281, `q = p // 10 = 28` (divisão
+inteira, definição do código publicado), prior com os mesmos quatro níveis
+(0,1 ×223; 0,6 ×7; 0,8 ×17; 1,0 ×34), platô de 34, **decil 28/28 dentro do
+platô**. Toda banda fora do platô está estritamente abaixo dele. O prior NIR
+oficial é o mesmo: a docstring de `src/pgsg2/priors/nir_gaussian.py` registra
+que `make_literature_prior` de `pgsg_1` é função degrau e que *"é o prior que
+gerou os resultados publicados"*; a versão gaussiana existe só como ablação de
+H3.
+
+**Raman.** `h1_raman_v2_result.npz`: p = 1870, q = 187, prior **contínuo**
+(soma de 19 gaussianas, σ = 15 cm⁻¹, normalizada pelo pico), 545 valores
+distintos, platô no máximo de **1 banda**, decil 1/187 dentro dele. O
+mecanismo não se aplica ao braço Raman.
+
+**A condição de comparação publicada é `prior=None`**, não prior aleatório,
+apesar do nome das variáveis (`r2_rand_*`, `jaccard_rand_*`):
+`run_h4_prior_ablation.py` documenta *"init não-informada (prior=None — theta
+inicia em zeros, gate uniforme)"*. Números publicados: NIR J = 0,9418 contra
+0,6002; Raman J = 0,9011 contra 0,6545; R² praticamente idêntico nas duas
+condições e nas duas modalidades. A ablação, como executada, compara prior
+contra ausência de prior, e por isso não separa conteúdo de ancoragem — que é
+o que os braços de controle deste trabalho fazem.
+
+## Terceira explicação mecânica proposta e descartada
+
+Registrada pelo mesmo motivo que as duas anteriores.
+
+**"O Jaccard NIR publicado é artefato de ordenação."** No gate NIR arquivado,
+as 34 bandas do platô têm valor **bit-idêntico** (0,99999380, amplitude
+0,0e+00, s(1−s) = 6,2×10⁻⁶ contra 0,133 fora) — a saturação por inicialização
+no prior de F001. Daí a hipótese de que `argsort` escolheria 28 entre 34
+valores iguais por ordem de índice, fixando o conjunto e inflando o Jaccard.
+
+**Falsa, e pelo sinal oposto.** `np.argsort` usa quicksort por default e **não
+é estável**: um bloco empatado é ordenado pela partição e a seleção muda com os
+valores do entorno. Medido em gates sintéticos com platô totalmente empatado:
+J = 0,7301, contra nível de chance 0,7000 para 28 em 34 (núcleo comum 19/28,
+união 34). Com `kind='stable'` seria 1,0 por construção, mas não é o que o
+código usa.
+
+Um platô empatado portanto **deprime** o Jaccard na direção do acaso. O número
+publicado, 0,9418, está muito acima de 0,70, logo nas dez execuções da ablação
+o platô carregava ordenação real. **Não há erro nos números publicados por esta
+via**, e a hipótese era descartável por aritmética antes de ser levantada.
+
+Verificação direta disponível em `check_decile_ties.py` (repositório `pgsg_2`):
+reexecuta o braço de literatura de H4 e compara o Jaccard publicado com o
+mesmo cálculo tendo os empates exatos sorteados ao acaso.
+
 ## O que fica estabelecido sem depender de modelo
 
-1. O prior é uma escada de quatro níveis; 223 de 281 bandas no piso.
-2. O decil superior está contido no platô do prior em 15/15 células, logo o
-   Jaccard mede desempate dentro do platô.
-3. Qualquer prior normalizado min–max com platô maior que `q` tem a mesma
-   propriedade, incluindo o Raman de `Gate Topology and Reproducibility of
-   Prior-Guided Spectral Gating Across Near-Infrared and Raman Spectroscopy`
-   (aceito), onde p = 1870 e q = 187 — o tamanho do platô lá é verificável sem
-   treinar nada e deve ser verificado.
+1. O prior NIR é uma escada de quatro níveis; 223 de 281 bandas no piso.
+2. O decil superior está contido no platô do prior em 15/15 células deste
+   trabalho e no gate NIR arquivado do artigo aceito. O Jaccard ordena
+   **apenas dentro do nível de topo do prior**.
+3. Isso é afirmação sobre o **escopo** da métrica, não sobre a correção de
+   nenhum resultado: a métrica não pode detectar se o nível de topo do prior é
+   o lugar certo para olhar, porque nunca olha fora dele.
+4. Vale para qualquer prior normalizado min–max cujo platô exceda `q`. Não
+   vale para o braço Raman do artigo aceito, cujo prior é contínuo — ali o
+   decil não é preso a platô, e as conclusões daquele braço não são tocadas
+   por nada aqui.
