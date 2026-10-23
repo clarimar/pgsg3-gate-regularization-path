@@ -160,9 +160,29 @@ def h11a(c: dict) -> dict:
 
 def h11_jaccard(c: dict) -> dict:
     d = residuo_intra_nivel(c)
-    if any(len(np.unique(v)) < len(v) for v in d):
-        return {"indefinida": True}
+    empates = [len(v) - len(np.unique(v)) for v in d]
+    if max(empates) > 0:
+        return {"indefinida": True, "empates": max(empates)}
     return {"indefinida": False, "j": jaccard_medio(d, c["q"])}
+
+
+def composicao_residuo(c: dict) -> dict:
+    """Which prior levels the residual decile draws from. DESCRIPTIVE.
+
+    H11a asks only whether the decile leaves the plateau. It does not ask
+    whether the decile is confined somewhere ELSE, and with 223 of 281 bands on
+    the floor it can escape the plateau and still be confined. This reports the
+    composition against each level's share of bands, so confinement anywhere is
+    visible. It is not a criterion and must not become one.
+    """
+    d = residuo_intra_nivel(c)
+    por_nivel = {}
+    for v in c["niveis"]:
+        bandas = set(np.flatnonzero(
+            np.abs(c["prior"] - v) <= TOL_NIVEL).tolist())
+        fr = [len(set(topo(x, c["q"]).tolist()) & bandas) / c["q"] for x in d]
+        por_nivel[float(v)] = (float(np.mean(fr)), len(bandas) / c["p"])
+    return por_nivel
 
 
 # ----------------------------------------------------------------------- main
@@ -278,6 +298,19 @@ def main() -> None:
         print(f"  {c['dir'].name:<16} {r['fracao']:>11.3f}   "
               f"{'ok' if r['suportada'] else '-'}")
 
+    head("Residual decile composition by prior level (DESCRIPTIVE, no verdict)")
+    print("H11a asks only whether the decile leaves the plateau. With 223 of")
+    print("281 bands on the floor it can leave the plateau and still be")
+    print("confined. 'share' is each level's fraction of all bands: a decile")
+    print("drawn without regard to level would match it.\n")
+    for c in lits:
+        comp = composicao_residuo(c)
+        print(f"  {c['dir'].name}")
+        for v, (fr, share) in comp.items():
+            marca = "   <- confined here" if fr > 0.9 else ""
+            print(f"    level {v:.3g}   in decile {fr:.3f}   share {share:.3f}"
+                  f"{marca}")
+
     head("H11b - residual reproducibility distinguishes the arms")
     print("Pairwise top-decile Jaccard of the within-level residual. One")
     print("scalar per cell, so there is no pairing by seed: this criterion is a")
@@ -286,17 +319,25 @@ def main() -> None:
            ([("shuffled", shfs)] if shfs else [])
     print(f"  {'partition':<16}" + "".join(f"{nome:>12}" for nome, _ in cols)
           + "   H11b")
-    r11b = []
+    r11b, indefinidas = [], []
     for i, c in enumerate(lits):
         vals, linha = {}, f"  {c['dir'].name:<16}"
         for nome, arms in cols:
             r = h11_jaccard(arms[i])
             vals[nome] = None if r["indefinida"] else r["j"]
-            linha += f"{'undef':>12}" if r["indefinida"] else f"{r['j']:>12.4f}"
+            if r["indefinida"]:
+                linha += f"{'undef':>12}"
+                indefinidas.append((c["dir"].name, nome, r.get("empates", 0)))
+            else:
+                linha += f"{r['j']:>12.4f}"
         ok = (vals["literature"] is not None and vals["blocks"] is not None
               and vals["literature"] > vals["blocks"])
         r11b.append(ok)
         print(linha + f"   {'ok' if ok else '-'}")
+    for nome_part, nome_arm, n_emp in indefinidas:
+        print(f"\n  undefined: {nome_part} / {nome_arm} has {n_emp} exact ties")
+        print("  in the residual, so its decile is partly ordered by the sort.")
+        print("  Per the pre-registration the cell is reported, not imputed.")
 
     # -------------------------------------------------------------- verdicts
     head("Pre-registered verdicts")
@@ -315,12 +356,30 @@ def main() -> None:
     veredito("H11b", sum(r11b), n, 4, "J(literature) > J(blocks)")
 
     head("Reading")
-    if k_b >= 4:
-        print("H10b supported: the prior's position does carry content, visible")
-        print("once the metric looks inside a level instead of across levels.")
-        print("H7 stands as refuted on the metric it pre-registered; the two")
-        print("together say the whole-spectrum Spearman was insensitive to the")
-        print("question it was asked.")
+    # H10a and H10b have to be read together. H10b alone says only that
+    # literature beats blocks; it does not say literature is right. An earlier
+    # version of this script keyed on H10b alone and printed a conclusion that
+    # a failed H10a does not support. The pre-registration did not specify the
+    # joint reading either, which is a gap in it, recorded rather than patched.
+    if k_b >= 4 and k_a >= 4:
+        print("H10a and H10b both supported: inside the plateau the literature")
+        print("gate orders bands in agreement with the external reference, and")
+        print("better than a relocated prior does. The position carries content,")
+        print("visible once the metric looks inside a level instead of across")
+        print("levels. H7 stands as refuted on the metric it pre-registered; the")
+        print("two together say the whole-spectrum Spearman was insensitive to")
+        print("the question it was asked.")
+    elif k_b >= 4:
+        print("H10b supported but H10a NOT. Read narrowly: literature beats")
+        print("blocks without itself ordering in agreement with the reference.")
+        print("Relocating the blocks makes the within-plateau ordering worse")
+        print("than useless; keeping the literature position leaves it near")
+        print("zero with a sign that varies by partition. The position is")
+        print("therefore not neutral, but it does not produce alignment, and")
+        print("'the prior carries content' is more than these numbers support.")
+        print("Check the secondary table: if literature beats blocks on the")
+        print("SAME bands in fewer partitions than H10b did, part of H10b is")
+        print("set membership rather than ordering.")
     elif n - k_b >= 2:
         print("H10b not supported: the position carries no content even in the")
         print("metric built to see it. Explanation (b) of H7 is confirmed by a")

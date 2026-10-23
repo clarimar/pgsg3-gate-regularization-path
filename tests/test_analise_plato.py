@@ -251,3 +251,40 @@ def test_constantes_vem_do_pre_registro():
 def test_spearman_nan_sem_variacao():
     assert np.isnan(mod.spearman(np.ones(10), np.arange(10.0)))
     assert np.isnan(mod.spearman(np.arange(2.0), np.arange(2.0)))
+
+
+# ------------------------------------------------ residual decile composition
+
+def test_composicao_soma_um_e_reporta_share(tmp_path):
+    """The decile's fractions over all levels must account for the whole
+    decile, and each level's share of bands must be reported next to it."""
+    c = celula(tmp_path, nome="c1", rho_alvo=0.8, realce="piso")
+    comp = mod.composicao_residuo(c)
+    assert set(comp) == {0.1, 0.6, 0.8, 1.0}
+    assert sum(fr for fr, _ in comp.values()) == pytest.approx(1.0)
+    assert sum(share for _, share in comp.values()) == pytest.approx(1.0)
+    assert comp[0.1][1] == pytest.approx(223 / P)
+
+
+def test_composicao_expoe_confinamento_no_piso(tmp_path):
+    """H11a passes when the decile leaves the plateau, but the decile can be
+    confined to the floor instead. The composition has to make that visible."""
+    c = celula(tmp_path, nome="c2", rho_alvo=0.8, realce="piso")
+    comp = mod.composicao_residuo(c)
+    assert mod.h11a(c)["suportada"]          # it did leave the plateau
+    assert comp[1.0][0] < 0.1                # plateau contributes almost none
+    assert comp[0.1][0] > 0.9                # but the floor holds it all
+
+
+def test_composicao_expoe_confinamento_no_plato(tmp_path):
+    c = celula(tmp_path, nome="c3", rho_alvo=0.8, realce="plato")
+    comp = mod.composicao_residuo(c)
+    assert comp[1.0][0] > 0.5
+    assert comp[1.0][1] == pytest.approx(34 / P)
+
+
+def test_jaccard_indefinido_informa_quantos_empates(tmp_path):
+    c = celula(tmp_path, nome="c4", rho_alvo=0.8)
+    c["gates"] = [np.full(P, 0.5) for _ in range(NS)]
+    r = mod.h11_jaccard(c)
+    assert r["indefinida"] and r["empates"] > 0
