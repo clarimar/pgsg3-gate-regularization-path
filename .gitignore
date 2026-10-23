@@ -28,3 +28,7 @@ results/**/*.pt
 *.bbl
 *.blg
 *.synctex.gz
+
+# clones e snapshots de outros trabalhos, que vivem em repos proprios
+pgsg4-bayesian-gating/
+*.zip
