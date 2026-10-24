@@ -40,6 +40,7 @@ import argparse
 import itertools
 import os
 import sys
+from math import comb
 from pathlib import Path
 
 import numpy as np
@@ -61,18 +62,60 @@ def carregar(caminho: Path) -> dict[str, np.ndarray]:
         a = np.asarray(np.load(caminho, allow_pickle=False), float)
         return {caminho.stem: a}
     if caminho.suffix in (".csv", ".txt"):
-        try:
-            a = np.loadtxt(caminho, delimiter=",")
-        except ValueError:
-            a = np.loadtxt(caminho)
-        return {caminho.stem: np.asarray(a, float)}
+        for kw in ({"delimiter": ","}, {}):
+            try:
+                a = np.loadtxt(caminho, **kw)
+                return {caminho.stem: np.asarray(a, float)}
+            except ValueError:
+                continue
+        return {}          # has a header: carregar_registro reads it instead
     return {}
+
+
+def carregar_registro(caminho: Path) -> dict[str, np.ndarray] | None:
+    """A headed CSV of stored metrics, as named columns.
+
+    gate_metrics.csv is the authoritative record of what pgsg_1's R2 run
+    measured, and it declares its own q per row. Reading it is the only
+    independent cross-check this script can run against itself: if the
+    recomputation here disagrees with jaccard_lit there, one of the two is
+    wrong, and that has already happened once in this program -- the decile
+    convention, findings/F004, correction of 2026-10-24.
+    """
+    try:
+        d = np.genfromtxt(caminho, delimiter=",", names=True)
+    except Exception:                                         # noqa: BLE001
+        return None
+    if d.dtype.names is None or d.size == 0:
+        return None
+    return {n: np.atleast_1d(d[n]).astype(float) for n in d.dtype.names}
 
 
 def jaccard_medio(gates: list[np.ndarray], q: int) -> float:
     tops = [set(np.argsort(g)[::-1][:q].tolist()) for g in gates]
     return float(np.mean([len(a & b) / len(a | b)
                           for a, b in itertools.combinations(tops, 2)]))
+
+
+def jaccard_esperado_exato(q: int, L: int) -> float:
+    """E[J] for two independent uniform q-subsets of L tied bands.
+
+    The overlap k is hypergeometric, and J(k) = k/(2q-k), so
+
+        E[J] = sum_k [C(q,k) C(L-q,q-k) / C(L,q)] * k/(2q-k)
+
+    This is NOT q/(2L-q). That ratio is J evaluated at the expected overlap,
+    E[k] = q^2/L, and J(q^2/L) = q/(2L-q) identically. But J''(k) =
+    4q/(2q-k)^3 > 0 for k < 2q, so J is strictly convex and Jensen gives
+    E[J] > J(E[k]): the ratio is a strict lower bound, by 0.0012 at q=28 and
+    0.0009 at q=29 for L=34. The program called the ratio "exact" in three
+    notes; see findings/F002, correction of 2026-10-24.
+    """
+    if L < q or q < 1:
+        return float("nan")
+    tot = comb(L, q)
+    return float(sum(comb(q, k) * comb(L - q, q - k) / tot * k / (2 * q - k)
+                     for k in range(max(0, 2 * q - L), q + 1)))
 
 
 def jaccard_sorteando_empates(gates: list[np.ndarray], q: int,
@@ -113,13 +156,21 @@ def main() -> None:
     head(f"What is in {d}")
     if not arquivos:
         raise SystemExit("no .npz/.npy/.csv/.txt found. Nothing to check.")
-    achados = {}
+    achados, registros = {}, {}
     for p in arquivos:
         try:
             conteudo = carregar(p)
         except Exception as e:                                # noqa: BLE001
             print(f"  {p.relative_to(d)}   unreadable: {e}")
             continue
+        if not conteudo and p.suffix in (".csv", ".txt"):
+            reg = carregar_registro(p)
+            if reg:
+                registros[p] = reg
+                print(f"  {str(p.relative_to(d)):<44} stored record, "
+                      f"{len(next(iter(reg.values())))} rows: "
+                      f"{', '.join(reg)}")
+                continue
         achados[p] = conteudo
         for k, v in conteudo.items():
             print(f"  {str(p.relative_to(d)):<44} {k:<22} {str(v.shape):<12} "
@@ -162,6 +213,7 @@ def main() -> None:
               + "  ".join(f"{v:.4g} x{c}" for v, c in zip(niveis, contagens)))
         print(f"plateau      : {len(plato)} bands\n")
 
+    medidos: dict[tuple[str, str], tuple[int, float]] = {}
     for p, conteudo in achados.items():
         for k, v in conteudo.items():
             mat = v if v.ndim == 2 else v[None, :]
@@ -199,11 +251,47 @@ def main() -> None:
             if len(mat) >= 2:
                 ji = jaccard_medio(list(mat), q)
                 jr, sd = jaccard_sorteando_empates(list(mat), q)
-                chance = (q / (2 * len(idx) - q)
-                          if len(idx) >= q else float("nan"))
+                medidos[(p.name, k)] = (q, ji)
+                exato = jaccard_esperado_exato(q, len(idx))
+                aprox = (q / (2 * len(idx) - q)
+                         if len(idx) >= q else float("nan"))
                 print(f"  {'':36} {'':18} Jaccard INDEX {ji:.4f}   "
-                      f"RANDOM {jr:.4f} +- {sd:.4f}   chance {chance:.4f}")
+                      f"RANDOM {jr:.4f} +- {sd:.4f}")
+                desvio = ((jr - exato) / sd) if sd > 0 else float("nan")
+                print(f"  {'':36} {'':18} E[J] exact {exato:.4f}   "
+                      f"q/(2L-q) {aprox:.4f} (low by {exato - aprox:+.4f})"
+                      f"   RANDOM is {desvio:+.2f} sd from exact")
             print()
+
+    # ------------------------------------------- against the stored record
+    if registros:
+        head("Recomputation against the stored record")
+        for p, reg in registros.items():
+            ns = reg.get("n_actual")
+            qs = reg.get("q")
+            print(f"{p.name}: the record declares q per row"
+                  f"{'' if qs is None else ' = ' + ', '.join(str(int(v)) for v in sorted(set(qs)))}"
+                  f"; this run used q={a.q if a.q else 'ceil(decil*p)'}\n")
+            for col, arq in (("jaccard_lit", "gates_lit"),
+                             ("jaccard_rand", "gates_rand")):
+                if col not in reg or ns is None:
+                    continue
+                for i, n in enumerate(ns.astype(int)):
+                    chave = (f"gates_n{n}.npz", arq)
+                    if chave not in medidos:
+                        continue
+                    qm, jm = medidos[chave]
+                    qr = int(qs[i]) if qs is not None else qm
+                    s = reg[col][i]
+                    marca = ("ok" if abs(s - jm) < 5e-4
+                             else ("CONVENTION" if qm != qr else "DIVERGENCE"))
+                    print(f"  n={n:<5} {col:<13} stored {s:.4f} (q={qr})   "
+                          f"here {jm:.4f} (q={qm})   {marca}")
+                print()
+        print("A CONVENTION flag means the two used different q and the")
+        print("numbers are not comparable -- re-run with --q matching the")
+        print("record. A DIVERGENCE at equal q is a real disagreement and")
+        print("one of the two is wrong.")
 
     head("Reading")
     print("A plateau with 1 distinct value and spread 0.0e+00 means the stored")
@@ -223,8 +311,18 @@ def main() -> None:
     print("DECILE CONVENTION. q defaults to ceil(0.10*p) = 29 at p=281, which")
     print("is what gate_metrics.csv records and what pgsg_3 uses. The pgsg_2")
     print("H4 ablation uses floor division, q = 28. The two give different")
-    print("numbers (chance 0.7436 against 0.7000) and must be reported per")
+    print("numbers (E[J] 0.7445 against 0.7012) and must be reported per")
     print("protocol, never mixed. Pass --q to pin one explicitly.")
+    print()
+    print("CHANCE LEVEL. The column reported is the exact hypergeometric E[J].")
+    print("q/(2L-q), which the band-selection literature uses, is J evaluated")
+    print("at the expected overlap and is a strict lower bound by convexity;")
+    print("both are printed so the gap cannot be mistaken for a discrepancy.")
+    print()
+    print("UNINFORMED ARM. It is tie-free only from n = 200. Below that some")
+    print("seeds retain residual ties worth up to +0.028 on the index rule, in")
+    print("both decile conventions -- two orders below the anchored arm's 0.22.")
+    print("findings/F004 asserted exact equality there; corrected 2026-10-24.")
 
 
 if __name__ == "__main__":

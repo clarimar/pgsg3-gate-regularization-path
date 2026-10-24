@@ -175,3 +175,65 @@ resultados. Aqui apontei divergência num documento de 2026-08-12 que estava
 correto, por usar convenção diferente da que os dados registram. A lição é
 operacional: **ler o protocolo que o arquivo declara antes de recomputar**, e
 não impor o do script.
+
+---
+
+## Correção de 2026-10-24 — dois erros meus nesta nota
+
+### 1. "INDEX e sorteado coincidem até o último dígito" é falso em 3 de 7 células
+
+O parágrafo da **condição não informada** afirma: *"Sem empate: INDEX e sorteado
+coincidem até o último dígito, porque não há empate para desempatar."* E a
+tabela que o acompanha tem uma única coluna rotulada `J (INDEX = sorteado)`.
+
+**Os valores da tabela estão certos. O rótulo e a justificativa estão errados.**
+Com n pequeno, algumas sementes do braço não informado chegam ao fim do treino
+com apenas dois ou três valores distintos entre as 34 bandas da região do platô,
+e há empate a desempatar:
+
+| n | platô, distintos | q = 28: INDEX / sorteado | q = 29: INDEX / sorteado |
+| --- | --- | --- | --- |
+| 30 | 3–34 de 34 | 0,1141 / 0,1054 ± 0,0028 | 0,1121 / 0,1040 ± 0,0027 |
+| 60 | 2–34 | 0,0886 / 0,0719 ± 0,0034 | 0,0898 / 0,0738 ± 0,0033 |
+| 100 | 2–34 | 0,1634 / 0,1359 ± 0,0038 | 0,1663 / 0,1393 ± 0,0036 |
+| 200 | 34 de 34 | 0,3124 / idêntico, sd 0,0000 | 0,3068 / idêntico |
+| 400 | 34 de 34 | 0,4365 / idêntico | 0,4328 / idêntico |
+| 700 | 34 de 34 | 0,3703 / idêntico | 0,3855 / idêntico |
+| 1158 | 34 de 34 | 0,5646 / idêntico | 0,5658 / idêntico |
+
+O excesso é de +0,009 a +0,028, e aparece **nas duas convenções**. Logo a frase
+não estava certa no protocolo em que foi escrita e passou a estar errada na
+outra: estava errada desde a redação. O `check_gates_r2.py` imprimia as duas
+colunas na execução original e elas não coincidiam nessas três linhas. Eu li a
+coluna INDEX, escrevi-a sob o rótulo das duas, e justifiquei com uma ausência de
+empate que a saída na tela contradizia.
+
+**O que isto não derruba, e por quê.** O excesso de +0,009 a +0,028 contra
+**+0,22** no braço de literatura é uma ordem de grandeza menor, e o decil não é
+preso ao platô (0,000–0,276 contra 1,000). A condição não informada **mede**,
+com ruído de empate nas células pequenas; não é cega. Os dois Spearman com n
+são computados sobre a coluna INDEX e não mudam: +0,9286 (p = 0,0025) sem
+ancoragem, −0,3214 (p = 0,4821) com prior na inicialização. A assinatura
+diagnóstica da nota permanece.
+
+O que cai é a palavra **"sem empate"** como descrição do braço não informado, e
+com ela a afirmação absoluta *"até o último dígito"*. O enunciado defensável é:
+*o braço não informado é livre de empate a partir de n = 200; abaixo disso
+algumas sementes retêm empate residual que eleva o INDEX em até 0,028, duas
+ordens de grandeza abaixo do colapso de 0,22 do braço ancorado.*
+
+Mesma classe do erro de contagem 10/10 → 9/10: número afirmado como exato sem
+conferir a saída que eu tinha à frente. Segundo deste tipo no programa. Texto
+original preservado acima.
+
+### 2. 0,7000 chamado de "acaso combinatório exato"
+
+A linha *"0,7005 é o acaso combinatório exato de sortear 28 entre 34 duas vezes
+(0,7000)"* e a tabela de convenções (*"29 de 34 dá 0,7436; 28 de 34 dá
+0,7000"*) usam a aproximação `q/(2L−q)` como se fosse o valor exato. Não é: é J
+avaliado no overlap esperado, e J é estritamente convexa em k, logo
+E[J] > J(E[k]) por Jensen. Os exatos são **0,701177** (q = 28) e **0,744473**
+(q = 29). Derivação e tabela em `F002`, correção de 2026-10-24.
+
+Nenhum veredito desta nota muda: 0,7005 ± 0,0068 fica a −0,10 sd do exato. Os
+números de chance desta nota leem-se **0,7012** e **0,7445**.

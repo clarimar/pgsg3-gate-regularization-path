@@ -96,6 +96,19 @@ pgsg_5.
    `check_gates_r2.py`; mecanismo em `findings/F002`, medida em
    `findings/F004`.
 
+   **Correção de 2026-10-24, dois pontos.** (a) `0,7000` é chamado acima de
+   *"o acaso exato de escolher 28 entre 34"*. Não é: é `q/(2L−q)`, que é J
+   avaliado no overlap esperado. J é estritamente convexa em k, logo
+   E[J] > J(E[k]) por Jensen, e os valores exatos são **0,701177** (q = 28) e
+   **0,744473** (q = 29). Derivação em `findings/F002`. O medido, 0,7005 ±
+   0,0068, fica a −0,10 sd do exato, portanto o colapso ao acaso permanece
+   sustentado e esta decisão não muda. (b) A frase *"não há empate algum ali"*,
+   logo abaixo, é falsa para n ≤ 100: algumas sementes do braço não informado
+   retêm empate residual que eleva o Jaccard por índice em até 0,028 nas duas
+   convenções de decil. O braço é livre de empate a partir de n = 200. Medidas
+   em `findings/F004`, correção de 2026-10-24. O ρ = +0,9286 citado abaixo é
+   computado sobre a coluna por índice e não muda.
+
    A linha «não informada» **não** é afetada: não há empate algum ali, e o seu
    Jaccard cresce com o tamanho de treino (ρ = +0,9286, p = 0,0025), como uma
    medida de estabilidade deve fazer. A coluna ρ(gate,prior) também não é

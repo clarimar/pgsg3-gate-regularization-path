@@ -158,7 +158,7 @@ mesmo pré-processamento, mesma divisão e `q = p // 10 = 28`:
 | decil dentro do platô | 28/28 |
 | Jaccard, empates como o sort os deixa | **0,9418** |
 | Jaccard, empates sorteados ao acaso (200 sorteios) | **0,7005 ± 0,0068** |
-| nível de chance, 28 em 34 sorteados duas vezes | 0,7000 |
+| nível de chance, 28 em 34 sorteados duas vezes | **0,7012** (exato); 0,7000 é J(E[k]) |
 | figura publicada para este braço | 0,9418 |
 
 As 34 bandas do platô têm valor bit-idêntico em **todas** as sementes, logo o
@@ -225,3 +225,41 @@ precisa ser calibrado por quantidade medida, não por escala arbitrária.
      inicialização. Sem saturação, `inert = 0` em todo λ (F001), e
      `05_diagnostico_jaccard.py` verifica ausência de empate exato entre gates
      treinados em todas as células antes de reportar qualquer Jaccard.
+
+---
+
+## Correção de 2026-10-24 — `q/(2L−q)` não é o acaso exato
+
+A tabela acima dizia, do nível de chance, **0,7000**, e as notas deste programa
+o chamavam em três lugares de *"o acaso combinatório exato de sortear 28 entre
+34 duas vezes"*. **O adjetivo está errado.**
+
+`q/(2L−q)` é **J avaliado no overlap esperado**, não a esperança de J. Sob
+sorteio uniforme de dois subconjuntos de tamanho `q` entre `L` bandas, o overlap
+`k` é hipergeométrico com E[k] = q²/L, e
+
+    J(E[k]) = (q²/L) / (2q − q²/L) = q / (2L − q)
+
+identicamente — a aproximação *é* essa substituição. Mas J(k) = k/(2q−k) tem
+J''(k) = 4q/(2q−k)³ > 0 para k < 2q, logo é **estritamente convexa**, e por
+Jensen **E[J] > J(E[k])**. A aproximação é limite inferior estrito.
+
+O valor exato soma a hipergeométrica termo a termo:
+
+    E[J] = Σₖ [C(q,k) C(L−q,q−k) / C(L,q)] · k/(2q−k)
+
+| | q = 28, L = 34 | q = 29, L = 34 |
+| --- | --- | --- |
+| E[J] exato | **0,701177** | **0,744473** |
+| q/(2L−q) | 0,700000 | 0,743590 |
+| erro da aproximação | +0,001177 | +0,000884 |
+
+**Nenhum veredito muda.** O medido na célula publicada, 0,7005 ± 0,0068, fica a
+−0,10 sd do exato e a +0,07 sd da aproximação: a medida não discrimina entre os
+dois, e o colapso ao acaso está igualmente sustentado. O que muda é que o
+programa afirmava exatidão de um número que não a tem, enquanto o rascunho da §4
+já usava o valor correto — os documentos de apoio contradiziam o manuscrito.
+
+Corrigido aqui, em `F004`, no `ADR-0001` e em `paper/00-estrutura.md`. O
+`check_gates_r2.py` passa a imprimir o exato e a aproximação lado a lado, com o
+erro, para que a diferença não volte por descuido.

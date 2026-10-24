@@ -72,11 +72,16 @@ ADR**; corrigido o F004, que reportava a divergência como se fosse dos dados.
 
 ### Consequência de métodos: duas convenções de decil no programa
 
-| base | definição | q em p = 281 | nível de chance, 34 bandas |
+| base | definição | q em p = 281 | E[J] exato, 34 bandas |
 | --- | --- | --- | --- |
-| `gate_metrics.csv` (pgsg_1 R2) | `ceil(0,10 p)` | **29** | 0,7436 |
-| `pgsg_3` | `ceil(0,10 p)` | **29** | 0,7436 |
-| ablação H4 publicada (pgsg_2) | `len(wl) // 10` | **28** | 0,7000 |
+| `gate_metrics.csv` (pgsg_1 R2) | `ceil(0,10 p)` | **29** | **0,7445** |
+| `pgsg_3` | `ceil(0,10 p)` | **29** | **0,7445** |
+| ablação H4 publicada (pgsg_2) | `len(wl) // 10` | **28** | **0,7012** |
+
+**[v3]** A coluna é a esperança hipergeométrica exata de J, não `q/(2L−q)`.
+Essa razão é J avaliado no overlap esperado; J é estritamente convexa em k, logo
+subestima E[J] por 0,0012 (q = 28) e 0,0009 (q = 29). A §2 reporta o exato e
+nomeia a aproximação, porque a literatura de seleção de bandas usa a segunda.
 
 A §2 **declara as duas** e diz qual vale para qual conjunto. Os números de
 colapso por desempate são reportados **por protocolo**, nunca misturados: a
@@ -232,8 +237,9 @@ as 34 bandas e o decil de 28 ou 29.
 | decil contido no platô | 1,000 em 15/15 células; 28/28 no gate arquivado | F002, F003 |
 | platô bit-idêntico | 1/34 valores distintos, amplitude 0,0e+00 | F002, F004 |
 | J publicado reproduzido | 0,9418, idêntico | F002 |
-| colapso ao sortear empates, célula publicada (**q = 28**) | 0,7005 ± 0,0068 contra acaso 0,7000 | F002 |
-| **[v3]** os sete tamanhos do pgsg_1 R2 (**q = 29**) | J 0,9452–0,9867; acaso 0,7436 | F004 |
+| colapso ao sortear empates, célula publicada (**q = 28**) | 0,7005 ± 0,0068 contra E[J] = 0,7012 | F002 |
+| **[v3]** os sete tamanhos do pgsg_1 R2 (**q = 29**) | J 0,9452–0,9867 → **0,7442 ± 0,0063** contra E[J] = **0,7445** | F004 |
+| **[v3]** o sorteado é idêntico nas 7 células | o gate não entra no cálculo: só (q, L) | F004 |
 | **J rastreia similaridade fora do platô** | 1,0000 em sd = 0 a 0,7500 em sd = 10⁻²; publicado ≈ sd 1,5×10⁻⁴ | F002 |
 
 Figura 2: J como o sort deixa os empates, J com empates sorteados, e o acaso —
