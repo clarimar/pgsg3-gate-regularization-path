@@ -1,7 +1,7 @@
-# Estrutura do manuscrito e mapa de números — v2
+# Estrutura do manuscrito e mapa de números — v3
 
 Data: 2026-10-24
-Status: **revisada após parecer de 2026-10-24; nenhuma prosa escrita ainda**
+Status: **divergências numéricas resolvidas; nenhuma prosa escrita ainda**
 
 Fixa, antes da redação, o que cada seção afirma, qual número vai nela e de qual
 achado o número vem. A v1 (2026-10-23) foi revisada e as mudanças estão
@@ -15,7 +15,7 @@ marcadas como **[v2]**.
 | artigo aceito | antecedente **e** objeto de reanálise |
 | §6 e §8 | §6 reduzida, §8 preservada |
 | figuras | as cinco, com os ajustes do parecer |
-| divergências numéricas | **resolver antes da redação**; caminho em `scripts/resolver_divergencias.py` |
+| divergências numéricas | **[v3] resolvidas**, as duas; ver abaixo |
 
 Três correções científicas do parecer, aceitas integralmente, e uma devolvida
 ao parecerista. Todas detalhadas em §§ próprias abaixo.
@@ -55,6 +55,33 @@ H11a (suportada contra o confinamento errado) e H13b (não suportada por
 critério mal desenhado).
 
 ---
+
+## **[v3]** As duas divergências numéricas, resolvidas
+
+**Contagem Raman: conciliada.** 6.472 analisados + **488 descartados** = 6.960
+declarados. O carregador descarta espectros cujo alvo de glicose é `NaN` e
+registra a contagem em `metadata["n_samples_dropped_missing_target"]`. Critério
+documentado na fonte, não inferido. A §2 declara os três números.
+
+**Faixa de Jaccard: o ADR estava certo, o erro era meu.** `gate_metrics.csv`
+registra `q = 29` por linha, e ao q = 29 a recomputação casa exatamente com os
+valores armazenados — faixa 0,9452--0,9867, que é o 0,945--0,987 da decisão 6.
+O meu `check_gates_r2.py` usava `int(p × 0,10)` = 28, truncando, e foi essa
+diferença de convenção que criou a falsa divergência. **Nada a corrigir no
+ADR**; corrigido o F004, que reportava a divergência como se fosse dos dados.
+
+### Consequência de métodos: duas convenções de decil no programa
+
+| base | definição | q em p = 281 | nível de chance, 34 bandas |
+| --- | --- | --- | --- |
+| `gate_metrics.csv` (pgsg_1 R2) | `ceil(0,10 p)` | **29** | 0,7436 |
+| `pgsg_3` | `ceil(0,10 p)` | **29** | 0,7436 |
+| ablação H4 publicada (pgsg_2) | `len(wl) // 10` | **28** | 0,7000 |
+
+A §2 **declara as duas** e diz qual vale para qual conjunto. Os números de
+colapso por desempate são reportados **por protocolo**, nunca misturados: a
+célula publicada do pgsg_2 em q = 28, os sete tamanhos do pgsg_1 R2 e tudo do
+pgsg_3 em q = 29. É exatamente o que a Decisão 5 do parecer exigia.
 
 ## Correção aceita A — a dependência de n não é regra **[v2]**
 
@@ -163,8 +190,9 @@ Sem números.
 | p (NIR) | 281 | F002 |
 | divisões NIR | agrupadas por fruto; 725 frutos, 723 medidos duas vezes | F001 |
 | Raman | `bioprocess_substrates`, alvo glicose | ADR-0001 pgsg_2 |
-| n Raman declarado / analisado | 6.960 / **6.472** | **[v2]** ver abaixo |
-| critério de exclusão Raman | alvo de glicose ausente (`NaN`), contagem em `metadata` | **[v2]** `raman_bioprocess.py` |
+| n Raman declarado / descartado / analisado | 6.960 / **488** / 6.472 | **[v3]** conciliado |
+| critério de exclusão Raman | alvo de glicose ausente (`NaN`), contagem registrada na fonte | `raman_bioprocess.py` |
+| **convenção de decil** | `ceil(0,10 p)` = 29 aqui; `// 10` = 28 na ablação publicada | **[v3]** declarar as duas |
 | p (Raman) | 1870 | F005 |
 | divisões Raman | não agrupadas; sem id de lote na ingestão | F005 |
 | referência | \|coef PLS\|, 1 EP, H_MAX = 120, por partição | F001 |
@@ -173,12 +201,8 @@ Sem números.
 | sementes | 10 por célula | todos |
 | orçamento | 500 épocas fixas, Adam | todos |
 
-**[v2]** A linha do n Raman deixa de ser divergência: o carregador descarta
-espectros sem rótulo válido de glicose e registra quantos em
-`metadata["n_samples_dropped_missing_target"]`. A §2 declara o total da fonte,
-o critério e o total analisado — três números, não um conflito.
-`scripts/resolver_divergencias.py` imprime a contagem para confirmar que
-6.472 + descartados = 6.960 antes de a frase ser escrita.
+**[v3]** Confirmado por execução: 488 descartados, 6.472 + 488 = 6.960. Três
+números, não um conflito.
 
 **SRM / aprendizibilidade não-uniforme** — λ·KL(g‖s) é família de problemas
 restritos indexada pela distância ao prior. Introduzir aqui, **sem** a
@@ -208,8 +232,8 @@ as 34 bandas e o decil de 28 ou 29.
 | decil contido no platô | 1,000 em 15/15 células; 28/28 no gate arquivado | F002, F003 |
 | platô bit-idêntico | 1/34 valores distintos, amplitude 0,0e+00 | F002, F004 |
 | J publicado reproduzido | 0,9418, idêntico | F002 |
-| colapso ao sortear empates | 0,7005 ± 0,0068 contra acaso 0,7000 | F002 |
-| o mesmo em sete tamanhos | J 0,9479–1,0000 → 0,7005 em todas | F004 |
+| colapso ao sortear empates, célula publicada (**q = 28**) | 0,7005 ± 0,0068 contra acaso 0,7000 | F002 |
+| **[v3]** os sete tamanhos do pgsg_1 R2 (**q = 29**) | J 0,9452–0,9867; acaso 0,7436 | F004 |
 | **J rastreia similaridade fora do platô** | 1,0000 em sd = 0 a 0,7500 em sd = 10⁻²; publicado ≈ sd 1,5×10⁻⁴ | F002 |
 
 Figura 2: J como o sort deixa os empates, J com empates sorteados, e o acaso —
@@ -222,8 +246,8 @@ não pode ficar de fora.
 
 | afirmação | número | origem |
 | --- | --- | --- |
-| sem ancoragem, cresce com n | 0,0886 → 0,5646; ρ = +0,9286, p = 0,0025 | F004 |
-| sob prior na inicialização, invariável | 0,9479–1,0000; ρ = −0,3063, p = 0,5040 | F004 |
+| sem ancoragem, cresce com n | **[v3]** 0,0898 → 0,5658; ρ = +0,9286, p = 0,0025 | F004 |
+| sob prior na inicialização, invariável | **[v3]** 0,9452–0,9867; ρ = −0,3214, p = 0,4821 | F004 |
 | variação coberta | n de 30 a 1.158, fator 39 | F004 |
 
 Afirmação: as duas condições **não captam o mesmo fenômeno**. Sinal de alerta
@@ -312,16 +336,14 @@ entre distribuições sobre hipóteses, amostragem na inferência. Nenhuma previ
 | a leitura conjunta de H10a e H10b não foi especificada no pré-registro | F003 |
 | a dependência de n é observação deste experimento, não regra | **[v2]** F004 |
 | PAC-Bayes é semelhança formal, não limite | **[v2]** §9 |
-| faixa de Jaccard do ADR-0001 contra a recomputação | F004, **[v2]** ver abaixo |
+| **[v3]** duas convenções de decil no programa; declaradas e não misturadas | F004 |
 | cinco explicações mecânicas propostas e descartadas durante o trabalho | F002, F003, F005, F006 |
 
-**[v2]** A divergência da faixa de Jaccard é resolvida antes da redação, não
-transferida. `gate_metrics.csv` registra um `q` por linha;
-`scripts/resolver_divergencias.py` recomputa ao `q` do próprio arquivo, a
-`p // 10` e a `ceil(0,10 p)`, e diz qual protocolo o ADR citou. Se forem
-protocolos diferentes, ambos podem estar certos e **não** serão apresentados
-como o mesmo experimento. Sem reabilitar o número: platô empatado torna todos
-eles artefato de desempate.
+**[v3]** Resolvida: o ADR citou o protocolo correto (q = 29) e a divergência
+vinha do meu verificador, que truncava para 28. O que resta como limitação não
+é divergência mas **inconsistência de convenção entre as três bases**, e ela é
+declarada na §2. Nenhum número é reabilitado por isso: platô empatado torna
+todos eles artefato de desempate, em qualquer q.
 
 ### 11. Trabalho futuro
 
@@ -368,7 +390,7 @@ No corpo, não em suplementar.
 
 ## O que falta antes da prosa
 
-1. **Rodar `resolver_divergencias.py`** e fechar as duas linhas numéricas.
+1. ~~Rodar `resolver_divergencias.py`~~ — **[v3] feito**, as duas conciliadas.
 2. **A rota com o editor**, que decide se a §4 carrega uma correção ou uma
    reanálise. O parecer é explícito e eu concordo: se o manuscrito identifica
    problema material em resultado já publicado, reanálise em outro artigo

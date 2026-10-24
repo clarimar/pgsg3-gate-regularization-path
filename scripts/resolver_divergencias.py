@@ -160,11 +160,32 @@ def faixa_jaccard(gates_dir: Path) -> None:
     coincide = all(abs(r[2] - armazenado[r[0]][0]) < 5e-4 for r in recalc
                    if r[1])
     if coincide:
+        # which of the three recomputed ranges does the ADR match?
+        faixas = {
+            "the file's own q": (min(r[2] for r in recalc if r[1]),
+                                 max(r[2] for r in recalc if r[1])),
+            "p // 10": (min(r[4] for r in recalc), max(r[4] for r in recalc)),
+            "ceil(0.10 p)": (min(r[6] for r in recalc),
+                             max(r[6] for r in recalc)),
+        }
+        casa = [k for k, (lo, hi) in faixas.items()
+                if abs(lo - ADR_JACCARD[0]) < 5e-3
+                and abs(hi - ADR_JACCARD[1]) < 5e-3]
         print("At the q the file itself records, the recomputation matches the")
-        print("stored values. The ADR's range was therefore quoted from a")
-        print("different q or a different subset, and the two are not the same")
-        print("experiment. State one protocol in the methods and use it")
-        print("throughout; correct the ADR by a dated note.")
+        print("stored values.")
+        print()
+        if casa:
+            print(f"And the ADR's range matches: {', '.join(casa)}.")
+            print("So the ADR quoted the stored protocol and is CORRECT. Any")
+            print("earlier 'discrepancy' came from a checker using a different")
+            print("decile convention, not from the ADR. Nothing to correct")
+            print("there; what must be corrected is whichever document reported")
+            print("the mismatched convention as the data's own.")
+        else:
+            print("But the ADR's range matches none of the three. It was")
+            print("quoted from a different subset or a different protocol, and")
+            print("the two are not the same experiment. State one protocol in")
+            print("the methods and correct the ADR by a dated note.")
     else:
         print("The recomputation does NOT match the stored values even at the")
         print("file's own q. The difference is not a decile convention, and the")

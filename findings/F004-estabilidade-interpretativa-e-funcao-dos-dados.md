@@ -76,10 +76,10 @@ evidência de artefato, e é verificável por quem só tenha os números.
 > O que os dados sustentam é o enunciado específico: **neste experimento, a
 > estabilidade sem ancoragem cresce com o tamanho amostral (ρ = +0,9286,
 > p = 0,0025, numa variação de 39×), enquanto a estabilidade sob prior na
-> inicialização permanece em 0,95–1,00 e praticamente invariável (ρ = −0,3063,
-> p = 0,5040).** Isso é evidência de que a métrica ancorada **não está captando
-> o mesmo fenômeno** que a condição de controle — o que basta para o argumento
-> e não exige a regra universal.
+> inicialização permanece em 0,95–1,00 e praticamente invariável (ρ = −0,3214,
+> p = 0,4821 no protocolo destes dados).** Isso é evidência de que a métrica
+> ancorada **não está captando o mesmo fenômeno** que a condição de controle —
+> o que basta para o argumento e não exige a regra universal.
 >
 > O diagnóstico continua útil como **sinal de alerta**, não como critério:
 > sobreposição insensível a uma variação grande de n merece investigação da
@@ -120,12 +120,58 @@ A leitura que os dados sustentam é a inversa: **estabilidade de seleção de
 bandas é função da quantidade de dados.** Sem prior ela vai de 0,09 a 0,56
 entre n = 30 e n = 1.158. Com o prior na inicialização ela não é medida.
 
-## Ponta solta
+## Convenção de decil, e uma divergência que era minha
 
-A decisão 6 do `ADR-0001` declara a faixa de Jaccard do braço de literatura
-como 0,945--0,987. A recomputação dá 0,9479--1,0000, e o 1,0000 em n = 200 está
-fora da faixa declarada. `gate_metrics.csv` no mesmo diretório guarda
-`jaccard_lit` por tamanho e deve conciliar isso — não foi lido aqui porque o
-script o descartou como não numérico, e o número conciliado não muda nenhuma
-conclusão acima, já que o artefato vale em todas as sete células
-independentemente do quarto decimal.
+**Correção de 2026-10-24.** A primeira versão desta nota tratava a faixa de
+Jaccard da decisão 6 do `ADR-0001` (0,945--0,987) como divergente da
+recomputação (0,9479--1,0000). **O ADR estava certo; o erro era meu.**
+
+`gate_metrics.csv` registra `q = 29` por linha, e ao q = 29 a recomputação casa
+exatamente com os valores armazenados: 0,9600; 0,9556; 0,9689; 0,9867; 0,9763;
+0,9452; 0,9496 — faixa 0,9452--0,9867, que é o 0,945--0,987 declarado. O
+`check_gates_r2.py` usava `int(p × 0,10)` = 28, truncando, e foi essa diferença
+de convenção que produziu a falsa divergência. Verificado por
+`scripts/resolver_divergencias.py`.
+
+**Isso expõe inconsistência real no programa: duas convenções de decil em três
+bases de código.**
+
+| base | definição | q em p = 281 |
+| --- | --- | --- |
+| `gate_metrics.csv` (pgsg_1 R2) | `ceil(0,10 p)` | **29** |
+| `pgsg_3`, `jaccard_medio` | `ceil(0,10 p)` | **29** |
+| ablação H4 do pgsg_2 (publicada) | `len(wl) // 10` | **28** |
+
+Os dois protocolos dão números diferentes e **níveis de chance diferentes**:
+29 de 34 dá 0,7436; 28 de 34 dá 0,7000. Não se misturam, e o manuscrito declara
+qual vale para qual conjunto.
+
+### Os números desta nota, por protocolo
+
+As tabelas acima foram computadas a **q = 28**, isto é, na convenção do pgsg_2
+aplicada aos dados do pgsg_1. Os valores no protocolo próprio destes dados
+(q = 29) são: 0,9600; 0,9556; 0,9689; 0,9867; 0,9763; 0,9452; 0,9496 no braço
+de literatura, e 0,1121; 0,0898; 0,1663; 0,3068; 0,4328; 0,3855; 0,5658 no
+braço não informado.
+
+**As conclusões não mudam, e isso é verificável:**
+
+| | q = 29 (protocolo destes dados) | q = 28 (como reportado acima) |
+| --- | --- | --- |
+| sem ancoragem, Spearman com n | **+0,9286 (p = 0,0025)** | **+0,9286 (p = 0,0025)** |
+| prior na init, Spearman com n | −0,3214 (p = 0,4821) | −0,3063 (p = 0,5040) |
+| faixa sem ancoragem | 0,0898--0,5658 | 0,0886--0,5646 |
+| faixa com prior na init | 0,9452--0,9867 | 0,9479--1,0000 |
+
+O manuscrito usa a coluna de q = 29 para estes dados e a de q = 28 para a
+célula publicada do pgsg_2, que é a convenção do código que a gerou. O colapso
+por desempate daquela célula — 0,9418 para 0,7005 contra acaso 0,7000 — está
+em q = 28 e permanece correto como está.
+
+### Erro meu, do tipo espelhado
+
+Nos casos anteriores eu afirmei coisas erradas sobre os meus próprios
+resultados. Aqui apontei divergência num documento de 2026-08-12 que estava
+correto, por usar convenção diferente da que os dados registram. A lição é
+operacional: **ler o protocolo que o arquivo declara antes de recomputar**, e
+não impor o do script.

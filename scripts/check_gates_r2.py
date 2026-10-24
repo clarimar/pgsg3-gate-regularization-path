@@ -95,6 +95,12 @@ def main() -> None:
     ap.add_argument("--dir", default="data/processed/gates_r2")
     ap.add_argument("--pgsg1-root", default=os.environ.get("PGSG1_ROOT", ""))
     ap.add_argument("--decil", type=float, default=0.10)
+    ap.add_argument("--q", type=int, default=None,
+                    help="top-q explicito. Sem isto, usa ceil(decil*p). "
+                         "A truncagem int(decil*p) da 28 em p=281 e e a "
+                         "convencao da ablacao H4 do pgsg_2; gate_metrics.csv "
+                         "e o pgsg_3 usam ceil, que da 29. Protocolos "
+                         "diferentes nao se misturam.")
     a = ap.parse_args()
 
     d = Path(a.dir).expanduser()
@@ -169,7 +175,8 @@ def main() -> None:
                 print(f"  {str(p.relative_to(d)):<36} {k:<18} skipped: values "
                       f"outside [0,1], not a gate")
                 continue
-            q = max(1, int(mat.shape[1] * a.decil))
+            q = (a.q if a.q
+                 else max(1, int(np.ceil(mat.shape[1] * a.decil))))
             idx = (plato if prior is not None
                    else np.flatnonzero(mat[0] >= mat[0].max() - 1e-9))
             if len(idx) < 3:
@@ -212,6 +219,12 @@ def main() -> None:
     print()
     print("The rho column is NOT affected either way: rho(gate,prior) uses the")
     print("values, not their order, and 0.9987 is a real measurement.")
+    print()
+    print("DECILE CONVENTION. q defaults to ceil(0.10*p) = 29 at p=281, which")
+    print("is what gate_metrics.csv records and what pgsg_3 uses. The pgsg_2")
+    print("H4 ablation uses floor division, q = 28. The two give different")
+    print("numbers (chance 0.7436 against 0.7000) and must be reported per")
+    print("protocol, never mixed. Pass --q to pin one explicitly.")
 
 
 if __name__ == "__main__":
