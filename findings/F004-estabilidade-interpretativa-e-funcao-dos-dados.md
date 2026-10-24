@@ -66,6 +66,29 @@ sobreposição entre sementes é a mesma com trinta amostras e com mil e cento e
 cinquenta e oito, ela não está medindo seleção. A insensibilidade a n é
 evidência de artefato, e é verificável por quem só tenha os números.
 
+> **Correção de 2026-10-24, em revisão externa.** A frase em negrito acima é
+> **generalização indevida** e está retirada como regra. Uma medida legítima
+> pode permanecer constante com n — por exemplo quando a seleção já
+> estabilizou, quando o sinal é fraco demais para que mais dados o resolvam, ou
+> quando o procedimento é estruturalmente insensível aos dados. "Tem de
+> depender de n" não é teorema.
+>
+> O que os dados sustentam é o enunciado específico: **neste experimento, a
+> estabilidade sem ancoragem cresce com o tamanho amostral (ρ = +0,9286,
+> p = 0,0025, numa variação de 39×), enquanto a estabilidade sob prior na
+> inicialização permanece em 0,95–1,00 e praticamente invariável (ρ = −0,3063,
+> p = 0,5040).** Isso é evidência de que a métrica ancorada **não está captando
+> o mesmo fenômeno** que a condição de controle — o que basta para o argumento
+> e não exige a regra universal.
+>
+> O diagnóstico continua útil como **sinal de alerta**, não como critério:
+> sobreposição insensível a uma variação grande de n merece investigação da
+> causa, e aqui a causa está medida (platô empatado, F002).
+>
+> Primeiro erro meu neste programa encontrado por revisão externa antes de mim,
+> e é do tipo que eu produzo com mais facilidade: transformar observação real em
+> regra. Texto original preservado.
+
 ## Alcance
 
 O artefato está presente em **todo experimento NIR com prior na inicialização
