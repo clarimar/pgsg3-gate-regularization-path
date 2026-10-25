@@ -197,3 +197,33 @@ def test_prior_nao_e_descrito_como_min_max():
             / "F002-o-que-as-metricas-interpretativas-medem.md").read_text()
     assert "maior\nconjunto de nível exceda" in f002
     assert "vale para qualquer prior\nnormalizado min–max" in f002   # original
+
+
+def test_s6_distingue_jaccard_genuino_do_artefato():
+    """Section 6 reports overlaps of 0.957-1.0000 from this work (theta0 = 0,
+    no ties, q = 29) which are genuine, while Section 4 reports 0.9418 from
+    the earlier configuration (prior-init, q = 28) which is not. Without the
+    distinction stated, Section 6 reads as contradicting Section 4."""
+    t = (RAIZ / "paper" / "04-rascunho-s6-s7-s8.md").read_text()
+    assert "not the quantity Section 4 found uninterpretable" in t
+    assert "q = 29" in t and "q = 28" in t
+    assert "a prior anticorrelated with the\nreference earns a genuine one" in t
+
+
+def test_s7_nao_afirma_raman_sem_qualificar():
+    """H12c passed at 2/3 but partition 2 is a significant reversal. The
+    unqualified form 'the literature prior wins in Raman' must not appear."""
+    t = (RAIZ / "paper" / "04-rascunho-s6-s7-s8.md").read_text()
+    assert "wins clearly in two of three partitions" in t
+    assert "marginally ahead" in t
+    assert "significant* reversal" in t or "significant_ reversal" in t
+
+
+def test_s8_nega_recuperacao_de_relevancia_verdadeira():
+    """Mandatory note required by the review: the floor finding is not
+    evidence of recovering true chemical relevance, because the reference is
+    an absolute PLS coefficient vector from the same training partition."""
+    t = (RAIZ / "paper" / "04-rascunho-s6-s7-s8.md").read_text()
+    assert "not evidence that the gate recovers true chemical relevance" in t
+    assert "operational\nreference" in t
+    assert "no\nground-truth support exists" in t
