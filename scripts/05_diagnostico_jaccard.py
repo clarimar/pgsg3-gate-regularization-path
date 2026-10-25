@@ -9,7 +9,11 @@ in place of it, and nothing here may be turned into a post-hoc criterion.
 
 The mechanism it measures
 -------------------------
-The prior is min-max normalized, so it has a FLAT PLATEAU at its maximum. The
+The prior assigns one constant per reported region, so it has a FLAT
+PLATEAU at its maximum -- a property of the construction, not of any
+normalisation (make_literature_prior divides by a maximum that is
+already 1.0, and the minimum is 0.1, not 0.0). See findings/F002,
+correction of 2026-10-25. The
 top-decile metric keeps q = ceil(0.10 p) bands. When the plateau is larger than
 q, the prior cannot decide which of its own plateau bands make the cut -- the
 DATA breaks those ties. So:

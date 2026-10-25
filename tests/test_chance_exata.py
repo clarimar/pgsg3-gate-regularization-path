@@ -147,3 +147,53 @@ def test_cruzamento_acusa_convencao_divergente(tmp_path):
     # pinned to the other convention: flagged as incomparable, not as a
     # disagreement about the measurement
     assert marcas(correr("--q", "28")) == ["CONVENTION"]
+
+
+def test_resumo_C_carrega_as_quatro_exigencias():
+    """The four binding requirements the author attached to approving
+    register C, 2026-10-24. Recorded in 00-estrutura.md, 'Registro
+    editorial'; two of them correct C's own first draft."""
+    import re
+    # the file is wrapped prose, so match on collapsed whitespace
+    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "02-resumo-C.md").read_text())
+    # 1. a plateau larger than q creates the possibility, not the defect
+    assert "does not produce one" in t
+    assert "only if" not in t          # the overstated phrasing, retired
+    # 2. the null model named in the sentence, with its q
+    assert "28 of 34 plateau bands twice" in t
+    # 3. the displacement control, and why it is immune
+    assert "neither the top-k selection nor the tie-breaking" in t
+    # 4. the eight refutations declared, not buried
+    assert "eight of which our criteria did not support" in t
+
+
+def test_estrutura_concilia_com_o_ADR_0003():
+    """Item 2 of 'O que falta antes da prosa' said the editor route was
+    blocking and recorded my recommendation to notify. ADR-0003 decided
+    otherwise. Both documents are committed, so the contradiction needs a
+    dated note and the original text kept."""
+    t = (RAIZ / "paper" / "00-estrutura.md").read_text()
+    assert "Isso precisa\n   estar resolvido" in t      # original preserved
+    assert "não é mais bloqueante" in t                 # and reconciled
+    assert "não se verificou" in t
+
+
+def test_prior_nao_e_descrito_como_min_max():
+    """The literature prior is not min-max normalised: make_literature_prior
+    assigns a constant per reported region and divides by a maximum that is
+    already 1.0, and the minimum is 0.1, not 0.0. Two committed sources said
+    min-max, which was both wrong and narrower than the finding. Corrected
+    2026-10-25; the characterisation must not come back as a live claim."""
+    for rel in ("scripts/05_diagnostico_jaccard.py",
+                "paper/03-rascunho-s1-s2-s3.md"):
+        t = (RAIZ / rel).read_text()
+        assert "min-max normalized" not in t, rel
+        assert "min–max normalised" not in t, rel
+    # the construction-based statement replaces it
+    t = (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md").read_text()
+    assert "property of the\nconstruction, not of the normalisation" in t
+    # and the finding records the widened scope
+    f002 = (RAIZ / "findings"
+            / "F002-o-que-as-metricas-interpretativas-medem.md").read_text()
+    assert "maior\nconjunto de nível exceda" in f002
+    assert "vale para qualquer prior\nnormalizado min–max" in f002   # original

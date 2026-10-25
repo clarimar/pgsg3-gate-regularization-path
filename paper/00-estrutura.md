@@ -168,6 +168,45 @@ reinstaurei com o mecanismo certo; a trilha está em F002.
 
 ---
 
+## Registro editorial — decisão de 2026-10-24 **[v4]**
+
+Voz aprovada pelo autor: **C, prescritiva com o controle preservado.** O
+sujeito do artigo é a **condição de validade da métrica**, não o achado. O
+0,9418 é instância, não tese. Razão: a Tabela 1 reporta oito hipóteses não
+suportadas em vinte e três critérios mal desenhados — a credibilidade vem do
+método, e um registro que ponha o achado como sujeito lê como defesa.
+
+**Sequência que todo o manuscrito segue**, prescrita pelo autor:
+
+> condição de validade → mecanismo de falha → demonstração experimental →
+> controle não afetado → limites da interpretação → recomendações de reporte
+
+**Quatro exigências vinculantes**, as duas primeiras corrigindo a redação de C:
+
+1. **Platô > q cria a possibilidade, não o defeito.** A formulação *"a
+   sobreposição só é informativa quando todos os níveis são menores que o
+   conjunto selecionado"* é forte demais e contradiz a frase seguinte do
+   próprio resumo. O enunciado correto separa três coisas: a condição
+   geométrica que cria a possibilidade; a persistência dos empates no
+   treinamento; o desempate determinístico que produz a estabilidade
+   artificial.
+2. **O modelo nulo é explícito na própria frase.** `0,7012` é **q = 28**, a
+   convenção do código que produziu o 0,9418, e o resumo tem de dizer
+   *"drawing 28 of 34 plateau bands twice"*. Dar `0,7012` sem nomear q deixa
+   um parecerista recomputar a q = 29, obter 0,7445, e concluir que erramos.
+   O protocolo de q = 29 vale para os sete tamanhos do pgsg_1 R2, onde o
+   acaso é 0,7445 e o medido 0,7442 ± 0,0063.
+3. **A frase do controle de deslocamento permanece no resumo** e é sustentada
+   **explicitamente na Discussão**, demonstrando por que aquele controle não
+   depende da ordenação top-k nem do desempate. Isso cria uma subseção nova
+   na §9, que não existia no plano v3.
+4. **As oito refutações são resultado, não passivo.** O resumo as declara.
+
+Resumo em **242 palavras** (`paper/02-resumo-C.md`). O limite do Chemolab
+**não foi confirmado** — o guia de autores não é alcançável nesta sessão.
+Cortar para 200 custaria a frase do tamanho amostral ou a do Raman; nenhuma
+das duas sai sem o limite na mão.
+
 ## Seções
 
 ### 1. Introdução
@@ -402,5 +441,26 @@ No corpo, não em suplementar.
    problema material em resultado já publicado, reanálise em outro artigo
    **não substitui** comunicação formal ao periódico de origem. Isso precisa
    estar resolvido, não em paralelo.
+
+   > **Correção de 2026-10-24 — resolvido, e o texto acima ficou
+   > desatualizado.** O `docs/adr/ADR-0003-comunicacao-ao-editor.md` decidiu:
+   > prosseguir com o novo artigo **sem** comunicação formal ao editor do
+   > artigo anterior, com três ressalvas vinculantes para a redação. Logo este
+   > item **não é mais bloqueante**, e a §4 carrega uma reanálise, não uma
+   > correção.
+   >
+   > A premissa do texto acima — *"se o manuscrito identifica problema
+   > material em resultado já publicado"* — **não se verificou**. O manuscrito
+   > aceito já contém o controle de deslocamento que responde à objeção, mede
+   > ρ(d) = 0,9462 em NIR e já reporta Jaccard do decil de |d| = 0,38. Aquele
+   > controle usa valores, não postos, e não é afetado. Não há problema
+   > material identificado; há um número que, no braço NIR, não mede seleção
+   > reprodutível de bandas. Retratação minha registrada no próprio ADR-0003.
+   >
+   > O artigo está **em provas**, e `paper/correcao-em-provas.md` propõe uma
+   > inserção de quatro linhas, que é rotina de autor e não tramita como
+   > ocorrência editorial. Minha recomendação científica de comunicar, citada
+   > acima, está **retirada** por ter sido feita sem ler a seção de controle.
+   > Texto original preservado, por ser registro.
 3. **As cinco figuras**, propostas e não desenhadas. Sem títulos nos gráficos;
    identificação nas legendas.

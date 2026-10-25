@@ -263,3 +263,54 @@ já usava o valor correto — os documentos de apoio contradiziam o manuscrito.
 Corrigido aqui, em `F004`, no `ADR-0001` e em `paper/00-estrutura.md`. O
 `check_gates_r2.py` passa a imprimir o exato e a aproximação lado a lado, com o
 erro, para que a diferença não volte por descuido.
+
+---
+
+## Correção de 2026-10-25 — o alcance estava errado no mecanismo, e estreito
+
+Esta nota afirma, em dois lugares, que o achado *"vale para qualquer prior
+normalizado min–max cujo platô exceda `q`"* (§ do alcance, e item 4 do
+fechamento). **A caracterização está errada, e por estar errada subestima o
+alcance.** O `05_diagnostico_jaccard.py` repete o erro na docstring: *"The
+prior is min-max normalized, so it has a FLAT PLATEAU at its maximum."*
+
+O prior de literatura **não é normalizado min–max.** `make_literature_prior`
+em `src/pgsg_3/m_model/pgsg_v2.py` atribui um valor constante por região
+reportada e divide pelo máximo:
+
+```python
+prior = np.ones(len(wavelengths)) * 0.1
+if 680 <= w <= 700:   prior[i] = 0.6
+if 900 <= w <= 1000:  prior[i] = 1.0
+if 1100 <= w <= 1200: prior[i] = 0.8
+return prior / prior.max()
+```
+
+Duas consequências.
+
+**1. A normalização não cria o platô.** `prior.max()` já é 1,0, logo
+`prior / prior.max()` é a identidade. Min–max daria mínimo 0,0, e o mínimo
+medido é 0,1 — o que por si só refuta a caracterização. O platô de 34 bandas
+existe porque **um único constante foi atribuído a uma região de 100 nm**, e
+existe antes de qualquer normalização.
+
+**2. O alcance é maior do que eu escrevi.** Condicionar a "prior normalizado
+min–max" restringe o achado a um esquema de normalização que o próprio
+programa não usa. A condição verdadeira é de **construção**: todo prior escrito
+na forma *estas regiões importam isto* tem conjuntos de nível tão grandes
+quanto as regiões que nomeia, e a condição é violada sempre que a maior região
+nomeada contiver mais bandas que o conjunto selecionado. Essa é a forma comum
+de codificar atribuições de banda publicadas, e portanto o achado alcança mais
+casos, não menos.
+
+**Enunciado que substitui o anterior:** *vale para qualquer prior cujo maior
+conjunto de nível exceda `q` — o que inclui, mas não se limita a, priors
+construídos por atribuição de constante por região — **e** com o prior na
+inicialização.* As exclusões do item 4 (braço Raman, condição não informada,
+números do pgsg_3, R² e ρ) permanecem exatamente como estão.
+
+**Como o erro entrou.** Eu propaguei a caracterização de uma nota minha
+anterior em vez de ler `make_literature_prior`. É a mesma lição operacional já
+registrada no `F004`: ler a fonte que o arquivo declara antes de caracterizá-la.
+Terceiro erro deste tipo no programa, e o primeiro que **estreitava** um achado
+em vez de exagerá-lo. Texto original preservado acima.
