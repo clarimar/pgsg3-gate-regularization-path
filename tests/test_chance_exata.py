@@ -227,3 +227,106 @@ def test_s8_nega_recuperacao_de_relevancia_verdadeira():
     assert "not evidence that the gate recovers true chemical relevance" in t
     assert "operational\nreference" in t
     assert "no\nground-truth support exists" in t
+
+
+def test_s9_imunidade_do_controle_e_declarada_sem_exagero():
+    """Requirement 3 of the register: Section 9 must show why the displacement
+    control depends on neither the top-k selection nor the tie-breaking. The
+    argument is sound, but 'unaffected' overstates it: under prior-init
+    d = g_final - s is identically 0 on the plateau, so 34 of 281 bands agree
+    trivially. That is NOT the artifact, and it is not nothing. The section
+    must claim the immunity and mark the plateau question as unmeasured."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md").read_text())
+    assert "immune to the deterministic top-k" in t
+    assert "Each of the three conditions fails separately" in t
+    assert "d = 0 on those 34 bands, in every seed, by construction" in t
+    # the dependence is measured, so it is asserted, not merely flagged
+    assert "the dependence is real and we do not claim the control is" in t
+    assert "about nine times smaller" in t
+    # and the author's veto of the full-support claim is honoured
+    assert "interpretive conclusion stands on it" not in t
+    assert "published control's definition is not recorded in our materials" in t
+
+
+def test_s9_pac_bayes_nao_extrai_previsao():
+    """The committed plan binds this: formal resemblance, no prediction. We
+    made the opposite error once and the section records it."""
+    t = (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md").read_text()
+    assert "resemblance is formal and we draw nothing from" in t
+    assert "we made that error ourselves" in t
+    assert "is not a bound and therefore predicts nothing" in t
+
+
+def test_s10_mantem_a_regra_de_n_retirada():
+    """F004's overgeneralisation was withdrawn as a rule. Section 10 must keep
+    it withdrawn and state only the narrow claim."""
+    t = (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md").read_text()
+    assert "not a\nrule" in t
+    assert "do not claim that a legitimate stability measure must depend on n" in t
+    assert "do not measure the same quantity" in t
+
+
+def test_script_09_existe_e_declara_o_que_nao_e():
+    """It must not be mistaken for a recomputation of the published 0.9462."""
+    t = (RAIZ / "scripts" / "09_controle_deslocamento.py").read_text()
+    assert "WHAT THIS IS NOT" in t
+    assert "does not restate" in t
+    assert "g_0 = sigma(logit(s)) = s" in t
+
+
+
+def test_f007_registra_as_tres_conclusoes():
+    """F007 must keep the dependence, its magnitude, and the n-response the
+    measurement produced -- including that the question began as a suspicion
+    against the earlier control and ended as evidence for it."""
+    f = (RAIZ / "findings"
+         / "F007-o-controle-de-deslocamento-e-o-plato.md").read_text()
+    assert "7 de 7" in f
+    assert "Nove vezes" in f
+    assert "+0,8929" in f and "p = 0,0068" in f
+    assert "terminou produzindo evidência a favor dele" in f
+    # and the two things it must disclaim
+    assert "Não é recomputação do 0,9462" in f
+    assert "Nenhum resultado do fixture sintético" in f
+
+
+def test_resumo_suspende_a_sustentacao_integral():
+    """Editorial decision of 2026-10-25: the abstract asserts immunity to the
+    tie-breaking artefact but not that the displacement control sustains the
+    earlier interpretation in full."""
+    import re
+    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "02-resumo-C.md").read_text())
+    assert "is what supports its interpretive claim" not in t
+    assert "is immune to this artefact" in t
+    assert "lowers it by 0.018 (Pearson) or 0.051 (Spearman)" in t
+    assert "at the largest sample size" in t
+    assert "what survives still responds to n" in t
+
+
+def test_f007_nao_confunde_sensibilidade_com_validade():
+    """The author's precision of 2026-10-25: +0.8929 is a monotonic
+    association across seven conditions, not evidence that the remaining
+    stability is the learning of chemically relevant bands, and responding to
+    n is a sensitivity diagnostic rather than a test of interpretive
+    validity. The earlier 'passes / fails' wording was too strong."""
+    import re
+
+    def plano(caminho):
+        """Collapse wrapping AND blockquote markers: a '> ' at the start of a
+        continuation line otherwise survives into the middle of a phrase."""
+        bruto = caminho.read_text()
+        bruto = re.sub(r"^>\s?", "", bruto, flags=re.M)
+        return re.sub(r"\s+", " ", bruto)
+
+    f = plano(RAIZ / "findings"
+              / "F007-o-controle-de-deslocamento-e-o-plato.md")
+    assert "associação monotônica forte nas sete condições examinadas" in f
+    assert "não teste de validade interpretativa" in f
+    assert "Não é validação interpretativa" in f
+    s9 = plano(RAIZ / "paper" / "05-rascunho-s9-s10-s11.md")
+    assert "does and does not show" in s9
+    assert "not a test of interpretive validity" in s9
+    assert "sensitive to the data where the decile overlap is not" in s9
+    assert "we do not offer it as one" in s9

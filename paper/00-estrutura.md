@@ -298,7 +298,22 @@ não pode ficar de fora.
 Afirmação: as duas condições **não captam o mesmo fenômeno**. Sinal de alerta
 útil, não critério universal.
 
-Figura 3: J contra n, os dois braços. **[v2]** Legenda sem a formulação de
+Figura 3 **[v4, decisão do autor em 2026-10-25]**: três painéis, não dois, e
+nenhuma figura sexta para o F007. A figura passa a tornar visualmente
+verificável a distinção central do artigo:
+
+| painel | conteúdo |
+| --- | --- |
+| a | estabilidade top-k **sem ancoragem** (θ₀ = 0) contra n |
+| b | estabilidade top-k **com prior na inicialização** contra n |
+| c | correlação de deslocamento contra n, **com** e **sem** as 34 bandas do platô |
+
+O painel (c) é o F007 entrando como painel e não como figura própria. Os três
+painéis compartilham o eixo n, para que a comparação seja de inclinação: (a)
+sobe, (b) é plana, (c) sobe nas duas séries e a distância entre elas é a
+contribuição do platô.
+
+Figura 3, legenda: **[v2]** Legenda sem a formulação de
 regra.
 
 ### 6. Resultados — os controles de prior **[v2 reduzida]**
