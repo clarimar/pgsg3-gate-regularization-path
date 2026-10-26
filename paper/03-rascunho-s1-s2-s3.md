@@ -96,11 +96,14 @@ That last point should be stated at the outset, so that the paper is not read
 as a denial of it. **The gate is not inert.** On both modalities it aligns with
 an external, data-derived reference, the alignment is positive in every
 partition we measured, and it survives conditioning on the prior. What we find
-is that this alignment is independent of which prior was used, and that it
-concentrates in the bands the prior demotes rather than in the bands it
-promotes. The gate learns from the data; the top-decile overlap, in the
-configuration examined here, is not where that learning shows up. Section 8
-reports it.
+is that this alignment is independent of which prior was used, and that it is
+present at the prior's lowest level, which carries 223 of the 281 bands and
+which the top-decile metric never reads. We do not claim it is *absent* at the
+prior's maximum: the measurements there are inconsistent in sign and we
+describe them as such, without converting a weaker result into a demonstrated
+difference between the two levels (Section 8.1). The gate learns from the data;
+the top-decile overlap, in the configuration examined here, is not where that
+learning can be seen. Section 8 reports it.
 
 ---
 
@@ -114,6 +117,25 @@ fruit: the collection holds 725 fruits of which 723 were measured twice, so a
 random split over spectra would place two measurements of one fruit on opposite
 sides of the partition and inflate held-out performance. All partitions
 reported here are grouped.
+
+**Fruit identity is inferred, not supplied, and we state what that does and
+does not guarantee.** The published file carries no fruit identifier. The
+grouping variable is constructed as runs of consecutive rows sharing every
+metadata field and the dry-matter value, and whole groups are assigned to one
+side of a split. We verified three properties over all fifteen split seeds used
+in this work and the one default. The group-size distribution reproduces the
+recorded structure exactly: 723 groups of two spectra and 2 of one, 725 groups
+over 1448 rows. No metadata-and-dry-matter key spans more than one group. And
+in every split, no such key appears on both sides.
+
+The third property is strong evidence of per-fruit separation and not a proof
+of it. Concluding that no physical fruit straddles a split requires the further
+assumption that every measurement of one fruit carries an identical key, which
+is the assumption the identification procedure rests on; the check is therefore
+circular with respect to it, and the file holds no fruit identifier with which
+to break the circle. This is a limitation of the source data rather than of the
+splitting procedure, and we report the verified properties rather than the
+conclusion they would support under the extra assumption.
 
 **Raman.** The `bioprocess_substrates` collection, glucose as the regression
 target, with p = 1870 Raman shifts. The source records 6960 spectra; 488 carry
@@ -224,6 +246,18 @@ components and one built from five or six are not equally sharp localisations
 of the signal, and Section 10 returns to what that limits.
 
 ### 2.7 Pre-registration
+
+**What a seed test and a partition count can each support.** Two units of
+replication appear below and they answer different questions. A test across the
+ten random initialisations within one partition characterises the variability
+of the optimisation procedure *conditional on that partition's training data*,
+which all ten initialisations share; it does not by itself support
+population-level inference about spectral relevance. A count across partitions
+describes how a measurement behaves under re-splitting, and the partitions are
+repeated 80/20 splits of the same 725 fruits with approximately 80% overlap
+between training sets, so they are not independent replicates either. We report
+seed tests as statements about run-to-run stability, partition counts as
+descriptions, and no test over partitions as population inference.
 
 Every hypothesis reported in this paper was written down, with its acceptance
 criterion, and committed before the runs that evaluate it. Criteria were not

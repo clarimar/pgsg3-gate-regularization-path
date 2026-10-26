@@ -330,3 +330,241 @@ def test_f007_nao_confunde_sensibilidade_com_validade():
     assert "not a test of interpretive validity" in s9
     assert "sensitive to the data where the decile overlap is not" in s9
     assert "we do not offer it as one" in s9
+
+
+def test_figuras_nao_tem_titulo():
+    """Standing constraint of the programme: no titles on plots. The
+    identification lives in the captions file."""
+    src = (RAIZ / "scripts" / "10_figuras.py").read_text()
+    for proibido in ("set_title(", "suptitle(", "plt.title("):
+        assert proibido not in src, proibido
+
+
+def test_figura3_respeita_as_duas_ressalvas():
+    """Author's constraints of 2026-10-25: shared x but INDEPENDENT y, because
+    a Jaccard index and a displacement correlation are different statistics;
+    and no causal reading of the association with n."""
+    import re
+    src = (RAIZ / "scripts" / "10_figuras.py").read_text()
+    # the y limits come from the data, never a hard-coded window
+    assert "set_ylim(0, 0.7)" not in src and "set_ylim(0.9, 1.01)" not in src
+    assert "limits from the data, never hard-coded" in src
+    leg = re.sub(r"\s+", " ", re.sub(r"^>\s?", "", (
+        RAIZ / "paper" / "06-legendas-figuras.md").read_text(), flags=re.M))
+    assert "The vertical axes are independent and deliberately so" in leg
+    assert "would suggest an equivalence between them that does not hold" in leg
+    assert "not an identification of the mechanism behind the growth" in leg
+    assert "is not offered as a general law of growth" in leg
+    assert "Nothing in this figure is evidence of a causal relation" in leg
+
+
+def test_figuras_4_e_5_escritas_contra_o_layout_real():
+    """Written only after the inventory reported the real fields. Figure 4
+    reads cells.json rather than recomputing, Figure 5 imports the finding's
+    own functions, and the rebuilt Raman prior is verified against what the
+    registered run recorded."""
+    import re
+    src = (RAIZ / "scripts" / "10_figuras.py").read_text()
+    # figure 4 does not recompute what the run already recorded
+    assert '"j_index"' in src and '"j_random_sd"' in src
+    # and the rebuilt prior is checked against the run, not trusted
+    assert "does not match the registered run" in src
+    assert "(pgsg1_root, pgsg2_root)" in src      # the importer's real order
+    # figure 5 borrows the finding's own code path
+    assert "06_analise_plato.py" in src
+    assert "h10_serie" in src and "m.ler(d)" in src
+    assert "A figure that" in src
+    leg = re.sub(r"\s+", " ", re.sub(r"^>\s?", "", (
+        RAIZ / "paper" / "06-legendas-figuras.md").read_text(), flags=re.M))
+    assert "[pendente]" not in leg
+    assert "The two series in panel (b) coincide" in leg
+    assert "q = p // 10 = 187" in leg
+    assert "fixed by the pre-registration and not chosen from the data" in leg
+    assert "not evidence that either recovers chemically relevant bands" in leg
+
+
+def test_fig5_nao_interpreta_nivel_pequeno():
+    """06_analise_plato reports a level below MIN_BANDAS_NIVEL and never
+    interprets it; the figure must not plot it as if it were comparable."""
+    src = (RAIZ / "scripts" / "10_figuras.py").read_text()
+    assert "MIN_BANDAS_NIVEL" in src
+    assert "reports such a level and never" in src
+
+
+def test_figura2_marca_o_que_toma_de_emprestimo():
+    """Two numbers in Figure 2 are not recomputed: the accepted study's 0.9418
+    and its 0.7005 collapse. They must be marked as constants with a source."""
+    src = (RAIZ / "scripts" / "10_figuras.py").read_text()
+    assert "PUB_J_SORT = 0.9418" in src
+    assert "PUB_J_RAND = 0.7005" in src
+    assert "NAO sao recomputados aqui" in src
+
+
+def test_s8_nao_confunde_diferenca_de_significancia():
+    """The floor clears the criterion against zero and the plateau does not.
+    That is NOT the floor exceeding the plateau: a paired test over the ten
+    partitions gives p = 0.3223. The original wording invited the stronger
+    reading; corrected 2026-10-25."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "04-rascunho-s6-s7-s8.md").read_text())
+    assert "two of five partitions negative" not in t   # retired count
+    assert "negative in four of the ten, two in each group of five" in t
+    assert "A difference in significance is not the significance of a difference" in t
+    # the three limits the author required, 2026-10-25
+    assert "the partitions are not independent replicates" in t
+    assert "approximately 80% overlap between training sets" in t
+    # the author's precision of 2026-10-25: dependence breaks the calibration;
+    # it does NOT license asserting the direction of the distortion
+    assert "cannot be interpreted under the usual independence assumption" in t
+    assert "draw no population-level inference from them" in t
+    assert "not descriptive statistics" in t
+    assert "we therefore do not assert that the tests are anti-conservative" in t
+    # and the pre-registered criterion carries its own bound
+    assert "conditional on the observed partition" in t
+    assert "failing to clear a criterion is not evidence of absence" in t
+    assert "not a demonstration that they are the same" in t
+    assert "the converse error is equally available" in t
+    # and the comparative framing must be gone from headings and openings
+    assert "The alignment is in the bands the prior demotes" not in t
+    intro = (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md").read_text()
+    assert "rather than in the bands it\npromotes" not in intro
+    assert "We do not claim it is *absent* at the" in intro
+    # the descriptive wording the author asked for, not "replication"
+    assert "descriptive pattern recurred in both groups of five partitions" in t
+
+
+def test_f003_registra_o_plato_nas_dez():
+    """New numbers must not appear first in a figure. The plateau level on
+    partitions 10-14 was computed while drawing Figure 5 and is recorded."""
+    import re
+    f = re.sub(r"\s+", " ", (RAIZ / "findings"
+                             / "F003-onde-esta-o-sinal.md").read_text())
+    assert "o platô nas dez partições" in f
+    assert "números novos não devem aparecer primeiro numa figura" in f
+    assert "4 de 10 negativas" in f and "p = 0,1055" in f
+    assert "p = 0,3223" in f
+    # the three limits, and that no conclusion rests on the p-values
+    assert "Três limites, e os três são meus para declarar" in f
+    assert "NÃO são réplicas independentes" in f
+    assert "80,05% dos seus frutos" in f
+    assert "nenhuma conclusão repousa neles" in f
+    assert "não é teste de equivalência" in f
+    assert "padrão descritivo recorreu nos dois grupos de cinco" in f
+
+
+def test_fig5_exige_as_dez_particoes():
+    """A pattern search matching ten cells today is not a guarantee. The
+    figure refuses a subset instead of drawing it."""
+    src = (RAIZ / "scripts" / "10_figuras.py").read_text()
+    assert "PARTICOES_FIG5 = tuple(range(5, 15))" in src
+    assert "not complete on a subset" in src
+    assert "MISSING" in src and "DUPLICATE" in src
+    # and it refuses a lambda other than the pre-registered one
+    assert "LAM_FIXO is" in src and "not 1.0" in src
+
+
+
+def test_legenda4_declara_o_limite_de_rastreabilidade():
+    """Equal level counts and plateau size do not prove vector identity. The
+    caption must separate: reconstruction by the original procedure, agreement
+    of the recorded properties, and the absence of element-by-element
+    verification against the vector actually used."""
+    import re
+    leg = re.sub(r"\s+", " ", re.sub(r"^>\s?", "", (
+        RAIZ / "paper" / "06-legendas-figuras.md").read_text(), flags=re.M))
+    assert "reconstructed by the original procedure" in leg
+    assert "agree with those the registered run recorded" in leg
+    assert "Element-by-element identity" in leg
+    assert "necessary and not sufficient" in leg
+
+
+def test_legenda5_declara_a_dependencia_entre_particoes():
+    import re
+    leg = re.sub(r"\s+", " ", re.sub(r"^>\s?", "", (
+        RAIZ / "paper" / "06-legendas-figuras.md").read_text(), flags=re.M))
+    assert "not independent replicates" in leg
+    assert "share about 80% of their fruits" in leg
+    assert "no rank test over these ten points carries its nominal level" in leg
+    assert "not evidence of absence there" in leg
+    assert "not a demonstration that they behave alike" in leg
+
+
+
+def test_metodos_delimita_as_duas_unidades_de_replicacao():
+    """Section 2 must say what a seed test and a partition count can each
+    support, because the paper uses both and they answer different questions."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md").read_text())
+    assert "What a seed test and a partition count can each support" in t
+    assert "conditional on that partition's training data" in t
+    assert "not independent replicates either" in t
+    assert "no test over partitions as population inference" in t
+
+
+def test_script_11_verifica_vazamento_de_fruto():
+    """The fruit id is inferred from runs of consecutive identical metadata,
+    not read from a column. If a fruit's replicates are not adjacent it maps
+    to several groups and can straddle the split, which is leakage."""
+    src = (RAIZ / "scripts" / "11_verifica_agrupamento.py").read_text()
+    assert "INFERRED, not read" in src
+    # the check asks the question on the key, not on the group id
+    assert "in BOTH the training and the test side" in src
+    assert "holds whatever the group ids are" in src
+    # but it is NOT a proof of fruit-level separation: the extra hypothesis it
+    # needs is the identification procedure's own, so the check is circular
+    assert "circular with respect to it" in src
+    assert "strong evidence and not a proof" in src
+    assert "no fruit-ID\ncolumn with which to break the circle" in src
+    # and State B is not automatically safe
+    assert "This is NOT automatically" in src
+    assert "an earlier version of this script said it was" in src
+    # coverage: every split seed the programme uses, not only Figure 5's
+    assert "SEEDS_USADAS = tuple(range(0, 15)) + (42,)" in src
+    assert "the result was" in src and "It did not." in src
+    # the configuration must come FROM the experiments, not be copied: the
+    # same seed is not the same partition under a different season filter,
+    # test fraction, row order or split implementation
+    assert "SEASON = 4" not in src and "TEST_FRACTION = 0.2" not in src
+    assert "def constantes_do_sweep" in src
+    assert "Read by parsing, not by import" in src
+    assert "a silent copy is how a verifier ends up" in src
+    # and State C decides by dependence, not by section
+    assert "Identify the dependence, not the heading." in src
+    # and it must not request DM twice: FRUIT_META already ends with it
+    assert 'usecols=list(FRUIT_META))' in src
+    # achar_csv cannot be called without importing the sweep, and therefore
+    # torch, so the verifier does the one lookup it needs itself
+    assert "cannot be called without importing the module" in src
+    # a dirty result must not exit zero
+    assert "SystemExit(0 if ok3 else 2)" in src
+
+
+
+def test_metodos_declara_inferencia_do_fruto():
+    """The methods must say fruit identity is inferred, list the three
+    verified properties, and stop short of the conclusion they would support
+    only under the extra assumption."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md").read_text())
+    assert "Fruit identity is inferred, not supplied" in t
+    assert "723 groups of two spectra and 2 of one" in t
+    assert "strong evidence of per-fruit separation and not a proof of it" in t
+    assert "circular with respect to it" in t
+    assert "limitation of the source data rather than of the splitting" in t
+    assert "all fifteen split seeds used" in t
+
+
+
+def test_limitacoes_delimita_a_identidade_inferida():
+    """The author's formulation: absence of leakage was verified against
+    inferred fruit identities, not independent physical identifiers."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md").read_text())
+    assert "Fruit identity is inferred" in t
+    assert "not against independent physical identifiers" in t
+    assert "the check cannot be independent of it" in t
+    assert "plausible without making it verified" in t

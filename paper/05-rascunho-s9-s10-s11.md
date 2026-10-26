@@ -241,6 +241,19 @@ weak for more data to resolve, or because the procedure is insensitive to the
 data by construction. What the data support is the narrower statement that the
 two conditions do not measure the same quantity.
 
+**Fruit identity is inferred, so the leakage check is bounded by that
+inference.** Absence of leakage was verified against fruit identities inferred
+from the available records, not against independent physical identifiers. The
+published file carries no fruit column; the grouping is constructed from runs
+of consecutive rows with identical metadata and dry-matter value, and the
+verification asks whether any such key appears on both sides of a split. It
+does not, in any of the splits we use. Concluding from this that no physical
+fruit straddles a split requires assuming that every measurement of one fruit
+carries an identical key — the assumption the construction itself rests on —
+so the check cannot be independent of it. The observable structure is
+consistent with the recorded 725 fruits, 723 of them measured twice, which
+makes the inference plausible without making it verified. Section 2.1.
+
 **The PAC-Bayes connection is a formal resemblance.** Section 9.2.
 
 **Displacement reproducibility is not interpretable in small samples under

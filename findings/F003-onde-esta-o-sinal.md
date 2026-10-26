@@ -161,3 +161,78 @@ O que dez partições sustentam, em ordem decrescente de firmeza:
 O eixo do trabalho deixou de ser o caminho de regularização de λ. É que as
 métricas interpretativas deste programa medem estrutura do prior, e o sinal que
 existe está onde o prior não aponta.
+
+
+---
+
+## Correção/extensão de 2026-10-25 — o platô nas dez partições
+
+Ao gerar a **Figura 5**, que o autor pediu sobre as partições 5–14, a
+correlação intra-nível do **platô** foi computada também em 10–14. Esta nota
+registra esses valores, porque **números novos não devem aparecer primeiro numa
+figura**: `scripts/10_figuras.py` usa `ler` e `h10_serie` deste programa, com
+`LAM_FIXO = 1.0`, logo é o mesmo caminho de código, mas as células 10–14 do
+nível de platô não constavam de nenhum achado.
+
+| partição | piso (223 bandas) | platô (34 bandas) |
+| --- | --- | --- |
+| 5 | +0,2982 | **−0,1495** |
+| 6 | +0,1679 | +0,3578 |
+| 7 | +0,1457 | +0,1962 |
+| 8 | +0,3418 | **−0,1257** |
+| 9 | +0,2147 | +0,2908 |
+| 10 | +0,2705 | +0,2622 |
+| 11 | +0,3168 | **−0,0884** |
+| 12 | +0,1491 | +0,2597 |
+| 13 | +0,2901 | **−0,0039** |
+| 14 | +0,2063 | +0,1429 |
+
+**Piso: 10/10 médias de partição positivas**, de +0,1457 a +0,3418, média
++0,2401. **Platô: 4 de 10 negativas**, de −0,1495 a +0,3578, média +0,1142.
+
+**O padrão descritivo recorreu nos dois grupos de cinco partições:** duas
+médias negativas em cada, com médias de grupo de +0,1139 e +0,1145. Isso
+sustenta que o padrão de sinais e magnitudes se reproduziu nos dois grupos
+examinados — **não** que haja replicação estatística independente, pelas razões
+abaixo.
+
+### Três limites, e os três são meus para declarar
+
+**1. As partições NÃO são réplicas independentes.** Correção importante:
+`group_split` com `TEST_FRACTION = 0.2` divide os **mesmos 725 frutos** 80/20,
+mudando só a semente. Medido sobre as sementes 5..14: cada treino compartilha
+**80,05% dos seus frutos** com o de qualquer outra partição, de 78,3% a 81,7%
+nos 45 pares, Jaccard médio 0,667.
+
+Logo **qualquer teste de postos computado sobre as dez médias de partição é
+anticonservador** e não tem o seu nível nominal. Os valores que eu havia
+reportado — piso contra zero p = 0,0020, platô contra zero p = 0,1055, pareado
+p = 0,3223 — ficam registrados por completude e **nenhuma conclusão repousa
+neles.** Eu os introduzi nesta nota e na §8.1 como se fossem inferência; não
+são.
+
+O critério **pré-registrado** é outro teste: dentro de cada partição, sobre as
+dez inicializações aleatórias. É afirmação sobre estabilidade entre execuções
+com dados fixos, não sobre população, e é nesse sentido que o «5/5, p = 0,0020»
+do texto original desta nota vale.
+
+**2. Não cruzar um critério não é evidência de ausência.** As correlações do
+platô não estabelecem associação positiva ali; **tampouco** estabelecem que o
+gate não carregue ordenação naquele nível. Quatro médias negativas e seis
+positivas é padrão que descrevemos e não interpretamos como ausência.
+
+**3. Não demonstramos diferença entre os níveis, e isso não demonstra que
+sejam iguais.** `p = 0,3223` significa que não se demonstrou diferença
+estatisticamente significativa; **não é teste de equivalência** e não autoriza
+dizer que os níveis se comportam igual. Diferença em significância não é
+significância da diferença, e o erro inverso está igualmente disponível.
+
+### O que eu teria publicado
+
+A frase original desta nota e da §8.1 — *"o gate carrega ordenação onde o prior
+é plano e baixo, e não onde é plano e alto"* — é comparativa, e nem o teste
+pareado nem a dependência entre partições a sustentam. Estava também no título
+da §8.1 e no §1.3 da introdução. Os três foram reescritos. **O autor apanhou o
+princípio antes de mim nos dois casos: o alçapão da significância e a
+dependência entre partições.** Segundo e terceiro erros meus neste programa
+encontrados por revisão externa antes de mim.

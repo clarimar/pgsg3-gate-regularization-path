@@ -150,29 +150,76 @@ ties resolved at random, for the three partitions. The two series coincide.
 
 ## 8. Results — where the alignment is
 
-The gate does follow the data. This section reports where, and the answer is
-not where the interpretation would place it.
+The gate does follow the data. This section reports where it can be seen to,
+and the place is not the one the top-decile metric reads.
 
-### 8.1 The alignment is in the bands the prior demotes
+### 8.1 Alignment at the prior's floor, and what the plateau does not show
 
 Within each level of the step-function prior, we correlate the gate's values
 with the external reference across the bands at that level. This asks whether
 the gate orders bands that the prior treats as equivalent, which is the only
 place the gate can contribute information the prior did not already supply.
+The two levels large enough for the analysis to interpret are the floor, with
+223 bands, and the plateau, with 34; the remaining level of 7 bands is below
+the threshold and is measured but never interpreted.
 
 At the prior's floor — the level of 0.1, carrying 223 of the 281 bands — the
 correlation is positive in every partition measured: +0.2982, +0.1679, +0.1457,
-+0.3418 and +0.2147 across partitions 5 to 9, with p = 0.0020 in all five. This
-was pre-registered as a secondary observation and then replicated as a primary
-criterion on five held-out partitions: +0.2705, +0.3168, +0.1491, +0.2901 and
-+0.2063 across partitions 10 to 14, again with p = 0.0020 in all five. Ten of
-ten partitions, two pre-registrations, same direction.
++0.3418 and +0.2147 across partitions 5 to 9, and +0.2705, +0.3168, +0.1491,
++0.2901 and +0.2063 across partitions 10 to 14. In each of the ten, the
+pre-registered test over the ten random initialisations within that partition
+reaches its smallest attainable two-sided value, p = 0.0020. The first group of
+five was pre-registered as a secondary observation and the second as a primary
+criterion, and the direction is the same in all ten.
 
-At the prior's maximum — the 34-band plateau — the sign is inconsistent, with
-two of five partitions negative. The gate carries ordering information where the
-prior is flat and low, and not where the prior is flat and high. The
-configuration of Section 4 arranges for the selection metric to look only at
-the second place.
+At the prior's maximum — the 34-band plateau — the pattern is different. The
+partition means there are negative in four of the ten, two in each group of
+five, and range from −0.1495 to +0.3578 against the floor's +0.1457 to
++0.3418. The descriptive pattern recurred in both groups of five partitions:
+two negative means in each, with group means of +0.1139 and +0.1145.
+
+**What may and may not be concluded from this needs stating carefully, and
+three separate limits apply.**
+
+*First, the partitions are not independent replicates.* The ten partitions are
+repeated splits of the same 725 fruits, with approximately 80% overlap between
+training sets (78% to 82% over the 45 pairs). Consequently, the
+partition-level Wilcoxon p-values cannot be interpreted under the usual
+independence assumption. We report them descriptively — p = 0.0020 for the
+floor against zero, p = 0.1055 for the plateau, and p = 0.3223 for the two
+paired against each other — but draw no population-level inference from them.
+They are the output of tests whose inferential interpretation is compromised
+by the design, not descriptive statistics, and we identify them as such
+wherever they appear. The dependence is positive, which suggests the nominal
+levels are optimistic, but the magnitude and even the direction of the
+distortion depend on the joint distribution of these statistics, which we have
+not characterised; we therefore do not assert that the tests are
+anti-conservative, only that they are not calibrated for this design.
+
+The pre-registered criterion for this result is a different test, within each
+partition and across the ten random initialisations. That criterion is also
+bounded, and the bound belongs in the methods rather than in a footnote: the
+ten initialisations share the same training data, so the test characterises
+the variability of the optimisation procedure conditional on the observed
+partition. It does not, on its own, support population-level inference about
+spectral relevance.
+
+*Second, failing to clear a criterion is not evidence of absence.* The
+plateau's correlations do not establish a positive association there; they also
+do not establish that the gate carries no ordering information at that level.
+Four of ten partition means are negative and six are positive, which is a
+pattern we describe and do not interpret as an absence.
+
+*Third, we did not demonstrate a difference between the two levels, and that
+is not a demonstration that they are the same.* A paired comparison over the
+partitions does not reach significance, which is not an equivalence test and
+licenses no claim that the levels behave alike. A difference in significance
+is not the significance of a difference, and the converse error is equally
+available.
+
+What survives all three limits is the description: the floor's partition means
+are positive in ten of ten, the plateau's are not, and the selection metric of
+Section 4 reads only the plateau.
 
 ### 8.2 The alignment does not depend on which prior was used
 
@@ -186,7 +233,9 @@ This is the result that constrains the interpretation most tightly, and it cuts
 both ways. Against the reading we began with, it shows that the alignment is
 not evidence for the literature prior in particular. In favour of the method,
 it shows the gate is not inert and not merely reproducing its initialisation:
-something data-dependent is happening, consistently, in 223 of 281 bands.
+something data-dependent is happening, consistently, in the 223 bands at the
+prior's floor. Whether the same is true at the plateau is not settled by these
+measurements in either direction.
 
 ### 8.3 What this is not
 
