@@ -5,6 +5,34 @@ the real plateau geometry (L=34) and both decile conventions (q=28, 29), and the
 asserted values are those recomputed from the archived gates. The earlier
 failure in this program came from a fixture perturbed at sd=1e-2 when the data
 sat at 1.5e-4 -- 70x off -- which made a real finding look refuted.
+
+WHAT THESE TESTS ARE, AND WHAT THEY ARE NOT
+-------------------------------------------
+Recorded at the author's request, 2026-10-26, because the count is quoted often
+enough that it could be mistaken for scientific validation. The suite holds two
+kinds of test and neither establishes a scientific result.
+
+TEXTUAL CONSISTENCY. Most of what follows checks that a claim retired in a
+finding has not returned in the manuscript, that a number in the text matches
+the number in the finding that declares it, and that a caveat required by a
+review is still present. These catch propagation failures -- a correction
+applied in one section and not in the three that repeat it, which has happened
+repeatedly in this programme -- and nothing else. They would pass on a
+manuscript whose every number was wrong, provided the wrong numbers agreed with
+each other.
+
+COMPUTATIONAL INTEGRITY. A smaller set checks properties of files, of
+calculations and of the procedures implemented: that the exact hypergeometric
+expectation matches an independent Monte Carlo route, that a convexity
+inequality is strict, that a verifier refuses a subset of the required
+partitions, that a figure's axis limits come from the data rather than from a
+literal. These check that code does what it says.
+
+NEITHER CATEGORY establishes scientific validity, soundness of the experimental
+design, or correctness of a statistical interpretation. Every such judgement in
+this programme came from reading, from a pre-registered criterion, or from
+external review -- four of this session's corrections came from the last of
+those, and no test in this file would have caught any of them.
 """
 from __future__ import annotations
 
@@ -215,8 +243,15 @@ def test_s7_nao_afirma_raman_sem_qualificar():
     unqualified form 'the literature prior wins in Raman' must not appear."""
     t = (RAIZ / "paper" / "04-rascunho-s6-s7-s8.md").read_text()
     assert "wins clearly in two of three partitions" in t
-    assert "marginally ahead" in t
     assert "significant* reversal" in t or "significant_ reversal" in t
+    # E, 2026-10-26: calling a detected difference a tie contradicts the test.
+    # p = 0.0098 means the reversal was registered; "ties ... marginally
+    # ahead" was the retired wording, and this guard used to require it.
+    assert "marginally ahead" not in t
+    assert "in the third it ties" not in t
+    assert "the relocated control holds a small advantage that the test" in t
+    assert "calling a detected difference a" in t
+    assert "it is not a tie" in t
 
 
 def test_s8_nega_recuperacao_de_relevancia_verdadeira():
@@ -241,7 +276,23 @@ def test_s9_imunidade_do_controle_e_declarada_sem_exagero():
                (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md").read_text())
     assert "immune to the deterministic top-k" in t
     assert "Each of the three conditions fails separately" in t
-    assert "d = 0 on those 34 bands, in every seed, by construction" in t
+    # B, 2026-10-26: the displacement on the plateau is numerically negligible
+    # but NOT zero -- F007 records max |d| between 1.2e-6 and 6.7e-6. The exact
+    # equality is between the GATE VALUES, which is a different fact. This
+    # guard used to require the false statement.
+    assert "d = 0 on those 34 bands" not in t
+    assert "numerically negligible but not zero" in t
+    assert "Saying d = 0 would be convenient and false" in t
+    # 2026-10-26: three properties kept apart. Only (1) was measured, so the
+    # exact-equality claim is scoped to within a run and (2) is given as a
+    # bound derived from the measured maximum, not as an observed equality.
+    assert "Within each run, the gate values on the plateau are exactly equal" in t
+    # superseded 2026-10-26: P2 was measured, so the text no longer says the
+    # within-run equality is the only one we measured, nor that nothing
+    # answers the across-run question. It says P2 is non-zero.
+    assert "the only property the artefact needs" in t
+    assert "Across runs, the common plateau value is not the same" in t
+    assert "near-constant block" in t
     # the dependence is measured, so it is asserted, not merely flagged
     assert "the dependence is real and we do not claim the control is" in t
     assert "about nine times smaller" in t
@@ -693,3 +744,200 @@ def test_estrutura_tem_o_plato_nas_dez():
     t = (RAIZ / "paper" / "00-estrutura.md").read_text()
     assert "sinal inconsistente, 2 de 5 negativos" not in t
     assert "4 de 10 médias de partição negativas" in re.sub(r"\s+", " ", t)
+
+
+
+def test_s9_prescricoes_nao_generalizam_alem_dos_dados():
+    """Review of 2026-10-26, problems A and D. Prescription 1 claimed a level
+    set larger than q means the metric registers nothing new, which ignores
+    that the gate may separate those bands by learned differences.
+    Prescription 4 was a universal prohibition with an unscoped no-cost
+    claim."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md").read_text())
+    assert "cannot register any distinction the prior does not already make" not in t
+    assert "Check all three conditions together, not the geometry alone" in t
+    assert "makes the artefact *possible*" in t
+    assert "may separate those bands by differences it genuinely learned" in t
+    # prescription 4 scoped to the use, with the no-cost claim tied to the runs
+    assert "Do not put the prior in the initialisation" not in t
+    assert "a methodological preference conditional on the use, not a general" in t
+    assert "is as general as those runs" in t
+
+
+def test_s11_nao_reivindica_exclusividade_do_sintetico():
+    """Problem G: controlled mixtures, reference standards and experimental
+    systems with a known composition also measure recovery."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md").read_text())
+    assert "only design that measures recovery" not in t
+    assert "controlled mixtures, reference standards" in t
+    assert "not because it is the only route" in t
+
+
+
+def test_s1_nao_nega_limite_populacional_a_sobreposicao():
+    """Problem C of the 2026-10-26 review: saying seed overlap converges to no
+    population quantity is stronger than needed and may be false under
+    stability assumptions. The argument only needs that convergence does not
+    establish recovery of a true support."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md").read_text())
+    assert "converges to no population quantity" not in t
+    assert "We do not claim that seed overlap has no population limit" in t
+    assert "does not establish that the selection recovers a true support" in t
+
+
+def test_s4_declara_a_dependencia_do_plato_na_propria_secao():
+    """Problem F: 'unaffected by the property described here' in 4.4 invites a
+    wider reading than 9.3 supports, and the reader should not have to wait
+    for the discussion."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "01-rascunho-resumo-e-s4.md").read_text())
+    assert "unaffected by the property described here" not in t
+    assert "Immunity to that artefact is not independence from the prior" in t
+    assert "0.018 under Pearson and 0.051 under Spearman" in t
+
+
+def test_correcao_em_provas_separa_imunidade_de_independencia():
+    """Author's two precisions of 2026-10-26: the insertion may not call the
+    displacement control 'unaffected', because immunity to the tie-breaking
+    artefact is not independence from the plateau; and the Raman clause must
+    not imply interpretive validity. The optional abstract clause is dropped."""
+    import re
+    t = re.sub(r"\s+", " ", re.sub(r"^>\s?", "",
+               (RAIZ / "paper" / "correcao-em-provas.md").read_text(),
+               flags=re.M))
+    assert "their order, is unaffected." not in t
+    assert "no tie-breaking rule enters it" in t
+    assert "whether that correlation is also independent of the plateau is a" in t
+    assert "the mechanism described here does not arise" in t
+    assert "A oração no resumo foi retirada" in t
+    assert "in NIR this overlap is evaluated within the prior" not in t
+
+
+
+def test_f002_registra_a_ambiguidade_do_plato():
+    """The sentence 'bit-identical in every seed' admits two readings and only
+    one was measured: check_gates_r2 counts distinct values per row and never
+    compares rows. The artefact needs only the within-run reading."""
+    import re
+    f = re.sub(r"\s+", " ", (RAIZ / "findings"
+               / "F002-o-que-as-metricas-interpretativas-medem.md").read_text())
+    assert "uma frase ambígua sobre o platô" in f
+    assert "nunca compara linhas entre si" in f
+    assert "O artefato precisa apenas da primeira leitura" in f
+    assert "nenhum script do programa media a segunda" in f
+
+
+def test_script_09_mede_as_tres_propriedades():
+    """Within-run spread, across-run spread of the level, and max |d|. The
+    second was measured by nothing in this programme until 2026-10-26."""
+    src = (RAIZ / "scripts" / "09_controle_deslocamento.py").read_text()
+    assert "P1 value-equal in" in src
+    assert "P2 across-run amplitude of the common" in src
+    assert "nothing in this programme measured it until now" in src
+
+
+
+def test_09_nao_reduz_p2_a_media():
+    """Author's requirement of 2026-10-26: P2 is the amplitude over the COMMON
+    plateau value per run, computed only where P1 holds. A mean would hide
+    within-run variation precisely when the quantity is meaningless, and a 0.0
+    from subtraction is not by itself evidence of bit-identical storage."""
+    src = (RAIZ / "scripts" / "09_controle_deslocamento.py").read_text()
+    assert "g[plato].mean()" not in src          # the retired reduction
+    assert "P2 NOT COMPUTED" in src
+    assert "no single value to compare" in src
+    assert "value equality on the stored doubles" in src
+    assert "v.view(np.int64)" in src             # the bit-level comparison
+    assert "a mean would hide within-run variation" in src
+
+
+def test_s9_reporta_p2_medido_e_nao_um_limite():
+    """The bound was superseded by the measurement on 2026-10-26: P1 holds
+    10/10 by value and by bit in all seven sizes, and P2 is non-zero in all
+    seven, from 2.4e-7 to 4.1e-6, measured per size and never pooled."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md").read_text())
+    assert "identical both by value and by bit pattern in 10 of 10 runs" in t
+    assert "Across runs, the common plateau value is not the same" in t
+    assert "per training size and never pooled across them" in t
+    assert "2.4 × 10⁻⁷ at n = 30 to 4.1 × 10⁻⁶ at n = 1158" in t
+    # the mechanism rests on P1 alone, and the text must say so
+    assert "the only property the artefact needs" in t
+    assert "a tie inside a run does not require two runs to tie with each" in t
+    # P2 vs n is exploratory, not causal: seven conditions (2026-10-26)
+    assert "exploratory association and not as evidence" in t
+    assert "seven conditions cannot support that" in t
+    # resolution read at the OBSERVED values, not at 1.0. The plateau sits in
+    # [0.5, 1), where the single-precision spacing is 2**-24; 2**-23 applies
+    # above 1.0. An earlier draft used 2**-23 and halved every step count.
+    assert "binade [0.5, 1)" in t
+    assert "2⁻²⁴ ≈ 5.96 × 10⁻⁸" in t
+    assert "4, 6, 4, 6, 20, 34 and 68 steps" in t
+    assert "not a universal detection floor" in t
+    assert "2⁻²³" in t and "applies immediately" in t
+    # representability is not provenance
+    assert "a fact about where they lie and not about how they were produced" in t
+    assert "do not claim the provenance" in t
+
+
+
+def test_09_garante_dtype_antes_de_comparar_bits():
+    """view(np.int64) presupposes the array really is float64, which the
+    author asked to be guaranteed rather than assumed."""
+    src = (RAIZ / "scripts" / "09_controle_deslocamento.py").read_text()
+    assert "if g_.dtype != np.float64:" in src
+    assert "would compare the wrong width" in src
+    # and the resolution question is checked, not asserted
+    assert "exactly representable in" in src
+
+
+def test_09_usa_o_espacamento_dos_valores_observados():
+    """The plateau sits in [0.5, 1), where float32 spacing is 2**-24. An
+    earlier version used 2**-23 -- the spacing ABOVE 1.0, since 1.0 is a power
+    of two on a boundary -- and reported half the number of steps. The script
+    must read the spacing at the observed values, and must not present exact
+    representability as proof of single-precision provenance."""
+    src = (RAIZ / "scripts" / "09_controle_deslocamento.py").read_text()
+    assert "2.0) ** -23" not in src and "2.0)**-23" not in src
+    assert "the binade [0.5, 1.0), where the single-precision spacing is" in src
+    assert "The spacing 2**-23 applies ABOVE 1.0" in src
+    assert "does NOT show they were computed in single precision" in src
+    assert "Confirming" in src and "provenance needs the dtypes" in src
+    # spacing is local, so it is read at BOTH ends of the observed range and
+    # the step count is withheld when the values straddle a binade boundary.
+    # Found by a fixture whose plateau crossed 1.0: the old code read the
+    # spacing at the max and applied it to the whole range.
+    assert "Spacing is a LOCAL property" in src
+    assert "np.spacing(np.float32(lo))" in src
+    assert "np.spacing(np.float32(hi))" in src
+    assert "straddle a binade boundary" in src
+    assert "step count withheld: no single resolution" in src
+
+
+def test_f007_corrige_o_espacamento_e_separa_proveniencia():
+    """The two corrections the author required on 2026-10-26, recorded in the
+    finding with the original error named rather than quietly replaced."""
+    import re
+    t = re.sub(r"\s+", " ", (RAIZ / "findings"
+               / "F007-o-controle-de-deslocamento-e-o-plato.md").read_text())
+    # erro 1: o espacamento
+    assert "2⁻²⁴ = 5,960464×10⁻⁸" in t
+    assert "4, 6, 4, 6, 20, 34 e 68" in t
+    assert "o dobro do que eu havia reportado" in t
+    assert "não** é piso universal de detecção" in t
+    # erro 2: representabilidade nao e proveniencia
+    assert "representabilidade não é proveniência" in t
+    assert "pertencem à grade do `float32`" in t
+    assert "proveniência confirmada" in t
+    # P2 vs n exploratoria, P2 vs max|d| nao e evidencia independente
+    assert "associação exploratória**" in t
+    assert "não uso a correlação entre P2 e max |d| como evidência" in t
+    assert "compartilham dependência matemática" in t

@@ -120,8 +120,8 @@ def main() -> None:
         for arm, g0 in (("gates_lit", prior), ("gates_rand", 0.5)):
             if arm not in z.files:
                 continue
-            g = np.atleast_2d(np.asarray(z[arm], float))
-            desl = g - g0
+            g_ = np.atleast_2d(np.asarray(z[arm], float))
+            desl = g_ - g0
             for nome, idx in (("all 281", np.arange(len(prior))),
                               (f"non-pl {len(fora)}", fora)):
                 mp, sp = pares(desl[:, idx], pearson)
@@ -129,9 +129,92 @@ def main() -> None:
                 print(f"{p.name:<16}{arm:<12}{nome:<8}"
                       f"{mp:>10.4f} +-{sp:>6.4f}{ms:>10.4f} +-{ss:>6.4f}")
                 resumo[(p.name, arm, nome)] = (mp, ms)
-            # how much of d is identically zero on the plateau?
+            # Three properties, kept apart because only the first was ever
+            # measured and the text used to conflate them:
+            #   (1) within a run, are the 34 plateau gate values equal?
+            #   (2) across runs, is that value the SAME?
+            #   (3) how far has the gate moved from the prior there?
+            # check_gates_r2 measures (1) per row and never compares rows.
+            # (2) is what makes the plateau contribute trivial agreement to
+            # rho(d), and nothing in this programme measured it until now.
+            # view(np.int64) compares bit patterns, which presupposes the
+            # array really is float64. carregar() casts with float(), but an
+            # assumption worth stating is worth checking.
+            if g_.dtype != np.float64:
+                raise SystemExit(
+                    f"{p.name}/{arm}: dtype is {g_.dtype}, not float64, so the "
+                    f"bit comparison below would compare the wrong width. "
+                    f"Resolve this rather than silently reinterpreting.")
+            p1_valor, p1_bits, c_r = [], [], []
+            for g in g_:
+                v = g[plato]
+                # value equality on the stored doubles, and bit equality on
+                # their representations. A 0.0 obtained by subtraction is not
+                # by itself evidence of bit-identical storage, which is the
+                # distinction the author asked for on 2026-10-26.
+                p1_valor.append(np.unique(v).size == 1)
+                p1_bits.append(np.unique(v.view(np.int64)).size == 1)
+                c_r.append(float(v[0]) if p1_valor[-1] else float("nan"))
+            todas_p1 = all(p1_valor)
             z_plato = float(np.abs(desl[:, plato]).max())
-            print(f"{'':16}{'':12}max |d| on the plateau: {z_plato:.3e}")
+            print(f"{'':16}{'':12}P1 value-equal in {sum(p1_valor)}/{len(g_)} "
+                  f"runs, bit-equal in {sum(p1_bits)}/{len(g_)};  max |d| "
+                  f"{z_plato:.3e}")
+            # Resolution of these measurements, at the VALUES OBSERVED and
+            # not at 1.0. A gate is sigma(theta) < 1, so the plateau sits in
+            # the binade [0.5, 1.0), where the single-precision spacing is
+            # 2**-24. The spacing 2**-23 applies ABOVE 1.0: 1.0 is a power of
+            # two and lies on the boundary between two spacing regions. An
+            # earlier version of this script used 2**-23 and reported half the
+            # number of steps.
+            #
+            # Spacing is a LOCAL property, so it is read at both ends of the
+            # observed range. If the plateau values straddle a binade boundary
+            # there is no single resolution to express P2 in, and the step
+            # count is withheld rather than read at one end and applied to the
+            # whole range.
+            lo = float(np.abs(g_[:, plato]).min())
+            hi = float(np.abs(g_[:, plato]).max())
+            ulp_lo = float(np.spacing(np.float32(lo)))
+            ulp_hi = float(np.spacing(np.float32(hi)))
+            ULP32 = ulp_hi if ulp_lo == ulp_hi else float("nan")
+            exato32 = bool(np.array_equal(
+                g_[:, plato], g_[:, plato].astype(np.float32).astype(np.float64)))
+            print(f"{'':16}{'':12}plateau values exactly representable in "
+                  f"float32: {exato32};  single-precision spacing over "
+                  f"[{lo:.9f}, {hi:.9f}] = {ulp_lo:.6e}"
+                  + ("" if ulp_lo == ulp_hi else
+                     f" at the low end and {ulp_hi:.6e} at the high end "
+                     f"-- the values straddle a binade boundary, so there is "
+                     f"no single resolution and no step count is reported"))
+            if exato32:
+                print(f"{'':16}{'':12}  NOTE: exact representability shows the "
+                      f"stored float64 values lie on the float32 grid. It "
+                      f"does NOT show they were computed in single precision "
+                      f"-- rounding, an explicit cast or a quantisation step "
+                      f"before storage would leave the same trace. Confirming "
+                      f"provenance needs the dtypes used in training, export "
+                      f"and loading.")
+            if todas_p1:
+                # A_inter over the COMMON plateau value per run, not over a
+                # mean: a mean would hide within-run variation whenever P1
+                # fails, which is exactly when the quantity is meaningless.
+                A = float(np.ptp(np.asarray(c_r)))
+                mult = A / ULP32
+                print(f"{'':16}{'':12}P2 across-run amplitude of the common "
+                      f"level: {A:.6e}"
+                      + ("   (exactly equal)" if A == 0.0 else
+                         "   [step count withheld: no single resolution]"
+                         if not np.isfinite(mult) else
+                         f"   = {mult:.2f} steps of {ULP32:.6e}"
+                         + ("  [integer multiple]"
+                            if abs(mult - round(mult)) < 1e-6 else "")))
+            else:
+                ruins = [i for i, ok in enumerate(p1_valor) if not ok]
+                print(f"{'':16}{'':12}P2 NOT COMPUTED: P1 fails in run(s) "
+                      f"{ruins}, so the plateau has no single value to compare "
+                      f"across runs. Reporting the condition instead of "
+                      f"assigning one.")
         print()
 
     head("Reading")

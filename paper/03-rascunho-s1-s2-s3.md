@@ -49,10 +49,17 @@ support — and asserts that the procedure estimates it. Agreement between two
 runs then measures the variance of that estimator and says nothing about its
 bias: two runs can agree perfectly and both be wrong, and they will do so
 whenever the agreement is produced by something the two runs share that is not
-the data. A prior shared by both runs is exactly such a thing. Overlap between
-seeds, unlike held-out risk, converges to no population quantity as the
-training set grows; it is a property of a pair of fitted models under a fixed
-procedure. Reproducibility is therefore necessary for recovery of a support and
+the data. A prior shared by both runs is exactly such a thing.
+
+We do not claim that seed overlap has no population limit. Under assumptions
+about algorithmic stability, the data distribution and asymptotic behaviour, a
+selection overlap may well converge to a well-defined population quantity, and
+nothing here rules that out. The narrower point is the one the argument needs:
+**even where the overlap converges, its limit is a property of the procedure's
+agreement with itself, and convergence to it does not establish that the
+selection recovers a true support.** Held-out risk differs not in having a
+limit but in what the limit is — a property of the data distribution, against
+which the estimate can be wrong in a way that more data corrects. Reproducibility is therefore necessary for recovery of a support and
 nowhere near sufficient, and the gap between the two is where a prior can do
 its work undetected.
 

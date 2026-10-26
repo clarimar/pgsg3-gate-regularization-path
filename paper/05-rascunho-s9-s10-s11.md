@@ -89,11 +89,62 @@ The statement we make is the author's:
 ### 9.3.1 The dependence, measured
 
 Under the prior in the initialisation, θ₀ = logit(s), so g₀ = σ(logit(s)) = s
-exactly, and d = g_final − s. On the plateau the prior is 1 and the trained
-gate remains at 1, so **d = 0 on those 34 bands, in every seed, by
-construction**. Twelve per cent of the spectrum agrees trivially between any
-two seeds, and that agreement enters the displacement correlation. We assessed
-it separately, as the statement above requires, computing
+exactly, and d = g_final − s. Three facts about the plateau have to be kept
+apart, because only the first is an exact equality and the paper has conflated
+them before.
+
+**Within each run, the gate values on the plateau are exactly equal to one
+another.** Each seed holds one distinct value over the 34 bands, identical both
+by value and by bit pattern in 10 of 10 runs in each of the seven training
+sizes, and it is that equality *inside a run* that leaves the selected set to a
+tie-breaking rule. This is the artefact of Section 4, and it is the only
+property the artefact needs.
+
+**Across runs, the common plateau value is not the same.** We measured this
+separately, per training size and never pooled across them, and it differs in
+every one: the amplitude of the common value over the ten seeds runs from
+2.4 × 10⁻⁷ at n = 30 to 4.1 × 10⁻⁶ at n = 1158. It is larger at larger sample
+sizes over these seven conditions, which we report as an exploratory
+association and not as evidence that more data drives seeds apart; seven
+conditions cannot support that. So the two properties come apart, and the
+mechanism rests on the first: a tie inside a run does not require two runs to
+tie with each other.
+
+**The displacement on the plateau is numerically negligible but not zero.** The
+largest |d| there is between 1.2 × 10⁻⁶ and 6.7 × 10⁻⁶ across the seven
+training sizes, against 1.6 × 10⁻² to 5.3 × 10⁻² under θ₀ = 0. The gate did
+move, by about a part in a million. Saying d = 0 would be convenient and
+false.
+
+**What follows for the correlation is a near-constant block.** Under
+prior-initialisation every plateau displacement lies within 6.7 × 10⁻⁶ of zero,
+and the seeds differ there by between 2.4 × 10⁻⁷ and 4.1 × 10⁻⁶ depending on
+the training size. Twelve per cent of the spectrum therefore carries a
+displacement that is the same between seeds to within a few parts in a million,
+and that near-constancy contributes agreement to ρ(d) for a reason unrelated to
+learning. The dependence requires neither an exact zero nor exact equality
+across seeds, which is why the measured near-constancy suffices.
+
+Two caveats on the resolution of these figures.
+
+The first is where the resolution is read. A gate is σ(θ) < 1, so the plateau
+sits just below one, inside the binade [0.5, 1), where single-precision values
+are spaced 2⁻²⁴ ≈ 5.96 × 10⁻⁸ apart. The familiar 2⁻²³ applies immediately
+*above* one: unity is a power of two and lies on the boundary between two
+spacing regions. At the correct local spacing, the across-run amplitudes are 4,
+6, 4, 6, 20, 34 and 68 steps across the seven sizes — integer multiples, which
+is what makes the figures look quantised. The resolution is a property of the
+region the values occupy and not a universal detection floor for this quantity.
+
+The second is what that quantisation licenses. The stored values are exactly
+representable in single precision, which is a fact about where they lie and
+not about how they were produced: rounding, an explicit cast, or a
+quantisation step before storage would leave the same trace. We therefore
+report the representability as measured, offer single-precision arithmetic
+somewhere upstream as the explanation we find likeliest, and do not claim the
+provenance, which would require tracing the types used in training, export and
+loading. We
+assessed it separately, as the statement above requires, computing
 
     ρ_all = corr(d⁽ᵃ⁾, d⁽ᵇ⁾)        ρ_outside = corr(d⁽ᵃ⁾_¬P, d⁽ᵇ⁾_¬P)
 
@@ -176,12 +227,15 @@ correction is on record.
 
 Five recommendations follow, in increasing order of what they cost.
 
-1. **Check the largest level set of the prior against q before reporting
-   decile overlap**, and check for exact ties among the sorted gate values.
-   Both are one line. A level set larger than q means the metric cannot
-   register any distinction the prior does not already make; exact ties among
-   the selected values mean the reported figure includes a tie-breaking rule's
-   output.
+1. **Check all three conditions together, not the geometry alone.** Compare
+   the prior's largest level set against q; check whether exact ties among the
+   gate values survive training; and check what rule resolves them. Each is one
+   line. A level set larger than q makes the artefact *possible*, because the
+   selection can then fall entirely inside one level — but it does not by
+   itself mean the metric registers nothing the prior does not already make,
+   since the gate may separate those bands by differences it genuinely learned.
+   What the figure reports is a tie rule's output only when all three hold, and
+   the three are what Section 4.2 separates.
 2. **Report the overlap under randomised tie resolution alongside the
    conventional figure.** The difference between the two is the size of the
    artefact, it costs one line of code, and it requires no change to the
@@ -189,11 +243,18 @@ Five recommendations follow, in increasing order of what they cost.
 3. **Report the exact chance expectation, not q/(2L − q).** The ratio is J
    evaluated at the expected overlap and understates the expectation, in the
    direction that overstates any excess above chance (Section 2.5).
-4. **Do not put the prior in the initialisation.** θ₀ = 0 with the prior in the
-   penalty preserves the constraint without making any parameter unreachable,
-   costs nothing in predictive performance, and removes the condition entirely
-   (Section 3.2). Section 9.3 adds a second reason: initialising at the prior
-   also puts a block of coordinates at zero displacement, which contaminates a
+4. **Where the gate's band ordering is to be interpreted, avoid an
+   initialisation that leaves parameters saturated — or demonstrate that it
+   does not.** This is a methodological preference conditional on the use, not
+   a general prohibition: nothing here shows that initialising at a prior is
+   wrong for every purpose. In the configuration we examined, θ₀ = 0 with the
+   prior in the penalty preserves the constraint while leaving every parameter
+   reachable, and removes the condition of Section 4 entirely (Section 3.2);
+   held-out R² is equivalent between the two across the λ grid, both
+   modalities and the seven training sizes we ran, which is the evidence for
+   the cost being nil and is as general as those runs. Section 9.3 adds a
+   second reason within the same scope: initialising at the prior also leaves
+   a block of coordinates with near-zero displacement, which contaminates a
    displacement-based control that would otherwise be clean.
 5. **Vary the training set size and check whether the overlap responds.**
    Insensitivity across a large change in n is a reason to look for a cause,
@@ -291,10 +352,13 @@ was arrived at by elimination rather than by prediction.
 
 ## 11. Future work
 
-**A known support, by synthetic data.** Every agreement figure in this paper is
-concordance with a proxy. The only design that measures recovery is one where
-the true informative bands are known by construction, and nothing in this paper
-substitutes for it. This is the first item because it is the one that would
+**A known support.** Every agreement figure in this paper is concordance with
+a proxy. Measuring recovery rather than concordance requires a design in which
+the informative bands are known independently of the model: synthetic spectra
+with a support fixed by construction are the cheapest such design, and
+controlled mixtures, reference standards and experimental systems whose
+composition is set by the experimenter are others. We name synthetic data
+because it is what we would run first, not because it is the only route. This is the first item because it is the one that would
 convert the interpretive claim from unfalsifiable to testable.
 
 **Empirical Rademacher complexity by fitting random labels.** Section 1.2

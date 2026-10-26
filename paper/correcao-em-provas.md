@@ -33,24 +33,42 @@ literature prior) versus 0.6545 (Raman, uninformed)"* — inserir:
 > machine precision after training; the Jaccard reported there therefore
 > reflects the resolution of that tie rather than a choice among distinguishable
 > bands, and should not be read as reproducibility of band selection. The
-> displacement control below, which uses gate values rather than their order, is
-> unaffected. In Raman the prior is continuous and its maximum is attained at a
-> single band, so the decile is not plateau-bound.
+> displacement control below uses gate values rather than their order, so no
+> tie-breaking rule enters it and the figure reported there is not affected by
+> this; whether that correlation is also independent of the plateau is a
+> separate question. In Raman the prior is continuous and its maximum is
+> attained at a single band, so the decile is not plateau-bound and the
+> mechanism described here does not arise.
 
-Quatro linhas. Acrescenta, não retira. E reforça o artigo: mostra que os autores
+Cinco linhas. Acrescenta, não retira. E reforça o artigo: mostra que os autores
 sabem o que a própria métrica registra.
 
-## Opcional: uma oração no resumo
+### Duas precisões exigidas pelo autor em 2026-10-26, e por quê
 
-Onde está *"(pairwise Jaccard similarity $0.90$--$0.94$ versus
-$0.60$--$0.65$)"*, acrescentar após o fecho do parêntese:
+**A primeira redação dizia que o controle de deslocamento é *unaffected*.**
+Forte demais. O `F007` mostra que ele não sofre o artefato de desempate — não
+há operador de seleção nem ordem arbitrária — mas **não é independente do
+platô**: sob prior na inicialização, 12% do espectro carrega um deslocamento
+igual a menos de um milionésimo entre sementes, e excluir essas bandas baixa a
+correlação em 0,018 (Pearson) ou 0,051 (Spearman) no maior tamanho amostral.
+A inserção agora separa as duas propriedades e diz que a segunda é questão à
+parte. **O artigo anterior não precisa resolvê-la**: a frase apenas não a
+pré-julga.
 
-> ; in NIR this overlap is evaluated within the prior's own plateau of tied
-> bands, and the displacement control rather than this figure supports the
-> claim
+**A segunda era o fecho sobre o Raman.** Dizer que lá o decil não é preso ao
+platô é verdade e suficiente: elimina o mecanismo específico identificado em
+NIR. Não garante validade interpretativa da seleção espectral em Raman, e a
+redação original, ao parar no contraste, convidava a essa leitura. Acrescentado
+*"and the mechanism described here does not arise"*, que é exatamente o escopo
+da afirmação.
 
-Se produção reclamar de extensão no resumo, a frase da §4 basta — ela é onde o
-número vive.
+## A oração no resumo foi retirada
+
+A primeira versão propunha também uma oração no resumo do artigo aceito.
+**Retirada por decisão do autor:** a inserção localizada junto ao resultado de
+Jaccard é suficiente e interfere menos nas provas. Mexer no resumo em estágio
+de provas custa mais negociação com a produção do que o ganho justifica, e o
+número vive na §4.
 
 ## O que eu não proporia mudar
 

@@ -125,3 +125,104 @@ em geral; não reenunciam o número publicado.
 O fixture de `09` serviu para verificar que o script discrimina, e os seus
 números são da minha construção. Instrução explícita do autor em 2026-10-25,
 e a lição já registrada no `F002` sobre fixture descalibrado.
+
+---
+
+## Extensão de 2026-10-26 — P1, P2 e P3 separadas e medidas
+
+A §9.3 afirmava que o deslocamento no platô é zero por construção. Revisão
+externa apontou que `max |d|` fica entre 1,2×10⁻⁶ e 6,7×10⁻⁶, logo é desprezível
+e **não nulo**, e que três propriedades estavam conflatadas na mesma frase:
+
+| | definição | situação antes |
+| --- | --- | --- |
+| **P1** | as 34 bandas do platô têm o mesmo valor de gate **dentro** de uma execução | medida |
+| **P2** | esse valor comum é igual **entre** execuções | **não medida por nenhum script** |
+| **P3** | magnitude de d = g_final − s nas bandas do platô | medida |
+
+O `check_gates_r2.py` computa `len(np.unique(g[idx]))` **por linha** e nunca
+compara linhas entre si, logo media P1 e nunca P2.
+
+### P1, medida por valor e por padrão de bits
+
+Verdadeira em **10/10 execuções nas sete condições**, tanto por igualdade de
+valor sobre os `float64` armazenados quanto por igualdade de bits via
+`view(np.int64)`. No braço θ₀ = 0, falsa em 10/10 — sem saturação não há empate,
+que é o previsto.
+
+### P2, medida por condição e nunca agregada
+
+**Não nula em todas as sete.** Amplitude do valor comum sobre as dez sementes:
+
+| n | P2 | max \|d\| (P3) | P2 em ulps de float32 |
+| --- | --- | --- | --- |
+| 30 | 2,384×10⁻⁷ | 1,192×10⁻⁶ | 2 |
+| 60 | 3,576×10⁻⁷ | 1,311×10⁻⁶ | 3 |
+| 100 | 2,384×10⁻⁷ | 1,192×10⁻⁶ | 2 |
+| 200 | 3,576×10⁻⁷ | 1,550×10⁻⁶ | 3 |
+| 400 | 1,192×10⁻⁶ | 2,623×10⁻⁶ | 10 |
+| 700 | 2,027×10⁻⁶ | 4,292×10⁻⁶ | 17 |
+| 1158 | 4,053×10⁻⁶ | 6,676×10⁻⁶ | 34 |
+
+Spearman(P2, n) = +0,9092 (p = 0,0045), **associação exploratória**: sete
+condições não sustentam que aumentar n afaste as sementes, e a leitura causal
+não está disponível.
+
+**E não uso a correlação entre P2 e max |d| como evidência independente.** As
+duas são construídas dos mesmos valores de platô — P2 é a amplitude de
+(s − d_r) sobre as execuções, logo P2 ≤ 2·max |d| por construção. Correlacionam
+porque compartilham dependência matemática, não porque um mecanismo as una.
+
+### O desfecho, e por que não reabre a hipótese
+
+É o segundo dos três casos possíveis: **P1 verdadeira e P2 > 0.** As duas
+propriedades se separam, e o artefato de desempate repousa na primeira — um
+empate dentro de uma execução não exige que duas execuções empatem entre si.
+A caracterização empírica do mecanismo mudou; a validade da pergunta, não.
+P2 entra como diagnóstico complementar e **não** como requisito retrospectivo
+da hipótese originalmente investigada.
+
+### Resolução das medidas — e dois erros meus na primeira redação
+
+**Erro 1: o espaçamento.** Eu usei 2⁻²³ = 1,192093×10⁻⁷, que é o espaçamento
+do `float32` **acima** de 1,0. Um gate é σ(θ) < 1, logo o platô fica em
+[0,5 , 1,0), onde o espaçamento é **2⁻²⁴ = 5,960464×10⁻⁸** — 1,0 é potência de
+dois e está na fronteira entre duas regiões. Conferido:
+`np.spacing(np.float32(0.999998808))` = 5,960464×10⁻⁸. No espaçamento correto,
+P2 dá **4, 6, 4, 6, 20, 34 e 68** passos, o dobro do que eu havia reportado.
+
+E a resolução **não** é piso universal de detecção de P2: depende da região
+numérica que os valores ocupam, e seria outra se o platô estivesse em 0,5 ou
+em 0,1.
+
+Por isso o `09` passou a ler o espaçamento nas **duas pontas** do intervalo
+observado e a **recusar** a contagem de passos quando as pontas discordam —
+valores que atravessam a fronteira de uma binade não têm resolução única, e ler
+o espaçamento num extremo para aplicá-lo ao intervalo inteiro é exatamente o
+erro que eu acabei de cometer, uma casa adiante. Encontrei isso com um fixture
+cujo platô cruzava 1,0; nos dados reais σ(θ) < 1 e as sete condições ficam
+inteiras em [0,5 , 1,0), então a contagem vale — mas vale porque foi conferida,
+não porque σ é limitada.
+
+**Erro 2: representabilidade não é proveniência.** `exactly representable in
+float32: True` nas sete condições demonstra que os `float64` armazenados
+**pertencem à grade do `float32`**. Não demonstra que foram calculados em
+precisão simples: arredondamento, conversão explícita ou quantização antes do
+armazenamento deixariam o mesmo traço. Três níveis, mantidos separados:
+
+| | |
+| --- | --- |
+| **demonstrado** | os valores são exatamente representáveis em `float32` |
+| **hipótese explicativa** | aritmética em precisão simples em algum ponto a montante |
+| **proveniência confirmada** | exigiria rastrear os dtypes em treino, exportação e carregamento |
+
+O `09` passou a imprimir essa ressalva junto do resultado, para que ninguém leia
+a representabilidade como proveniência — eu li. E a comparação de bits passou a
+exigir `dtype == float64` explicitamente: `view(np.int64)` pressupõe essa
+largura, e uma suposição que vale a pena enunciar vale a pena conferir.
+
+### Erro meu
+
+Eu havia reduzido P2 a `np.ptp` sobre as **médias** do platô por execução. Uma
+média atribui valor único ao platô mesmo quando P1 falha — exatamente quando a
+quantidade não significa nada. Apanhado por revisão externa antes de rodar.

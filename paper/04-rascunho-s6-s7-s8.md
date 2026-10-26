@@ -136,11 +136,16 @@ three partitions:
 The criterion is met at 2 of 3, but partition 2 is a *significant* reversal,
 not a near-miss, and reporting the verdict without it would misdescribe the
 result. The two supporting margins are about thirteen times larger than the
-contrary one. The statement the data support is therefore: **the literature
-prior wins clearly in two of three partitions, and in the third it ties, with
-the relocated control marginally ahead.** It is not "the literature prior wins
-in Raman" without qualification, and we do not write it that way anywhere in
-this paper.
+contrary one, which is a statement about magnitude and not about evidence: at
+p = 0.0098 the test detected the reversal, and calling a detected difference a
+tie would contradict our own test. **The statement the data support is
+therefore: the literature prior wins clearly in two of three partitions, and in
+the third the relocated control holds a small advantage that the test
+registers.** It is not "the literature prior wins in Raman" without
+qualification, and it is not a tie; we write it neither way anywhere in this
+paper. As everywhere else here, what that p-value licenses depends on the test
+matching the unit of replication, and the three Raman partitions are splits of
+one collection (Section 2.7).
 
 **Figure 4.** The continuous Raman prior with the position of the top decile
 marked, and the overlap with ties left to the sort against the overlap with

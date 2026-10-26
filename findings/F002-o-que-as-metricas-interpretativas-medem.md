@@ -314,3 +314,36 @@ anterior em vez de ler `make_literature_prior`. É a mesma lição operacional j
 registrada no `F004`: ler a fonte que o arquivo declara antes de caracterizá-la.
 Terceiro erro deste tipo no programa, e o primeiro que **estreitava** um achado
 em vez de exagerá-lo. Texto original preservado acima.
+
+
+---
+
+## Correção de 2026-10-26 — uma frase ambígua sobre o platô
+
+A linha *"As 34 bandas do platô têm valor bit-idêntico em **todas** as
+sementes"* admite duas leituras, e só uma foi medida.
+
+**Medido:** dentro de cada semente, as 34 bandas do platô têm um único valor
+distinto, amplitude 0,0e+00. O `check_gates_r2.py` computa
+`len(np.unique(g[idx]))` **por linha** e nunca compara linhas entre si.
+
+**Não medido até 2026-10-26:** se duas sementes diferentes assentam no *mesmo*
+valor de platô. A frase, lida como "o mesmo valor em todas as sementes",
+afirma isso; lida como "em cada semente, bit-idêntico entre as bandas", afirma
+o que foi medido.
+
+**O artefato precisa apenas da primeira leitura.** A igualdade exata *dentro*
+de uma execução é o que entrega a seleção ao desempate, e é dela que `F002`
+trata. A segunda propriedade importa para outra coisa: é ela que faz o platô
+contribuir concordância trivial para o ρ(d) do controle de deslocamento
+(`F007`), e lá o que se pode afirmar é um **limite**, não uma igualdade —
+como todo |d| no platô está a menos de 6,7×10⁻⁶ de zero, duas sementes diferem
+ali por no máximo cerca de 1,3×10⁻⁵.
+
+`scripts/09_controle_deslocamento.py` passou a reportar as três quantidades
+separadamente: amplitude dentro da execução, amplitude do nível entre
+execuções, e o máximo de |d|. Até esta correção nenhum script do programa
+media a segunda.
+
+Levantado por revisão externa ao ler a §9.3, que herdara a mesma ambiguidade
+desta nota. Texto original preservado.

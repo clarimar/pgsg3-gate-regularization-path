@@ -217,7 +217,15 @@ rather than of the final gate, obtaining ρ(d) = 0.9462 in NIR and 0.976 in
 Raman, and reported that the agreement on *which* bands move most is
 considerably weaker, with a top-decile overlap of 0.38 in NIR. That control uses
 gate values over all 281 bands rather than ranks within a tied block, and is
-therefore unaffected by the property described here.
+therefore immune to the artefact described here: no selection operator, no
+top-q cut, and no tie-breaking rule enters it. Immunity to that artefact is
+not independence from the prior's plateau, and the two should not be read as
+one. Under prior-initialisation the plateau's displacement is the same to
+within about a millionth across seeds, so twelve per cent of the spectrum
+contributes agreement to that correlation for a reason unrelated to learning.
+Section 9.3 measures how much: excluding the plateau lowers the correlation by
+0.018 under Pearson and 0.051 under Spearman at the largest training size, and
+by considerably more in small samples.
 
 Our result is accordingly narrow and additive. It concerns what the final-gate
 top-decile overlap registers under a quantised prior — not the arithmetic of any
