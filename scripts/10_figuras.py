@@ -173,17 +173,26 @@ def figura1(dados: dict, out: Path) -> None:
 
     niveis, contagens = np.unique(prior, return_counts=True)
     for v, c in zip(niveis, contagens):
-        # above the step: below it the lowest level's count is clipped by the
-        # axis, and the floor is the level with the most bands
-        ax.annotate(f"{c}", xy=(wl[prior == v].mean(), v),
+        # Above the step, at the midpoint of the level's LONGEST CONTIGUOUS
+        # RUN -- not at the mean of its wavelengths. A level with disjoint
+        # runs, which the floor is, has a mean that can fall in a gap: on the
+        # real axis the floor's mean lands near 690 nm, inside the 680-700
+        # window, so the count was printed on top of that spike.
+        onde = np.flatnonzero(prior == v)
+        cortes = np.flatnonzero(np.diff(onde) > 1)
+        trechos = np.split(onde, cortes + 1)
+        maior = max(trechos, key=len)
+        ax.annotate(f"{c}", xy=(wl[maior].mean(), v),
                     xytext=(0, 4), textcoords="offset points",
                     ha="center", va="bottom", fontsize=6, color="0.35")
-    # under the floor, which is free across the whole axis whatever the
-    # wavelength range turns out to be
-    ax.text(0.98, 0.02, f"shaded: the prior's maximum, {plato.sum()} bands  |  "
-                        f"top-decile size q = {PUB_Q} or 29",
-            transform=ax.transAxes, va="bottom", ha="right", fontsize=6.5,
-            color="0.3")
+    # Top left, in two lines. The bottom strip is NOT free: on the real axis
+    # (309-1149 nm) the floor's own count sits there, and a single long line
+    # also ran past the left spine and under the y label.
+    ax.text(0.02, 0.97,
+            f"shaded: the prior's maximum, {plato.sum()} bands\n"
+            f"top-decile size q = {PUB_Q} or 29",
+            transform=ax.transAxes, va="top", ha="left", fontsize=6.5,
+            color="0.3", linespacing=1.5)
     fig.savefig(out / "fig1_prior_degrau.pdf")
     plt.close(fig)
     print(f"  fig1: levels {dict(zip(niveis.round(3), contagens))}, "
@@ -295,7 +304,10 @@ def figura3(dados: dict, out: Path, q_dados: int) -> None:
     for i, ax in enumerate(axes):
         ax.set_xscale("log")
         ax.set_xticks(ns)
-        ax.set_xticklabels([f"{int(v)}" for v in ns], fontsize=6)
+        # rotated: on a log axis 700 and 1158 are close enough that the two
+        # labels merged into "7001158" in all three panels
+        ax.set_xticklabels([f"{int(v)}" for v in ns], fontsize=6,
+                           rotation=45, ha="right")
         ax.minorticks_off()
         ax.set_xlabel("training size $n$")
         # outside the axes, above left: inside it collides with the y label
@@ -404,7 +416,7 @@ def figura4(raman: Path, out: Path, prior=None, eixo=None) -> None:
         ax.set_ylabel("prior $s$")
         ax.text(0.98, 0.95,
                 f"{len(np.unique(prior))} distinct values\n"
-                f"maximum at {len(pico)} band(s)",
+                f"maximum at {len(pico)} band" + ("s" if len(pico) != 1 else ""),
                 transform=ax.transAxes, ha="right", va="top", fontsize=6.5,
                 color="0.3", linespacing=1.4)
 

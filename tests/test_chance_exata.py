@@ -568,3 +568,46 @@ def test_limitacoes_delimita_a_identidade_inferida():
     assert "not against independent physical identifiers" in t
     assert "the check cannot be independent of it" in t
     assert "plausible without making it verified" in t
+
+
+def test_fig1_posiciona_contagem_no_maior_trecho():
+    """A level with disjoint runs has a mean wavelength that can fall in a
+    gap: on the real axis the floor's mean lands near 690 nm, inside the
+    680-700 window, and the count printed on top of that spike. Found only by
+    reconstructing the real geometry (309-1149 nm); the earlier fixture, whose
+    axis was 1100-2300, hid it."""
+    src = (RAIZ / "scripts" / "10_figuras.py").read_text()
+    assert "LONGEST CONTIGUOUS" in src
+    assert "max(trechos, key=len)" in src
+    assert "prior == v].mean()" not in src       # the retired placement
+    # and the caption box is no longer in the bottom strip, which the floor's
+    # own count occupies on the real axis
+    assert "The bottom strip is NOT free" in src
+
+
+def test_fig3_rotula_sem_colisao():
+    """On a log axis 700 and 1158 sit close enough that the two tick labels
+    merged into '7001158' in all three panels of the real figure."""
+    src = (RAIZ / "scripts" / "10_figuras.py").read_text()
+    assert 'rotation=45, ha="right")' in src
+    assert 'merged into "7001158"' in src
+
+
+def test_verificador_separa_dez_de_dezesseis():
+    """The closing sentence said 'those ten splits' while the audit covers
+    sixteen seeds; the ten are F003's subset and the sentence must say so."""
+    src = (RAIZ / "scripts" / "11_verifica_agrupamento.py").read_text()
+    assert "those ten splits share about 80%" not in src
+    # the sentence spans several print() calls, so assert fragments that each
+    # fit on one line: collapsing whitespace leaves the '") print("' between
+    assert "seeds 5 to 14, a subset of the" in src
+    assert "seeds audited here" in src
+    assert "The ten partitions that" in src
+
+
+def test_gitignore_reconhece_paper_figuras():
+    """The five PDFs entered a68d2a2 because no rule covered paper/figuras/,
+    not because the whitelist named it. The policy now names it."""
+    t = (RAIZ / ".gitignore").read_text()
+    assert "!paper/figuras/*.pdf" in t
+    assert "Entraram em a68d2a2 por ausencia de" in t

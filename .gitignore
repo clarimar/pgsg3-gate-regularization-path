@@ -18,6 +18,10 @@ results/**/*.pt
 
 # figuras finais SÃO versionadas
 !results/figures/*.pdf
+# e as do manuscrito vivem em paper/figuras/, que e onde o
+# 10_figuras.py as escreve. Entraram em a68d2a2 por ausencia de
+# regra, nao por estarem nesta lista; agora estao declaradas.
+!paper/figuras/*.pdf
 !results/figures/*.png
 !findings/**
 

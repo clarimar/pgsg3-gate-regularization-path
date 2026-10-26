@@ -311,10 +311,13 @@ def main() -> None:
     else:
         print("STATE C. See above.")
     print()
-    print("Either way this says nothing about the BETWEEN-partition")
-    print("dependence: those ten splits share about 80% of their training")
-    print("fruits by construction, which is a separate matter, already")
-    print("measured, and recorded in findings/F003.")
+    print("None of this touches the BETWEEN-partition dependence, which is a")
+    print("separate matter already measured. The ten partitions that")
+    print("findings/F003 and F006 report -- seeds 5 to 14, a subset of the")
+    print("seeds audited here -- are repeated splits of the same fruits and")
+    print("share about 80% of their training sets, so no rank test over those")
+    print("ten carries its nominal level. That is recorded in findings/F003")
+    print("and is unaffected by the result above.")
 
     raise SystemExit(0 if ok3 else 2)
 
