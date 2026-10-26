@@ -173,6 +173,18 @@ def main() -> None:
             # there is no single resolution to express P2 in, and the step
             # count is withheld rather than read at one end and applied to the
             # whole range.
+            #
+            # And the two quantities differ even where both exist. A/ulp is an
+            # amplitude expressed in units of one spacing; the NUMBER of
+            # representable values between two floats is the difference of
+            # their positions in the float ordering, which equals A/ulp only
+            # while both lie in one binade. Across an exponent boundary the
+            # division is not that count for ANY single ulp -- the ordinal
+            # difference (an int32 bit-view subtraction, for non-negative
+            # floats) would be, and we do not report it, because nothing in
+            # the argument needs a count of representable values. What the
+            # argument needs is that P2 be a whole number of steps at the
+            # resolution the values actually occupy.
             lo = float(np.abs(g_[:, plato]).min())
             hi = float(np.abs(g_[:, plato]).max())
             ulp_lo = float(np.spacing(np.float32(lo)))
@@ -186,7 +198,10 @@ def main() -> None:
                   + ("" if ulp_lo == ulp_hi else
                      f" at the low end and {ulp_hi:.6e} at the high end "
                      f"-- the values straddle a binade boundary, so there is "
-                     f"no single resolution and no step count is reported"))
+                     f"no single resolution, and dividing by either end would "
+                     f"give neither an amplitude in steps nor a count of the "
+                     f"representable values between them; no step count is "
+                     f"reported"))
             if exato32:
                 print(f"{'':16}{'':12}  NOTE: exact representability shows the "
                       f"stored float64 values lie on the float32 grid. It "

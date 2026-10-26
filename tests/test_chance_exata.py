@@ -920,6 +920,11 @@ def test_09_usa_o_espacamento_dos_valores_observados():
     assert "np.spacing(np.float32(hi))" in src
     assert "straddle a binade boundary" in src
     assert "step count withheld: no single resolution" in src
+    # an amplitude in steps is not a count of representable values, and the
+    # two part company exactly where the refusal applies (author, 2026-10-26)
+    assert "the NUMBER of" in src and "representable values between two floats" in src
+    assert "equals A/ulp only" in src
+    assert "nor a count of the" in src
 
 
 def test_f007_corrige_o_espacamento_e_separa_proveniencia():

@@ -195,14 +195,32 @@ E a resolução **não** é piso universal de detecção de P2: depende da regi�
 numérica que os valores ocupam, e seria outra se o platô estivesse em 0,5 ou
 em 0,1.
 
+E duas coisas que a divisão `A/ulp` não distingue sozinha: ela expressa uma
+**amplitude em unidades de um espaçamento**, e isso não é o mesmo que o
+**número de valores representáveis** entre dois floats. As duas coincidem
+enquanto ambos os extremos vivem numa binade só. Atravessando a fronteira de
+expoente, a divisão não dá essa contagem para *nenhum* `ulp` único — quem daria
+é a diferença de posições na ordenação dos floats (subtração das visões
+`int32`, para floats não negativos). Não reportamos essa contagem, porque o
+argumento não precisa dela: precisa que P2 seja um número inteiro de passos na
+resolução que os valores de fato ocupam.
+
 Por isso o `09` passou a ler o espaçamento nas **duas pontas** do intervalo
 observado e a **recusar** a contagem de passos quando as pontas discordam —
 valores que atravessam a fronteira de uma binade não têm resolução única, e ler
 o espaçamento num extremo para aplicá-lo ao intervalo inteiro é exatamente o
 erro que eu acabei de cometer, uma casa adiante. Encontrei isso com um fixture
-cujo platô cruzava 1,0; nos dados reais σ(θ) < 1 e as sete condições ficam
-inteiras em [0,5 , 1,0), então a contagem vale — mas vale porque foi conferida,
-não porque σ é limitada.
+cujo platô cruzava 1,0 — e o guarda não ficou hipotético: na execução real de
+2026-10-26 ele **disparou nas sete condições**, no braço `gates_rand`, cujos
+valores de platô ficam em torno de 0,49 a 0,55 e atravessam 0,5, que também é
+fronteira de binade (espaçamento 2,980232×10⁻⁸ abaixo, 5,960464×10⁻⁸ acima).
+Nesse braço P1 falha 0/10 e P2 já não seria computada, mas a recusa da
+contagem é independente disso e apareceu sozinha.
+
+No braço `gates_lit`, as sete condições ficam inteiras em [0,5 , 1,0) —
+intervalos de 0,999993 a 0,999999 — e aí a contagem vale: 4, 6, 4, 6, 20, 34 e
+68 passos de 5,960464×10⁻⁸, todos inteiros. Vale porque foi conferida nas duas
+pontas, não porque σ é limitada.
 
 **Erro 2: representabilidade não é proveniência.** `exactly representable in
 float32: True` nas sete condições demonstra que os `float64` armazenados
