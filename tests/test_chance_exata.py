@@ -611,3 +611,85 @@ def test_gitignore_reconhece_paper_figuras():
     t = (RAIZ / ".gitignore").read_text()
     assert "!paper/figuras/*.pdf" in t
     assert "Entraram em a68d2a2 por ausencia de" in t
+
+
+def test_tabela1_bate_com_os_achados():
+    """Audit of 2026-10-26: every verdict and count in Table 1 against the
+    finding that declares it. This test re-runs the comparison, so a future
+    edit to either side that breaks the correspondence fails here."""
+    import re
+    tab = (RAIZ / "paper" / "00-estrutura.md").read_text()
+    i = tab.index("## Tabela 1")
+    linhas = [l for l in tab[i:].splitlines() if l.startswith("| H")]
+    assert len(linhas) == 20, f"Table 1 has {len(linhas)} hypotheses, not 20"
+
+    # as the findings declare them: F001 (H0, H5*, H6), F002 (H7-H9),
+    # F003 (H10-H11), F005 (H12), F006 (H13)
+    esperado = {
+        "H0": ("suportada", None), "H5a": ("nao suportada", "2/5"),
+        "H5b": ("suportada", "5/5"), "H5c": ("suportada", "5/5"),
+        "H6": ("suportada", "4/5"), "H7-blocks": ("nao suportada", "1/5"),
+        "H7-shuffled": ("suportada", "4/5"), "H8": ("nao suportada", "0/5"),
+        "H9-blocks": ("nao suportada", "3/5"),
+        "H9-shuffled": ("suportada", "5/5"), "H10a": ("nao suportada", "3/5"),
+        "H10b": ("suportada", "5/5"), "H11a": ("suportada", "5/5"),
+        "H11b": ("suportada", "4/5"), "H12a": ("suportada", "3/3"),
+        "H12b": ("suportada", "3/3"), "H12c": ("suportada", "2/3"),
+        "H13a": ("suportada", "5/5"), "H13b": ("nao suportada", "0/5"),
+        "H13c": ("suportada", "5/5"),
+    }
+
+    def norm(s):
+        for a, b in (("ã", "a"), ("á", "a"), ("é", "e"), ("ç", "c"),
+                     ("ó", "o"), ("ú", "u"), ("í", "i")):
+            s = s.replace(a, b)
+        return s.lower()
+
+    vistos = set()
+    for l in linhas:
+        c = [x.strip() for x in l.strip("|").split("|")]
+        h, ver, interp = c[0], norm(c[2]), c[3]
+        assert h in esperado, f"unknown hypothesis {h}"
+        vistos.add(h)
+        v, cnt = esperado[h]
+        assert v in ver, f"{h}: verdict {c[2]!r} does not say {v!r}"
+        if cnt:
+            assert cnt in ver, f"{h}: count {c[2]!r} does not contain {cnt!r}"
+        else:
+            assert not re.search(r"\d/\d", ver), \
+                f"{h}: carries a count the source does not declare"
+        # H5c and H13c must not go back to an empty or unscoped interpretation
+        if h == "H5c":
+            assert "nao conta como confirmac" in norm(interp), \
+                "H5c: F001 records that the criterion passed trivially and " \
+                "does not count as confirmation; the cell must say so"
+        if h == "H13c":
+            assert "replicacao independente" in norm(interp) \
+                or "nao e replicacao" in norm(interp), \
+                "H13c: the partitions share ~80% of their fruits, so the " \
+                "cell must not claim replication"
+    assert vistos == set(esperado), f"missing: {set(esperado) - vistos}"
+
+
+
+def test_tabela1_separa_criterio_de_interpretacao():
+    """The verdict column reports the pre-registered rule's outcome and the
+    other what the result supports; they can disagree, and H5c is where they
+    do. Without that said, 'suportada' next to 'does not count as
+    confirmation' reads as a contradiction inside the table."""
+    import re
+    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "00-estrutura.md").read_text())
+    assert "respondem perguntas diferentes e podem discordar" in t
+    assert "o que o resultado sustenta" in t
+    assert "suportada, 5/5 **(formal)**" in t
+    assert "não é contradição da tabela" in t
+
+
+def test_estrutura_tem_o_plato_nas_dez():
+    """The section 8 claims table still showed '2 de 5 negativos', the figure
+    from before the F003 extension of 2026-10-25 measured the plateau across
+    all ten partitions."""
+    import re
+    t = (RAIZ / "paper" / "00-estrutura.md").read_text()
+    assert "sinal inconsistente, 2 de 5 negativos" not in t
+    assert "4 de 10 médias de partição negativas" in re.sub(r"\s+", " ", t)

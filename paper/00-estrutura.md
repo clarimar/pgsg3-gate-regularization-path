@@ -351,7 +351,7 @@ Figura 4: o prior contínuo com a posição do decil, e J(sort) contra J(sortead
 | --- | --- | --- |
 | piso, partições 5–9 | +0,2982; +0,1679; +0,1457; +0,3418; +0,2147; p = 0,0020 | F003 |
 | piso, replicação primária 10–14 (H13c) | +0,2705; +0,3168; +0,1491; +0,2901; +0,2063; p = 0,0020 | F006 |
-| platô, mesmo braço | sinal inconsistente, 2 de 5 negativos | F003 |
+| platô, mesmo braço | **[v5]** sinal inconsistente: 4 de 10 médias de partição negativas, duas em cada grupo de cinco | F003, extensão de 2026-10-25 |
 | indiferente ao prior | +0,12 a +0,37 nos três braços | F006 |
 
 Nota obrigatória no corpo, reforçada pelo parecer: isto **não** é evidência de
@@ -421,14 +421,40 @@ todos eles artefato de desempate, em qualquer q.
 
 ## Tabela 1 — as vinte hipóteses pré-registradas **[v2: colunas separadas]**
 
+> **Auditoria de 2026-10-26, contra `F001`–`F007`.** Os vinte vereditos e as
+> vinte contagens conferidos um a um contra o achado que os declara:
+> **nenhuma divergência.** Duas células da coluna de interpretação foram
+> corrigidas.
+>
+> **H5c** estava com a interpretação vazia enquanto o `F001` registra que o
+> critério *"passou 5/5 mas passa trivialmente"* e **não conta como
+> confirmação**. Com `5/5` e um travessão, um leitor conclui confirmação onde o
+> achado a nega — e é exatamente para isso que a coluna separada existe.
+>
+> **H13c** dizia *"replica como critério primário"*. A palavra foi retirada em
+> 2026-10-25: as partições 10–14 compartilham cerca de 80% dos frutos com as de
+> 5–9, logo o critério pré-registrado foi cumprido e o padrão recorreu, mas não
+> há replicação estatística independente. A correção estava no `F003` e não
+> havia sido propagada para cá.
+>
+> **H0** e **H5b** permanecem com travessão: nenhum achado registra ressalva
+> para elas, e um travessão ali significa ausência de reinterpretação, não
+> ausência de verificação.
+
 No corpo, não em suplementar.
 
-| | enunciado | veredito pelo critério | interpretação posterior |
+**As duas colunas de resultado respondem perguntas diferentes e podem discordar.** *Veredito pelo critério* é o desfecho da regra
+pré-registrada tal como escrita antes da execução. *O que o resultado sustenta* é o que ele permite concluir cientificamente, julgado
+depois. Onde um critério foi cumprido mas não decide a hipótese substantiva, o veredito leva **(formal)** e a segunda coluna diz por
+quê — é o caso de **H5c**. Um critério formalmente cumprido e cientificamente inconclusivo não é contradição da tabela: é o registro
+de uma regra mal redigida, e apagá-lo exigiria reescrever o critério depois dos dados ou esconder que ele não decidiu nada.
+
+| | enunciado | veredito pelo critério | o que o resultado sustenta |
 | --- | --- | --- | --- |
 | H0 | existe λ com descolamento e estabilidade | suportada | — |
 | H5a | o máximo interior transporta | não suportada, 2/5 | a curva satura em vez de picar |
 | H5b | o gate ancorado supera o prior sozinho | suportada, 5/5 | — |
-| H5c | a posição de λ\* é estável | suportada, 5/5 | — |
+| H5c | a posição de λ\* é estável | suportada, 5/5 **(formal)** | **passou trivialmente e não conta como confirmação:** a vizinhança de λ=1 foi definida como {0,7; 1; 10} e λ=10 é ao mesmo tempo vizinho de grade e borda, logo o teste não distingue *estável em 1* de *encostado no teto*. Falha de redação do critério (F001) |
 | H6 | a penalidade melhora o R² | suportada, 4/5 | efeito de regularizador, não de conteúdo |
 | H7-blocks | o conteúdo do prior importa | não suportada, 1/5 | cláusula de refutação acionada |
 | H7-shuffled | idem, contra embaralhado | suportada, 4/5 | contiguidade importa |
@@ -444,7 +470,7 @@ No corpo, não em suplementar.
 | H12c | a literatura supera blocos (Raman) | suportada, 2/3 | reversão significativa na partição 2 |
 | H13a | o parcial é positivo | suportada, 5/5 | e é igual nos três braços |
 | H13b | a literatura supera blocos no parcial | não suportada, 0/5 | **critério mal desenhado:** condiciona na variável que distingue os braços |
-| H13c | o achado do piso replica | suportada, 5/5 | replica como critério primário |
+| H13c | o achado do piso recorre | suportada, 5/5 | **critério primário cumprido em cinco partições retidas.** Não é replicação independente: as partições 10–14 compartilham ~80% dos frutos com as de 5–9 (F003, correção de 2026-10-25) |
 
 ---
 
