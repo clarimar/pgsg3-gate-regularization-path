@@ -126,6 +126,17 @@ def importar(pgsg1_root: Path, pgsg2_root: Path):
         if p not in sys.path:
             sys.path.insert(0, p)
 
+    def falta_pgsg1(nome: str) -> SystemExit:
+        return SystemExit(
+            f"could not import pgsg_1 (No module named {nome!r}).\n"
+            f"--pgsg1-root must be the pgsg_1 repository root: the directory "
+            f"that holds\n`src/pgsg_1` and `pgsg_v2.py`. Both it and its "
+            f"`src` go on sys.path.\n"
+            f"given: {pgsg1_root.resolve()}\n"
+            f"  exists: {pgsg1_root.is_dir()};  "
+            f"has src/pgsg_1: {(pgsg1_root / 'src' / 'pgsg_1').is_dir()};  "
+            f"has pgsg_1: {(pgsg1_root / 'pgsg_1').is_dir()}")
+
     try:
         from pgsg2.ingestion.raman_bioprocess import (
             RamanBioprocessSubstratesLoader)
@@ -133,21 +144,27 @@ def importar(pgsg1_root: Path, pgsg2_root: Path):
         from pgsg2.preprocessing.raman import RamanPreprocessor
         from pgsg2.priors.raman import RamanGlucosePrior
     except ModuleNotFoundError as e:
+        # Which root is at fault is decided by the MISSING MODULE, not by
+        # which import block raised. `pgsg2.models.adapter` imports pgsg_1
+        # itself, so a missing pgsg_1 surfaces here -- and this handler used
+        # to answer it by telling the user to pass the pgsg2 `src` they had
+        # already passed. Author's run, 2026-10-27.
+        nome = e.name or ""
+        if nome.split(".")[0] == "pgsg_1":
+            raise falta_pgsg1(nome) from None
         raise SystemExit(
-            f"could not import the pgsg_2 Raman modules ({e}).\n"
+            f"could not import the pgsg_2 Raman modules (No module named "
+            f"{nome!r}).\n"
             f"--pgsg2-root must be the directory that CONTAINS the `pgsg2` "
             f"package, i.e. the repository's `src`:\n"
             f"    --pgsg2-root ~/pgsg/pgsg2-nir-raman-gating/src\n"
-            f"given: {pgsg2_root.resolve()}") from None
+            f"given: {pgsg2_root.resolve()}\n"
+            f"  exists: {pgsg2_root.is_dir()};  "
+            f"has pgsg2: {(pgsg2_root / 'pgsg2').is_dir()}") from None
     try:
         from pgsg_1.ingestion import SpectralDataset
     except ModuleNotFoundError as e:
-        raise SystemExit(
-            f"could not import pgsg_1 ({e}).\n"
-            f"--pgsg1-root must be the pgsg_1 repository root (the directory "
-            f"holding `src/pgsg_1` and `pgsg_v2.py`):\n"
-            f"    --pgsg1-root ~/Dropbox/pgsg/pgsg_1\n"
-            f"given: {pgsg1_root.resolve()}") from None
+        raise falta_pgsg1(e.name or "pgsg_1") from None
 
     return dict(Loader=RamanBioprocessSubstratesLoader,
                 Prep=RamanPreprocessor, Prior=RamanGlucosePrior,

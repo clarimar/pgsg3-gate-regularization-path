@@ -889,6 +889,254 @@ def test_s9_reporta_p2_medido_e_nao_um_limite():
 
 
 
+def test_07_culpa_a_raiz_certa_pelo_modulo_que_falta():
+    """Author's run, 2026-10-27: the handler for the pgsg2 import block blamed
+    --pgsg2-root for a missing `pgsg_1`, because pgsg2.models.adapter imports
+    pgsg_1 itself. It answered the failure by telling the author to pass the
+    path already passed. Which root is at fault is decided by the missing
+    module, not by which block raised."""
+    src = (RAIZ / "scripts" / "07_raman_lambda1.py").read_text()
+    assert "def falta_pgsg1(" in src
+    assert 'if nome.split(".")[0] == "pgsg_1":' in src
+    assert "not by\n        # which import block raised" in src
+    # and both messages now report whether the directory holds the package,
+    # so the author does not have to guess which path is wrong
+    assert "has src/pgsg_1:" in src and "has pgsg2:" in src
+    assert "exists: {pgsg1_root.is_dir()}" in src
+
+
+def test_13_nao_esconde_um_sd_nao_nulo_atras_do_arredondamento():
+    """Author's Raman run, 2026-10-27: the table printed sd as 0.0000 in all
+    three partitions while returning z = -1.0 sd for two of them, which only a
+    non-zero sd can produce. Exactly zero and merely small are different
+    claims and must not render identically."""
+    src = (RAIZ / "scripts" / "13_dependencia_do_sort.py").read_text()
+    assert "{sd:>14.3e}" in src          # sd in full precision
+    assert "{ji - jr:>13.3e}" in src     # and the difference beside it
+    assert "a display hiding" in src
+    assert "EXACTLY zero and merely small are different" in src
+    # a spread at floating-point noise is no spread, with the threshold set
+    # by np.spacing at the observed magnitude and not by a round number
+    assert "8.0 * float(np.spacing(abs(media)))" in src
+    assert "3.0 ulp of a double" in src
+    assert "divides noise by noise" in src
+    # the tolerance is operational, documented as such, not statistical
+    assert "OPERATIONAL NUMERICAL TOLERANCE" in src
+    assert "carries no significance" in src
+    # metric invariance and set invariance are printed as separate claims
+    assert "TWO CLAIMS, KEPT APART" in src
+    assert "can return the same Jaccard" in src
+    assert "does not persist" in src
+
+
+def test_05_nao_afirma_que_o_padrao_desempata_por_indice():
+    """Mandatory correction, author 2026-10-27 (F008): the script used to print
+    that argsort breaks ties by band index. That is kind="stable"; the default
+    is an introsort and is not stable. A claim the programme made about itself,
+    and it was wrong."""
+    src = (RAIZ / "scripts" / "05_diagnostico_jaccard.py").read_text()
+    assert "argsort then breaks ties by band index" not in src
+    assert "CORRECTED 2026-10-27" in src
+    assert "is an introsort and is NOT stable" in src
+    assert "partly a property" in src and "of the build" in src
+    assert "13_dependencia_do_sort.py" in src
+    # and the untied branch now says why it is also sort-independent
+    assert "no\n        tie rule is involved" in src or (
+        "and no" in src and "tie rule is involved" in src)
+
+
+def test_13_mede_a_dependencia_do_sort_sem_inferir_ambiente():
+    """F008: every top-q selection uses a bare np.argsort, whose default is not
+    a stable sort, so the deterministic overlap measures the tie rule. The
+    script must demonstrate the instability rather than quote the docs, print
+    the numpy version, and compare against the randomised rule."""
+    src = (RAIZ / "scripts" / "13_dependencia_do_sort.py").read_text()
+    assert 'KINDS = ("quicksort", "heapsort", "mergesort", "stable")' in src
+    assert 'np.argsort(t, kind="stable")' in src        # stability, measured
+    assert "np.__version__" in src                      # environment, printed
+    assert "esperanca_exata" in src                 # against E[J], not q/(2L-q)
+    assert "jaccard_sorteado" in src                    # and the robust rule
+    # the script must not call the Jaccard empty (author, 2026-10-27): it
+    # measures agreement of the sets a stated procedure produces, and the
+    # script quantifies how atypical that procedure is instead
+    assert "as empty as a quantity can be" not in src
+    assert "does not identify the spectral" in src
+    assert "z = (J_kind - mean_random) / sd_random" in src
+    assert "def z_na_populacao" in src
+    # sd = 0 is the most robust case, not an infinity
+    assert "would manufacture an" in src
+    # the five provenance items the author required
+    assert "def sha256" in src
+    assert "Aggregation convention, stated rather than left to be inferred" in src
+    assert "not be presumed a sufficient cause" in src
+    # the Raman arm, from the recorded cells, without retraining
+    assert "def raman_de_cells" in src
+    assert "j_random_sd already\n    bounds what ANY tie rule can do" in src
+    # the three procedures, not a new official one
+    assert "Three procedures, and the manuscript needs all three" in src
+
+
+def test_f008_separa_o_medido_do_inferido():
+    """The finding must keep three things apart: what was measured here, what
+    the manuscript reports from another environment, and the author's numpy
+    version, which was NOT measured and must not be inferred from a Jaccard."""
+    import re
+    t = re.sub(r"\s+", " ", (RAIZ / "findings"
+               / "F008-a-sobreposicao-deterministica-depende-do-sort.md"
+               ).read_text())
+    assert "numpy 2.5.3" in t                   # o ambiente desta medicao
+    assert "0,9452 a 0,9867" in t               # o do autor, conforme o texto
+    assert "não foi medida" in t and "inferi-la de um valor de Jaccard" in t
+    # a Figura 3 nao esta obsoleta: a explicacao e o ambiente
+    assert "não está obsoleta" in t
+    # o que NAO e afetado, incluindo o motivo certo no Raman
+    assert "Não afeta P1, P2 nem P3" in t
+    assert "robusto **porque** não satisfaz C1" in t
+    assert ("A quantidade em que o manuscrito se apoia reproduz entre "
+            "ambientes") in t
+    # as cinco afirmacoes do texto que precisam de decisao
+    assert "precisam de decisão do autor" in t
+    assert "argsort then breaks ties by band index" in t
+    # --- extensao de 2026-10-27: o ambiente do autor, medido
+    assert "numpy 2.4.6, Python 3.14.6" in t
+    assert "dígito por dígito" in t
+    # as tres correcoes minhas, preservando o texto original
+    assert "O texto acima fica como escrito" in t
+    assert "eu chamei o Jaccard de quantidade vazia, e ele não é" in t
+    assert "+40,7 desvios" in t
+    assert ("J = 1 é consequência da regra de desempate, não evidência "
+            "adicional") in t
+    # a causa nao e presumida pela versao
+    assert "não demonstra que esta diferença específica" in t
+    assert "SHA-256 dos sete" in t
+    # o Raman: caminho sem retreino, e ainda nao medido
+    assert "não exige retreino" in t
+    # medido em 2026-10-27: a explicacao plausivel passou a resultado, e o
+    # desvio e ruido de ponto flutuante -- 3,0 ulp -- e nao dispersao
+    assert "ruído de ponto flutuante, não dispersão" in t
+    assert "3,0 ulp" in t
+    assert "nenhuma ordem de empate moveu o valor do Jaccard" in t
+    # as duas afirmacoes ficam separadas: metrica sim, conjuntos nao
+    assert "Duas afirmações, e só uma está demonstrada" in t
+    assert "Igualdade de valor não é igualdade de conjunto" in t
+    assert "o `07_raman_lambda1.py` não persiste" in t
+    # e o limiar e tolerancia operacional, nao estatistica
+    assert "tolerância numérica operacional" in t
+    assert "não carrega nível de significância" in t
+    # a raiz do pgsg_1, localizada e nao presumida
+    assert "Dropbox/pgsg/pgsg_1" in t
+    assert "cópias `vendor/` do pacote" in t
+    # as cinco figuras reproduzem na maquina do autor: a divergencia do
+    # painel (b) era entre ambientes, nao do arquivo comitado
+    assert "5 of 5 figures regenerated and matched" in t
+    assert "nunca divergiu na máquina que o produziu" in t
+    assert "idêntica, pixel a pixel" in t
+    assert "reproduzível no ambiente que a gerou" in t
+    assert "não é portável" in t
+    assert "Não há nada a substituir" in t
+    # e o que a verificacao NAO estabelece
+    assert "nem que outra pessoa as obtenha" in t
+    assert "é um resultado a qualificar" in t
+    assert "era ruído dividido por ruído" in t
+    assert "treze ordens de grandeza acima" in t
+    assert "a robustez é medida, e a falha de C1 é a explicação dela" in t
+    # o defeito de exibicao que a propria saida revelou
+    assert "só um desvio **não nulo** produz" in t
+    # e a raiz culpada pelo modulo que falta
+    assert "a raiz culpada é decidida pelo **módulo que falta**" in t
+    assert "continuam **não verificadas**" in t
+    assert "não existe** nessa" in t
+    # figuras e as duas etapas
+    assert "não é substituído" in t
+    assert "**Não iniciada**" in t
+
+
+def test_12_nao_chama_verificada_uma_figura_sem_entradas():
+    """Reproducibility of a procedure is not conformity of a submitted file.
+    A figure whose inputs are absent is NOT VERIFIABLE, never verified and
+    never wrong, and the script must not write into paper/figuras."""
+    src = (RAIZ / "scripts" / "12_verifica_figuras.py").read_text()
+    assert "NOT VERIFIABLE" in src
+    assert "is NOT shown to be wrong" in src
+    assert "`paper/figuras` is never written to by this script" in src
+    # byte comparison is wrong for matplotlib PDFs, and the reason is stated
+    assert "matplotlib stamps a creation date" in src
+    # a mismatch is reported, not diagnosed
+    assert "does not diagnose" in src
+    assert "renderer" in src
+    # bugs found by the author's run of 2026-10-27:
+    # (a) pdftoppm needs its output directory to exist
+    assert 'destino.mkdir(parents=True, exist_ok=True)' in src
+    # (b) a failed regeneration must stop the script, not be compared anyway
+    assert "is worse than no " in src
+    assert r"because\n  it looks like one" in src
+    # (c) a missing renderer is a verdict per figure, not a traceback
+    assert "class SemRasterizador" in src
+    assert "except SemRasterizador as e:" in src
+    # (d) --pgsg2-root is the src dir, as 10_figuras.py's own error says
+    assert "pgsg2-nir-raman-gating/src" in src
+    assert "CONTAINS the `pgsg2` package" in src
+    # (e) a provenance field must not degrade to "?": pypdfium2 5.x has no
+    # __version__, so the version comes from the distribution metadata
+    assert 'version("pypdfium2")' in src
+    assert "a provenance field reporting that it does not" in src
+    # (f) and the rasteriser is a declared optional extra, so the next person
+    # is not left to discover the requirement from a NOT VERIFIABLE line
+    assert "pip install -e '.[verify]'" in src
+    tom = (RAIZ / "pyproject.toml").read_text()
+    assert "[project.optional-dependencies]" in tom
+    assert 'verify = ["pypdfium2"]' in tom
+    assert "cannot be declared here" in tom
+
+
+def test_07_separa_exigencia_confirmada_de_nao_verificada():
+    """The submission matter must keep the two categories apart: what was read
+    at the official source with its own date, and what is plausible but
+    unverified for THIS journal. A rule applied by analogy with another
+    Elsevier title is an assumption, and this programme checks assumptions."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "07-declaracoes-submissao.md").read_text())
+    # a declaracao de IA: cabecalho literal e data da propria fonte
+    assert ("Declaration of generative AI and AI-assisted technologies in the "
+            "manuscript preparation process") in t
+    assert "Policy updated June 2026" in t
+    assert "Basic checks of grammar, spelling and punctuation" in t
+    assert "reproducible manner in the Methods section" in t
+    # o que NAO foi verificado fica rotulado, e o inventario nao e veredito
+    assert "NÃO VERIFICADO" in t
+    assert "inventário, não julgamento de conformidade" in t
+    assert "Nada entra como conforme por analogia" in t
+    # a instrucao de 1992 nao e tratada como regra vigente
+    assert "é de 1992 e não entra aqui" in t
+    # o PGSG nao e IA generativa auxiliando a redacao
+    assert "é o objeto da pesquisa" in t
+    # a versao do modelo nao e afirmada como identificador unico, nem por
+    # familia: nem uma coisa nem outra esta sustentada pelos registros
+    assert "pode diferir do configurado" in t
+    assert "também não está sustentada pelos registros" in t
+    assert "nomear fornecedor e ferramenta" in t
+    # revisao assistida nao e validacao independente
+    assert ("constitute independent scientific validation of the "
+            "analyses") in t
+    assert "Assist in the critical review" in t and "não é validação" in t
+    # mais de uma ferramenta participou, e o que falta esta marcado como falta
+    assert "NAME EVERY OTHER TOOL USED" in t
+    assert "a declaração está errada enquanto o colchete estiver lá" in t
+    # reprodutibilidade de procedimento nao e conformidade do arquivo
+    assert ("documenta a origem das figuras e não demonstra a conformidade "
+            "dos arquivos submetidos") in t
+    assert "nenhuma das cinco figuras deve ser descrita como verificada" in t
+    # as duas contagens do resumo nao sao um menu
+    assert "não são um menu" in t
+    assert "decidir a regra depois de ver o resultado" in t
+    assert "reduzir com margem" in t
+    # disponibilidade so se declara depois de conferir os fatos
+    assert "nas condições\ndescritas" in (RAIZ / "paper"
+           / "07-declaracoes-submissao.md").read_text()
+    assert "está nomeado como indisponível" in t
+
+
 def test_09_garante_dtype_antes_de_comparar_bits():
     """view(np.int64) presupposes the array really is float64, which the
     author asked to be guaranteed rather than assumed."""

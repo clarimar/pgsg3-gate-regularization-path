@@ -217,15 +217,35 @@ def main() -> None:
         if r["gate_max_ties"] > 1:
             print(f"{r['dir']}: {r['gate_max_ties']} trained gate values are "
                   f"exactly tied at the maximum.")
-            print("  argsort then breaks ties by band index, so this Jaccard "
-                  "is partly an")
-            print("  artifact of ordering. Report it only with that stated.")
+            # CORRECTED 2026-10-27, findings/F008. This used to say "argsort
+            # then breaks ties by band index". That is true of
+            # kind="stable"; numpy's DEFAULT is 'quicksort', an introsort,
+            # which is not stable, so the order among exactly equal values is
+            # implementation-defined. The statement was a claim the programme
+            # made about itself, and it was wrong.
+            print("  The tie order then decides which of them the decile "
+                  "takes, and this")
+            print("  script does not state `kind`, so numpy's default decides "
+                  "it: 'quicksort'")
+            print("  is an introsort and is NOT stable. Index-order "
+                  "tie-breaking is what")
+            print("  kind=\"stable\" gives, and it is not what runs here by "
+                  "default.")
+            print("  So this Jaccard is partly an artifact of ordering AND "
+                  "partly a property")
+            print("  of the build. Report it only with the sort kind and the "
+                  "versions stated;")
+            print("  scripts/13_dependencia_do_sort.py measures how far the "
+                  "rule that ran sits")
+            print("  from the typical tie order.")
     if all(r["gate_max_ties"] <= 1 for r in rs):
         print("No exact ties among trained gate values: the deciles are "
               "ordered by the")
         print("gates themselves, so J = 1 means genuine agreement across "
-              "seeds, not")
-        print("tie-breaking by band index.")
+              "seeds, and no")
+        print("tie rule is involved -- which also makes the figure "
+              "independent of the")
+        print("sort kind, unlike the tied case above.")
     print()
     for r in rs:
         folga = r["plato"] - r["q"]

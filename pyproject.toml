@@ -12,5 +12,14 @@ dependencies = [
     "torch", "matplotlib",
 ]
 
+[project.optional-dependencies]
+# scripts/12_verifica_figuras.py rasterises the committed PDFs to compare
+# them with regenerated ones; a byte comparison cannot do it, because
+# matplotlib stamps a creation date into every PDF. Without a rasteriser the
+# script reports each figure as NOT VERIFIABLE, which is honest but useless,
+# and nothing else in the repository declares the requirement. A poppler
+# install (pdftoppm) satisfies it too and cannot be declared here.
+verify = ["pypdfium2"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
