@@ -308,6 +308,48 @@ def test_secao12_conclusoes_responde_as_tres_perguntas():
 
 
 @pytest.mark.semantico
+def test_referencia_e_separate_em_todo_o_manuscrito():
+    """Author 2026-10-28, after the integral reading: "external reference"
+    invites the reader to take it as statistically independent, when it is a
+    second estimate built on the same training partition. The terminology is
+    uniform -- "separate statistical reference" -- and the dependence is
+    explained in Sections 8.3 and 12 rather than repeated at each mention.
+
+    Three concepts the paper must not conflate: operational separation (gate
+    and reference are different estimators), statistical dependence (both use
+    the same training partition), and independent validation (not
+    demonstrated here). The results support the first two only."""
+    import re
+    fontes = ["02-resumo-C.md", "03-rascunho-s1-s2-s3.md",
+              "04-rascunho-s6-s7-s8.md", "05-rascunho-s9-s10-s11.md",
+              "06-legendas-figuras.md", "08-rascunho-s5.md",
+              "09-rascunho-s12.md", "01-rascunho-resumo-e-s4.md"]
+    for nome in fontes:
+        bruto = (RAIZ / "paper" / nome).read_text()
+        # a nota de rascunho da secao 12 registra a troca e cita o termo
+        # antigo; so o texto ingles do manuscrito e verificado
+        if nome == "09-rascunho-s12.md":
+            bruto = bruto.split("## 12. Conclusions", 1)[1]
+        assert "external reference" not in bruto, nome
+        assert "external, data-derived" not in bruto, nome
+    # e o termo escolhido esta onde as quatro ocorrencias estavam
+    i = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md").read_text())
+    assert "a separate, data-derived statistical reference" in i
+    s6 = re.sub(r"\s+", " ",
+                (RAIZ / "paper" / "04-rascunho-s6-s7-s8.md").read_text())
+    assert "agreement with the separate statistical reference" in s6
+    assert "with the separate statistical reference across the bands" in s6
+    assert "between the gate and the separate statistical reference" in s6
+    leg = re.sub(r"\s+", " ",
+                 (RAIZ / "paper" / "06-legendas-figuras.md").read_text())
+    assert "the gate and the separate statistical" in leg
+    # a dependencia continua explicada onde deve, sem repeticao
+    assert "a second statistical estimate from the same data" in s6
+    assert "not an independent determination" in s6
+
+
+@pytest.mark.semantico
 def test_secao12_nao_le_como_o_modelo_nao_aprende():
     """The author's own caveat of 2026-10-28: the sentence limiting the
     interpretation of stable selections must be confronted with the controls
@@ -319,7 +361,12 @@ def test_secao12_nao_le_como_o_modelo_nao_aprende():
     t = re.sub(r"\s+", " ",
                (RAIZ / "paper" / "09-rascunho-s12.md").read_text())
     assert "It does not limit the interpretation of the gate as a whole" in t
-    assert "aligns positively with an external, data-derived reference" in t
+    # harmonizado com o resumo em 2026-10-28: "external" sugeria
+    # independencia estatistica que a referencia nao tem
+    assert "aligns positively with a separate statistical reference" in t
+    assert "an external, data-derived reference" not in t
+    assert "separate from the gate's own training but not independent of " \
+           "the data" in t
     assert "the same under a prior whose content has been destroyed" in t
     assert "the top-decile metric never reads" in t
     # e a imprecisao de "strongly constrained" foi corrigida, nao embutida
@@ -336,7 +383,7 @@ def test_secao12_nao_le_como_o_modelo_nao_aprende():
     assert "maximum displacements between 1.2 × 10⁻⁶ and 6.7 × 10⁻⁶" in t
     assert "operational rather than mathematical immobility" in t
     # e a referencia externa nao e verdade quimica
-    assert "a second statistical estimate from the same training data" in t
+    assert "a second statistical estimate built on the same training" in t
     assert "not a demonstration that the gate recovers chemically true " \
            "bands" in t
     # as duas alteracoes ao texto do autor estao declaradas

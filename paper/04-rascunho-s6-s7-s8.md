@@ -21,8 +21,8 @@ o segundo entra como última frase do primeiro e perde ênfase.
 None of the metrics we tested separates the prior's chemical content from the
 mere fact of anchoring. The pre-registered hypothesis that anchoring alone
 buys little was not supported in any partition, in either arm: anchoring on a
-prior whose content has been destroyed raises agreement with the external
-reference from +0.031…+0.070 at λ = 0 to +0.087…+0.464 at λ = 1, so the
+prior whose content has been destroyed raises agreement with the separate
+statistical reference from +0.031…+0.070 at λ = 0 to +0.087…+0.464 at λ = 1, so the
 anchoring term and the content term have to be reported as separate
 contributions rather than as one effect. Reproducibility behaves the same way
 and survives its criterion by the wrong route. No control arm beats the
@@ -183,7 +183,7 @@ and the place is not the one the top-decile metric reads.
 ### 8.1 Alignment at the prior's floor, and what the plateau does not show
 
 Within each level of the step-function prior, we correlate the gate's values
-with the external reference across the bands at that level. This asks whether
+with the separate statistical reference across the bands at that level. This asks whether
 the gate orders bands that the prior treats as equivalent, which is the only
 place the gate can contribute information the prior did not already supply.
 The two levels large enough for the analysis to interpret are the floor, with
@@ -276,6 +276,6 @@ similar regions. It does not establish that either is right, and it cannot: no
 ground-truth support exists for this dataset, which is the gap identified in
 Section 1.1 and the first item of the future work in Section 11.
 
-**Figure 5.** Within-level correlation between the gate and the external
-reference, by prior level, with the spread across seeds. The floor level and
+**Figure 5.** Within-level correlation between the gate and the separate
+statistical reference, by prior level, with the spread across seeds. The floor level and
 the plateau level are the two the text distinguishes.

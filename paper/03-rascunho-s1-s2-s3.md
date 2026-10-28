@@ -102,7 +102,8 @@ does and does not follow the data.
 
 That last point should be stated at the outset, so that the paper is not read
 as a denial of it. **The gate is not inert.** On both modalities it aligns with
-an external, data-derived reference, the alignment is positive in every
+a separate, data-derived statistical reference, the alignment is positive in
+every
 partition we measured, and it survives conditioning on the prior. What we find
 is that this alignment is independent of which prior was used, and that it is
 present at the prior's lowest level, which carries 223 of the 281 bands and

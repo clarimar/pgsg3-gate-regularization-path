@@ -3,11 +3,11 @@
 Gerado por `scripts/16_matriz_rastreabilidade.py`. Não editar: a categoria de cada
 teste é declarada no próprio teste, por marcador `pytest`.
 
-245 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
+246 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
 nível do módulo, lida da fonte por AST — não é item coletado pelo pytest nem teste executado. Casos
 parametrizados somam +15 itens na coleta.
 
-## semantico (20)
+## semantico (21)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -17,6 +17,7 @@ parametrizados somam +15 itens na coleta.
 | `test_etapa_b_43_sem_valor_p_sem_unidade_justificada` | Author 2026-10-27: do not keep a coefficient and p-value from an | `08-rascunho-s5.md` |
 | `test_etapa_b_secao6_invariancia_aritmetica` | Author's item 3: check the sensitivity of 0.9763-1.0000 BEFORE touching | `04-rascunho-s6-s7-s8.md` |
 | `test_secao12_conclusoes_responde_as_tres_perguntas` | Created by the integral audit of 2026-10-28: the paper had no | `09-rascunho-s12.md` |
+| `test_referencia_e_separate_em_todo_o_manuscrito` | Author 2026-10-28, after the integral reading: "external reference" | `01-rascunho-resumo-e-s4.md`, `02-resumo-C.md`, `03-rascunho-s1-s2-s3.md` |
 | `test_secao12_nao_le_como_o_modelo_nao_aprende` | The author's own caveat of 2026-10-28: the sentence limiting the | `09-rascunho-s12.md` |
 | `test_secao10_separa_achado_de_limitacao_de_reprodutibilidade` | Author 2026-10-28: the result is that selection can depend on the tie | `05-rascunho-s9-s10-s11.md` |
 | `test_resumo_na_ordem_logica_do_autor` | Author 2026-10-28: the abstract must carry BOTH contributions, in a | `02-resumo-C.md` |

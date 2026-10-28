@@ -30,7 +30,15 @@ exigiu, declaradas aqui e não embutidas em silêncio:
    imobilidade matemática. O F007 mediu `max |d|` no platô entre 1,2×10⁻⁶ e
    6,7×10⁻⁶ — pequeno e **não nulo**. A §12 passou a dizer inércia operacional
    e local, com os dois números, em vez de constância.
-3. **A natureza da referência externa foi preservada.** O alinhamento no piso
+3. **"External" foi harmonizado com o resumo.** A auditoria de 2026-10-28
+   apontou que a §12 dizia *external, data-derived reference* enquanto o
+   resumo já usava *separate statistical reference*. Não é contradição
+   matemática — a referência é externa ao treino do gate — mas "external"
+   sugere independência estatística que não existe, e as duas partes do
+   artigo não deviam escolher termos diferentes para a mesma coisa. A §12
+   passou a dizer *separate*, e a frase seguinte explicita as duas metades:
+   separada do treino do gate, **não** independente dos dados.
+4. **A natureza da referência foi preservada.** O alinhamento no piso
    é evidência de estrutura aprendida associada aos dados; não demonstra
    recuperação de bandas quimicamente verdadeiras, porque a referência é um
    segundo estimador estatístico sobre os mesmos dados de treino (§8.3). Numa
@@ -53,11 +61,12 @@ between 1.2 × 10⁻⁶ and 6.7 × 10⁻⁶ across the examined training sizes,
 indicating operational rather than mathematical immobility. This limits the interpretation of a stable top-q selection as
 evidence of data-driven selection. It does not limit the interpretation of the
 gate as a whole: outside the saturated level the gate aligns positively with
-an external, data-derived reference in every partition measured, that
-alignment is the same under a prior whose content has been destroyed, and it
-occurs at the level of the prior that carries most of the spectrum and that
-the top-decile metric never reads. That reference is a second statistical
-estimate from the same training data, so the alignment is evidence of learned
+a separate statistical reference in every partition measured, that alignment
+is the same under a prior whose content has been destroyed, and it occurs at
+the level of the prior that carries most of the spectrum and that the
+top-decile metric never reads. That reference is separate from the gate's own
+training but not independent of the data: it is a second statistical estimate
+built on the same training partition, so the alignment is evidence of learned
 structure associated with the data and not a demonstration that the gate
 recovers chemically true bands.
 

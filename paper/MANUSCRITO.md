@@ -5,7 +5,7 @@ The English text is copied verbatim; the Portuguese drafting apparatus is
 left behind and listed at the end of the generator's output. Do not edit this
 file -- edit the drafts and run the generator again.
 
-Source digest: **95651eda04904227** — SHA-256 over the 9 draft files this was
+Source digest: **c3a24f8f650d2e53** — SHA-256 over the 9 draft files this was
 built from, truncated. Two copies with the same digest were built from the same
 sources, whatever the git state. The findings in `findings/` and Table 1 below
 belong with this digest; the generator prints the git revision alongside it.
@@ -107,7 +107,8 @@ does and does not follow the data.
 
 That last point should be stated at the outset, so that the paper is not read
 as a denial of it. **The gate is not inert.** On both modalities it aligns with
-an external, data-derived reference, the alignment is positive in every
+a separate, data-derived statistical reference, the alignment is positive in
+every
 partition we measured, and it survives conditioning on the prior. What we find
 is that this alignment is independent of which prior was used, and that it is
 present at the prior's lowest level, which carries 223 of the 281 bands and
@@ -683,8 +684,8 @@ not measure it at all.
 None of the metrics we tested separates the prior's chemical content from the
 mere fact of anchoring. The pre-registered hypothesis that anchoring alone
 buys little was not supported in any partition, in either arm: anchoring on a
-prior whose content has been destroyed raises agreement with the external
-reference from +0.031…+0.070 at λ = 0 to +0.087…+0.464 at λ = 1, so the
+prior whose content has been destroyed raises agreement with the separate
+statistical reference from +0.031…+0.070 at λ = 0 to +0.087…+0.464 at λ = 1, so the
 anchoring term and the content term have to be reported as separate
 contributions rather than as one effect. Reproducibility behaves the same way
 and survives its criterion by the wrong route. No control arm beats the
@@ -849,7 +850,7 @@ and the place is not the one the top-decile metric reads.
 ### 8.1 Alignment at the prior's floor, and what the plateau does not show
 
 Within each level of the step-function prior, we correlate the gate's values
-with the external reference across the bands at that level. This asks whether
+with the separate statistical reference across the bands at that level. This asks whether
 the gate orders bands that the prior treats as equivalent, which is the only
 place the gate can contribute information the prior did not already supply.
 The two levels large enough for the analysis to interpret are the floor, with
@@ -942,8 +943,8 @@ similar regions. It does not establish that either is right, and it cannot: no
 ground-truth support exists for this dataset, which is the gap identified in
 Section 1.1 and the first item of the future work in Section 11.
 
-**Figure 5.** Within-level correlation between the gate and the external
-reference, by prior level, with the spread across seeds. The floor level and
+**Figure 5.** Within-level correlation between the gate and the separate
+statistical reference, by prior level, with the spread across seeds. The floor level and
 the plateau level are the two the text distinguishes.
 
 ---
@@ -1378,11 +1379,12 @@ between 1.2 × 10⁻⁶ and 6.7 × 10⁻⁶ across the examined training sizes,
 indicating operational rather than mathematical immobility. This limits the interpretation of a stable top-q selection as
 evidence of data-driven selection. It does not limit the interpretation of the
 gate as a whole: outside the saturated level the gate aligns positively with
-an external, data-derived reference in every partition measured, that
-alignment is the same under a prior whose content has been destroyed, and it
-occurs at the level of the prior that carries most of the spectrum and that
-the top-decile metric never reads. That reference is a second statistical
-estimate from the same training data, so the alignment is evidence of learned
+a separate statistical reference in every partition measured, that alignment
+is the same under a prior whose content has been destroyed, and it occurs at
+the level of the prior that carries most of the spectrum and that the
+top-decile metric never reads. That reference is separate from the gate's own
+training but not independent of the data: it is a second statistical estimate
+built on the same training partition, so the alignment is evidence of learned
 structure associated with the data and not a demonstration that the gate
 recovers chemically true bands.
 
@@ -1521,7 +1523,8 @@ cheap to ask.
 
 ## Figura 5
 
-> **Within-level agreement between the gate and the external reference, by
+> **Within-level agreement between the gate and the separate statistical
+> reference, by
 > partition.** For each prior level, the rank correlation between the gate and
 > the absolute coefficients of the PLS model calibrated on that partition's
 > training split, computed within the bands at that level, averaged over the

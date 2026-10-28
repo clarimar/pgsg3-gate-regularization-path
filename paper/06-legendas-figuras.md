@@ -110,7 +110,8 @@ arquivos de resultado, que não vou adivinhar.
 
 ## Figura 5
 
-> **Within-level agreement between the gate and the external reference, by
+> **Within-level agreement between the gate and the separate statistical
+> reference, by
 > partition.** For each prior level, the rank correlation between the gate and
 > the absolute coefficients of the PLS model calibrated on that partition's
 > training split, computed within the bands at that level, averaged over the
