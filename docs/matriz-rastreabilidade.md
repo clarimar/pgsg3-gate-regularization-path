@@ -3,7 +3,9 @@
 Gerado por `scripts/16_matriz_rastreabilidade.py`. Não editar: a categoria de cada
 teste é declarada no próprio teste, por marcador `pytest`.
 
-242 testes em 10 arquivos.
+245 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
+nível do módulo, lida da fonte por AST — não é item coletado pelo pytest nem teste executado. Casos
+parametrizados somam +15 itens na coleta.
 
 ## semantico (20)
 
@@ -30,12 +32,15 @@ teste é declarada no próprio teste, por marcador `pytest`.
 | `test_f008_separa_o_medido_do_inferido` | The finding must keep three things apart: what was measured here, what | `F008-a-sobreposicao-deterministica-depende-do-sort.md` |
 | `test_07_separa_exigencia_confirmada_de_nao_verificada` | The submission matter must keep the two categories apart: what was read | `07-declaracoes-submissao.md` |
 
-## estrutural (9)
+## estrutural (12)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
 | `test_15_exige_doze_secoes` | The consolidator must now expect twelve, so a lost Section 12 is a gap | `09-rascunho-s12.md`, `15_consolidar_manuscrito.py` |
 | `test_15_recusa_resumo_partido_em_vez_de_truncar` | On 2026-10-28 the abstract was rewritten with a line beginning '--', | `15_consolidar_manuscrito.py` |
+| `test_16_reconcilia_a_unidade_de_contagem` | Author 2026-10-28: the report must declare its unit of count and not | `16_matriz_rastreabilidade.py` |
+| `test_16_chama_a_reconciliacao_de_estatica` | Author 2026-10-28: the AST count of parametrised cases is adequate for | `16_matriz_rastreabilidade.py` |
+| `test_16_check_confronta_a_matriz_com_os_testes` | Author's condition 2: being generated does not make the stored matrix | `16_matriz_rastreabilidade.py`, `docs/matriz-rastreabilidade.md`, `scripts/16_matriz_rastreabilidade.py` |
 | `test_16_declara_a_categoria_e_nao_a_infere` | The matrix must take each test's category from a declared pytest | `16_matriz_rastreabilidade.py`, `pyproject.toml` |
 | `test_15_consolida_sem_perder_nem_inventar` | The consolidated manuscript is a build step over the drafts. It must | `08-rascunho-s5.md`, `15_consolidar_manuscrito.py` |
 | `test_14_veredicto_de_uma_linha_nao_pode_ser_truncado` | The author's partition run of 2026-10-27 was piped through `tail -20` | `14_etapa_b_por_procedimento.py` |
