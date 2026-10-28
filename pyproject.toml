@@ -23,3 +23,14 @@ verify = ["pypdfium2"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+# Categories for the traceability matrix (scripts/16_matriz_rastreabilidade.py),
+# at the author's recommendation of 2026-10-28. Registered here so that an
+# unknown-mark warning means a typo rather than a new category invented in
+# passing.
+markers = [
+    "numerico: metrics, counts and measured results",
+    "estrutural: sections, extraction, consolidation, file integrity",
+    "semantico: a scientific or editorial commitment whose loss would change what the paper claims",
+]

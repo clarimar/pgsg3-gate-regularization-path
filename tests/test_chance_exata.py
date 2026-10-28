@@ -115,6 +115,7 @@ def test_correcoes_datadas_presentes():
     assert "0,701177" in f002 and "Jensen" in f002
 
 
+@pytest.mark.semantico
 def test_etapa_b_item6_consistencia_tabela1_e_achados():
     """Author's closing criterion 4: Table 1 and F001-F007 must stay
     consistent with the new analyses. Findings and ADRs are never edited in
@@ -154,6 +155,7 @@ def test_etapa_b_item6_consistencia_tabela1_e_achados():
            "gates" in s9
 
 
+@pytest.mark.semantico
 def test_etapa_b_431_reprodutibilidade_para_o_leitor():
     """Author's item 5: incorporate the non-portability into the discussion.
     It concerns the published record, so it must be stated as what a reader
@@ -180,6 +182,7 @@ def test_etapa_b_431_reprodutibilidade_para_o_leitor():
            "environments" in t
 
 
+@pytest.mark.semantico
 def test_etapa_b_reporta_por_procedimento_e_nao_substitui():
     """Stage B, author 2026-10-27: the contribution is the comparison between
     procedures, not the replacement of the historical value by J = 1 or by
@@ -225,6 +228,7 @@ def test_etapa_b_reporta_por_procedimento_e_nao_substitui():
            "are held fixed is not measuring the data" in t
 
 
+@pytest.mark.semantico
 def test_etapa_b_43_sem_valor_p_sem_unidade_justificada():
     """Author 2026-10-27: do not keep a coefficient and p-value from an
     implementation whose rule was unspecified, and do not treat nested
@@ -252,6 +256,7 @@ def test_etapa_b_43_sem_valor_p_sem_unidade_justificada():
     assert "drop the p-values rather than re-deriving a justification" in t
 
 
+@pytest.mark.semantico
 def test_etapa_b_secao6_invariancia_aritmetica():
     """Author's item 3: check the sensitivity of 0.9763-1.0000 BEFORE touching
     the interpretation. The check is the tie on the boundary, which makes the
@@ -273,6 +278,7 @@ def test_etapa_b_secao6_invariancia_aritmetica():
     assert "the rule reordering equal values alone" in t
 
 
+@pytest.mark.semantico
 def test_secao12_conclusoes_responde_as_tres_perguntas():
     """Created by the integral audit of 2026-10-28: the paper had no
     conclusions section. It must answer what was demonstrated, what was
@@ -301,6 +307,7 @@ def test_secao12_conclusoes_responde_as_tres_perguntas():
     assert "neither requires retraining" in t
 
 
+@pytest.mark.semantico
 def test_secao12_nao_le_como_o_modelo_nao_aprende():
     """The author's own caveat of 2026-10-28: the sentence limiting the
     interpretation of stable selections must be confronted with the controls
@@ -338,6 +345,7 @@ def test_secao12_nao_le_como_o_modelo_nao_aprende():
     assert "declaradas aqui e não embutidas em silêncio" in t
 
 
+@pytest.mark.semantico
 def test_secao10_separa_achado_de_limitacao_de_reprodutibilidade():
     """Author 2026-10-28: the result is that selection can depend on the tie
     rule; the LIMITATION is that the historical overlaps are not reproducible
@@ -361,6 +369,7 @@ def test_secao10_separa_achado_de_limitacao_de_reprodutibilidade():
     assert "settles the matter in one line and no retraining" in t
 
 
+@pytest.mark.estrutural
 def test_15_exige_doze_secoes():
     """The consolidator must now expect twelve, so a lost Section 12 is a gap
     and not a silently shorter paper."""
@@ -370,6 +379,7 @@ def test_15_exige_doze_secoes():
     assert "had no conclusion at all" in src
 
 
+@pytest.mark.semantico
 def test_resumo_na_ordem_logica_do_autor():
     """Author 2026-10-28: the abstract must carry BOTH contributions, in a
     stated logical order, and the two abstract additions must not be bought
@@ -393,6 +403,7 @@ def test_resumo_na_ordem_logica_do_autor():
     assert "the tie-breaking analysis was a post hoc diagnostic" in t
 
 
+@pytest.mark.semantico
 def test_pre_registro_declara_o_post_hoc_antes_dos_resultados():
     """Author's Table 1 condition, 2026-10-28: the tie-breaking analysis is a
     post hoc discovery and must be identified as such BEFORE the results, not
@@ -413,6 +424,7 @@ def test_pre_registro_declara_o_post_hoc_antes_dos_resultados():
     assert "which claims were committed in advance" in t
 
 
+@pytest.mark.estrutural
 def test_15_recusa_resumo_partido_em_vez_de_truncar():
     """On 2026-10-28 the abstract was rewritten with a line beginning '--',
     which the prose filter read as a list bullet; the paragraph split and the
@@ -429,6 +441,7 @@ def test_15_recusa_resumo_partido_em_vez_de_truncar():
     assert "report its word count as the" in src
 
 
+@pytest.mark.semantico
 def test_resumo_representa_o_artigo_depois_da_etapa_b():
     """First integral-audit finding, 2026-10-28: the abstract approved on
     24/10 carried two p-values Section 5 disowns and reported -0.32 as a
@@ -453,6 +466,7 @@ def test_resumo_representa_o_artigo_depois_da_etapa_b():
     assert "at the revision data's own convention of q = 29" in r
 
 
+@pytest.mark.semantico
 def test_tabela1_h0_sem_contagem_por_construcao():
     """H0's criterion is existential and defines no per-partition tally, so
     the missing k/n is correct and the reason belongs in the cell. Adding 5/5
@@ -472,6 +486,7 @@ def test_tabela1_h0_sem_contagem_por_construcao():
     assert "não um número que este achado" in f001
 
 
+@pytest.mark.semantico
 def test_tres_niveis_de_evidencia_separados():
     """Author 2026-10-28: the manuscript must distinguish the demonstrated
     computational mechanism, the observed experimental consequence, and the
@@ -500,6 +515,31 @@ def test_tres_niveis_de_evidencia_separados():
     assert "How often other encodings do is not something we measured" in i
 
 
+@pytest.mark.estrutural
+def test_16_declara_a_categoria_e_nao_a_infere():
+    """The matrix must take each test's category from a declared pytest
+    marker, never from its name or its assertions: a matrix built by guessing
+    misclassifies quietly, which is the failure mode it exists to prevent.
+    Unmarked tests are listed as UNCLASSIFIED with their count."""
+    src = (RAIZ / "scripts" / "16_matriz_rastreabilidade.py").read_text()
+    assert 'CATEGORIAS = ("semantico", "estrutural", "numerico")' in src
+    assert "Nothing" in src and "is inferred from a test's name" in src
+    assert "UNCLASSIFIED" in src
+    assert "category is declared, never inferred" in src
+    assert "would misclassify quietly" in src
+    # e diz o que uma barreira semantica NAO estabelece
+    assert "can satisfy a substring search and still carry a wrong" in src
+    assert "not a substitute for reading" in src
+    # as tres categorias estao registradas, para que marca desconhecida seja
+    # erro de digitacao e nao categoria inventada de passagem
+    tom = (RAIZ / "pyproject.toml").read_text()
+    assert "[tool.pytest.ini_options]" in tom
+    for c in ("numerico:", "estrutural:", "semantico:"):
+        assert c in tom
+    assert "a new category invented in" in tom
+
+
+@pytest.mark.estrutural
 def test_15_consolida_sem_perder_nem_inventar():
     """The consolidated manuscript is a build step over the drafts. It must
     copy the English verbatim, report every block it drops, anchor Table 1 on
@@ -539,6 +579,7 @@ def test_15_consolida_sem_perder_nem_inventar():
     assert "Do not edit this" in src
 
 
+@pytest.mark.estrutural
 def test_14_veredicto_de_uma_linha_nao_pode_ser_truncado():
     """The author's partition run of 2026-10-27 was piped through `tail -20`
     and the rows that mattered were above the cut. A check whose conclusion
@@ -555,6 +596,7 @@ def test_14_veredicto_de_uma_linha_nao_pode_ser_truncado():
     assert "cannot hide a non-zero bnd" in src
 
 
+@pytest.mark.semantico
 def test_etapa_b_legenda_fig3_declara_regra_e_ambiente():
     """Author's item 4: the caption must declare rule, environment and origin,
     and the panel is plotted as drawn rather than redrawn."""
@@ -573,6 +615,7 @@ def test_etapa_b_legenda_fig3_declara_regra_e_ambiente():
     assert "no statistically detectable monotonic association" not in t
 
 
+@pytest.mark.numerico
 def test_14_mede_a_fronteira_e_nao_conta_empates():
     """The criterion for rule-dependence is a tie group spanning rank q, not
     the presence of ties: n = 700 has ties inside the selected set and every
@@ -589,6 +632,7 @@ def test_14_mede_a_fronteira_e_nao_conta_empates():
     assert "Does not settle: identity of selected sets" in src
 
 
+@pytest.mark.semantico
 def test_rascunho_nao_afirma_ausencia_total_de_empate():
     """The draft said the unanchored arm has no ties and the two rules agree
     to the last digit. True from n = 200, false below it. Corrected
@@ -610,6 +654,7 @@ def test_rascunho_nao_afirma_ausencia_total_de_empate():
     assert "two orders of magnitude below" in t
 
 
+@pytest.mark.numerico
 def test_rascunho_usa_a_esperanca_exata():
     t = (RAIZ / "paper" / "01-rascunho-resumo-e-s4.md").read_text()
     assert "0.7012" in t and "0.7445" in t
@@ -662,6 +707,7 @@ def test_cruzamento_acusa_convencao_divergente(tmp_path):
     assert marcas(correr("--q", "28")) == ["CONVENTION"]
 
 
+@pytest.mark.semantico
 def test_resumo_C_carrega_as_quatro_exigencias():
     """The four binding requirements the author attached to approving
     register C, 2026-10-24. Recorded in 00-estrutura.md, 'Registro
@@ -684,6 +730,7 @@ def test_resumo_C_carrega_as_quatro_exigencias():
     # is the record of what they are for.
 
 
+@pytest.mark.semantico
 def test_estrutura_concilia_com_o_ADR_0003():
     """Item 2 of 'O que falta antes da prosa' said the editor route was
     blocking and recorded my recommendation to notify. ADR-0003 decided
@@ -695,6 +742,7 @@ def test_estrutura_concilia_com_o_ADR_0003():
     assert "não se verificou" in t
 
 
+@pytest.mark.semantico
 def test_prior_nao_e_descrito_como_min_max():
     """The literature prior is not min-max normalised: make_literature_prior
     assigns a constant per reported region and divides by a maximum that is
@@ -1347,6 +1395,7 @@ def test_09_nao_reduz_p2_a_media():
     assert "a mean would hide within-run variation" in src
 
 
+@pytest.mark.numerico
 def test_s9_reporta_p2_medido_e_nao_um_limite():
     """The bound was superseded by the measurement on 2026-10-26: P1 holds
     10/10 by value and by bit in all seven sizes, and P2 is non-zero in all
@@ -1378,6 +1427,7 @@ def test_s9_reporta_p2_medido_e_nao_um_limite():
 
 
 
+@pytest.mark.estrutural
 def test_07_culpa_a_raiz_certa_pelo_modulo_que_falta():
     """Author's run, 2026-10-27: the handler for the pgsg2 import block blamed
     --pgsg2-root for a missing `pgsg_1`, because pgsg2.models.adapter imports
@@ -1394,6 +1444,7 @@ def test_07_culpa_a_raiz_certa_pelo_modulo_que_falta():
     assert "exists: {pgsg1_root.is_dir()}" in src
 
 
+@pytest.mark.estrutural
 def test_13_nao_esconde_um_sd_nao_nulo_atras_do_arredondamento():
     """Author's Raman run, 2026-10-27: the table printed sd as 0.0000 in all
     three partitions while returning z = -1.0 sd for two of them, which only a
@@ -1418,6 +1469,7 @@ def test_13_nao_esconde_um_sd_nao_nulo_atras_do_arredondamento():
     assert "does not persist" in src
 
 
+@pytest.mark.numerico
 def test_05_nao_afirma_que_o_padrao_desempata_por_indice():
     """Mandatory correction, author 2026-10-27 (F008): the script used to print
     that argsort breaks ties by band index. That is kind="stable"; the default
@@ -1434,6 +1486,7 @@ def test_05_nao_afirma_que_o_padrao_desempata_por_indice():
         "and no" in src and "tie rule is involved" in src)
 
 
+@pytest.mark.numerico
 def test_13_mede_a_dependencia_do_sort_sem_inferir_ambiente():
     """F008: every top-q selection uses a bare np.argsort, whose default is not
     a stable sort, so the deterministic overlap measures the tie rule. The
@@ -1465,6 +1518,7 @@ def test_13_mede_a_dependencia_do_sort_sem_inferir_ambiente():
     assert "Three procedures, and the manuscript needs all three" in src
 
 
+@pytest.mark.semantico
 def test_f008_separa_o_medido_do_inferido():
     """The finding must keep three things apart: what was measured here, what
     the manuscript reports from another environment, and the author's numpy
@@ -1540,6 +1594,7 @@ def test_f008_separa_o_medido_do_inferido():
     assert "**Não iniciada**" in t
 
 
+@pytest.mark.estrutural
 def test_12_nao_chama_verificada_uma_figura_sem_entradas():
     """Reproducibility of a procedure is not conformity of a submitted file.
     A figure whose inputs are absent is NOT VERIFIABLE, never verified and
@@ -1578,6 +1633,7 @@ def test_12_nao_chama_verificada_uma_figura_sem_entradas():
     assert "cannot be declared here" in tom
 
 
+@pytest.mark.semantico
 def test_07_separa_exigencia_confirmada_de_nao_verificada():
     """The submission matter must keep the two categories apart: what was read
     at the official source with its own date, and what is plausible but
@@ -1626,6 +1682,7 @@ def test_07_separa_exigencia_confirmada_de_nao_verificada():
     assert "está nomeado como indisponível" in t
 
 
+@pytest.mark.estrutural
 def test_09_garante_dtype_antes_de_comparar_bits():
     """view(np.int64) presupposes the array really is float64, which the
     author asked to be guaranteed rather than assumed."""
@@ -1636,6 +1693,7 @@ def test_09_garante_dtype_antes_de_comparar_bits():
     assert "exactly representable in" in src
 
 
+@pytest.mark.numerico
 def test_09_usa_o_espacamento_dos_valores_observados():
     """The plateau sits in [0.5, 1), where float32 spacing is 2**-24. An
     earlier version used 2**-23 -- the spacing ABOVE 1.0, since 1.0 is a power
@@ -1664,6 +1722,7 @@ def test_09_usa_o_espacamento_dos_valores_observados():
     assert "nor a count of the" in src
 
 
+@pytest.mark.numerico
 def test_f007_corrige_o_espacamento_e_separa_proveniencia():
     """The two corrections the author required on 2026-10-26, recorded in the
     finding with the original error named rather than quietly replaced."""
