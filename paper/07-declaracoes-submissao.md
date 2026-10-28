@@ -116,7 +116,62 @@ estudado.
 
 ---
 
-## 2. Pendente de leitura no guia vigente — NÃO VERIFICADO
+## 2. Lido no guia vigente — CONFIRMADO em 2026-10-28
+
+Fonte: *Guide for authors*, Chemometrics and Intelligent Laboratory Systems,
+ScienceDirect. Citado literalmente onde o guia é literal.
+
+| exigência | o guia diz | estado do manuscrito |
+| --- | --- | --- |
+| **resumo** | *"You are required to provide a concise and factual abstract which does not exceed 250 words."* | **304 palavras — 54 acima** |
+| **highlights** | *"Highlights should consist of 3 to 5 bullet points, each a maximum of 85 characters, including spaces."* | **ausentes**; cinco candidatos na §2.1 abaixo, todos dentro do limite |
+| **palavras-chave** | *"You are required to provide 1 to 7 keywords for indexing purposes."* | **ausentes**; seis candidatas na §2.2 |
+| **disponibilidade de dados** | *"you are encouraged to state the availability of any data at submission"*; política de dados Opção C: depositar e citar, ou declarar por que não pode ser compartilhado | **ausente**; os fatos a conferir estão na §3 |
+| **declaração de IA** | *"Authors must declare the use of generative AI tools in the manuscript preparation process upon submission of the paper."* | texto pronto na §1.1, pendente de nomear as outras ferramentas |
+| **conflito de interesses** | *"The declarations tool should always be completed"*; quem não tem nada a declarar escolhe *"I have nothing to declare"*; enviado como `.doc`/`.docx`; assinaturas não exigidas | **ausente** |
+| **CRediT** | o autor correspondente reconhece as contribuições dos coautores pelos papéis CRediT, 14 categorias | **ausente** |
+| **numeração de seções** | *"Divide your manuscript into clearly defined and numbered sections"*, subseções 1.1, 1.1.1; *"Do not include the article abstract within section numbering"* | **conforme**: doze seções, decimal, resumo fora da numeração |
+| **referências** | número entre colchetes no texto, numeradas por ordem de aparição, periódicos abreviados pela LTWA; no envio qualquer estilo consistente é aceito | a conferir na montagem final |
+| **figuras** | vetor em EPS ou PDF, **fontes embutidas**; legenda em cada item; cada figura citada no texto | **conforme**: as cinco são PDF vetorial, `pdffonts` reporta `emb=yes` em todas, DejaVu subsetado |
+| **tabelas** | texto editável, não imagem; sem réguas verticais nem sombreamento | a conferir na montagem final |
+| **idioma** | *"We recommend that you write in American or British English but not a combination of both."* | a conferir |
+| **formato do fonte** | `.doc`/`.docx` ou `.tex`; coluna única no Word; *"A PDF is not an acceptable source file."* | o manuscrito está em Markdown; a conversão é etapa de envio |
+| limite global do artigo | nenhum declarado para artigos completos; comunicações curtas não passam de quatro páginas impressas | não aplicável |
+| resumo gráfico | o guia não menciona | não aplicável |
+
+### 2.1 Highlights candidatos
+
+Cinco, para o autor escolher três a cinco. A contagem é de caracteres com
+espaços, medida e não estimada:
+
+| chars | texto |
+| --- | --- |
+| 78 | Top-q overlap depends on the tie rule when the boundary cuts equal gate values |
+| 76 | Identical gates gave overlaps from 0.744 to 1.000 under different sort rules |
+| 73 | Prior-based initialisation leaves the saturated level operationally inert |
+| 78 | Gates align with a separate reference at the prior's floor, not at its plateau |
+| 73 | Check boundary ties before reading overlap as reproducible band selection |
+
+### 2.2 Palavras-chave candidatas
+
+Seis, dentro do limite de sete: band selection; interpretability; prior-guided
+gating; near-infrared spectroscopy; Raman spectroscopy; reproducibility.
+
+### 2.3 O resumo contra o limite
+
+304 palavras, limite 250, excesso **54**. Comprimindo as dez frases sem
+remover conteúdo chega-se a **253** — três acima — e esse caminho já custa a
+enumeração das três condições na quarta frase, que é o dispositivo organizador
+da §4.2.
+
+Portanto chegar a 250 exige **retirar conteúdo ou encurtar uma formulação
+aprovada palavra por palavra**, e isso é decisão do autor. O que a compressão
+preserva, nessa rota: as quatro exigências do registro C (a geometria que cria
+a possibilidade e não produz o defeito; o modelo nulo nomeado com o seu
+q = 28; o controle de deslocamento; as oito refutações declaradas), as duas
+contribuições, e as duas convenções de decil marcadas.
+
+## 3. Ainda NÃO VERIFICADO, e o que falta não é o guia
 
 O manuscrito **não tem nenhum destes itens hoje**. A coluna "estado atual" é
 inventário, não julgamento de conformidade, porque a exigência não foi lida.

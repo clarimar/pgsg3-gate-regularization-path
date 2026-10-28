@@ -1761,7 +1761,19 @@ def test_07_separa_exigencia_confirmada_de_nao_verificada():
     assert "reproducible manner in the Methods section" in t
     # o que NAO foi verificado fica rotulado, e o inventario nao e veredito
     assert "NÃO VERIFICADO" in t
-    assert "inventário, não julgamento de conformidade" in t
+    # e o que FOI lido no guia fica citado literalmente, com a data
+    assert "CONFIRMADO em 2026-10-28" in t
+    assert "does not exceed 250 words" in t
+    assert "each a maximum of 85 characters, including spaces" in t
+    assert "1 to 7 keywords" in t
+    assert "Authors must declare the use of generative AI tools" in t
+    # o resumo contra o limite: a conta, e a decisao que ela nao toma
+    assert "excesso **54**" in t
+    assert "chega-se a **253** — três acima" in t
+    assert "retirar conteúdo ou encurtar uma formulação" in t
+    assert "isso é decisão do autor" in t
+    # e as figuras conferidas, nao supostas
+    assert "pdffonts` reporta `emb=yes` em todas" in t
     assert "Nada entra como conforme por analogia" in t
     # a instrucao de 1992 nao e tratada como regra vigente
     assert "é de 1992 e não entra aqui" in t
