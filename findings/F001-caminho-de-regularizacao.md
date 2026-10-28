@@ -85,3 +85,18 @@ diferença entre decaimento acoplado e desacoplado age sobre gates saturados, e
 nesta parametrização não há nenhum. O trabalho de incerteza mede o contraste em
 +0,435 no prior em degrau (34 bandas inertes) e praticamente zero na condição
 neutra; esta é aquela condição neutra, reproduzida por outro caminho de código.
+
+---
+
+## Nota de rastreabilidade, 2026-10-28 — o 2/5 de H5a
+
+A Tabela 1 registra H5a como **não suportada, 2/5**. Este achado escreve que
+"em 3 das 5 partições o argmax fica em λ = 10, a borda da grade" e que o
+critério exigia máximo interior em ≥ 4. O **2/5** da tabela é portanto o
+complemento aritmético do 3/5 registrado aqui, e não um número que este achado
+tenha enunciado.
+
+O complemento é válido porque a classificação das cinco partições é
+**exaustiva e mutuamente exclusiva**: o argmax de cada uma está na borda da
+grade (λ = 10) ou no interior, sem terceira possibilidade e sem empate entre
+as duas. Registrado para que a tabela não pareça citar um número medido aqui.

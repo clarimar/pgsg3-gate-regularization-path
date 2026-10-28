@@ -184,10 +184,20 @@ to 0.05. **Both definitions give the same answer, so the unrecorded definition
 of the published figure does not change this conclusion.**
 
 And the displacement correlation responds to the data in the way the decile
-overlap does not. Its rank correlation with training size is +0.9643
-(p = 0.0005) over all bands, and it remains +0.8929 (p = 0.0068) with the
-plateau removed, against −0.3214 (p = 0.4821) for the decile overlap under the
-same initialisation.
+overlap does not. Its rank correlation with training size is +0.9643 over all
+bands and +0.8929 with the plateau removed. The decile overlap under the same
+initialisation has no comparable figure to offer: its series is constant under
+index-order tie-breaking and constant under randomised tie-breaking, so a rank
+correlation is undefined, and it varies only under the sort's own tie order,
+where it gave −0.3214 in the environment of the published analysis and +0.5714
+in another (Section 4.2.1). The contrast therefore holds more sharply than a
+comparison of two coefficients would suggest: one quantity responds to the
+data, and the other has no response to report that is a property of the gates.
+
+We give these rank correlations without p-values. The seven sizes are nested
+subsamples of one collection and the runs within a size share its training
+data, so the replication unit the test would need is not available here
+(Section 5); the coefficients are descriptive.
 
 Two cautions on reading that, both of which we judge necessary. The rank
 correlation establishes a strong monotonic association between displacement
@@ -260,6 +270,20 @@ Five recommendations follow, in increasing order of what they cost.
    Insensitivity across a large change in n is a reason to look for a cause,
    not a finding in itself — see the limitation in Section 10.
 
+These are ordered by cost, which is not the same as being ordered by what each
+one settles, and the difference matters enough to state. Inspecting the
+selection boundary for ties (recommendation 1) **identifies the possibility of
+tie-dependence directly**, by arithmetic on stored values. Specifying and
+comparing tie rules (2) **quantifies** how much the selection depends on it.
+Separating initialisation from regularisation (4) investigates the mechanism by
+which the prior exerts its influence. Varying n (5) examines a complementary
+experimental response — how the selection behaves as the quantity of data
+changes — and it answers a different question rather than the same one less
+well. **It does not substitute for the boundary inspection**: an overlap that
+fails to respond to n is consistent with tie-dependence and with several other
+causes, while a tie group spanning the boundary settles the matter in one
+line and no retraining.
+
 Conditioning the metric on the prior is not a substitute for any of these, and
 Section 10 records why.
 
@@ -294,8 +318,26 @@ in Table 1 with the verdict and the later interpretation in separate columns.
 ordering were pre-registered separately, and how to read them together was not.
 We report them separately and do not combine them.
 
+**The historical top-decile overlap results are conditional on the selection
+procedure used to resolve tied gate values.** In the examined near-infrared
+experiments, different sorting implementations produced different overlap
+values from identical stored gates when ties crossed the top-q boundary.
+Consequently, reproducing the gate values alone does not guarantee
+reproduction of the reported overlap. The tie-breaking rule, the value of q,
+and the relevant computational implementation must also be specified. This
+limitation applies to the affected selection results and should not be
+generalised to experiments in which the selection boundary contains no ties.
+It is a limitation of how the results were documented and can be interpreted,
+not a further finding: the finding is in Section 4.2.1, and it is that the
+selection can depend on the tie rule at all.
+
 **The response to sample size is an observation about this experiment, not a
-rule.** Unanchored overlap grows with n here and anchored overlap does not. We
+rule.** In the examined sample-size experiment, unanchored overlap increased
+with n. For the prior-initialised arm, index-based and randomised
+tie-breaking produced constant overlap series, for which a rank correlation
+with n is undefined; correlations obtained under implementation-dependent
+sorting therefore cannot be interpreted as evidence of a sample-size response
+of the learned gates. We
 do not claim that a legitimate stability measure must depend on n: a measure
 may be flat because selection has already stabilised, because the signal is too
 weak for more data to resolve, or because the procedure is insensitive to the

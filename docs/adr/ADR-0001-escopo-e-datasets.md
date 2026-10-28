@@ -130,3 +130,22 @@ de ajuste de hiperparâmetros e passa a ser uma **extensão arquitetural**
 (introdução de λ) acompanhada do estudo do caminho que ela abre. Isso é
 mais publicável no Chemolab e responde a uma pergunta que pgsg_1 e pgsg_2
 deixaram explicitamente em aberto.
+
+---
+
+## Nota de 2026-10-27 — o ρ = +0,9286 citado acima, verificado (Etapa B)
+
+A decisão não muda. O ρ = +0,9286 citado nesta ADR é do braço **sem**
+ancoragem, e a Etapa B o mediu sob quatro regras de desempate: ele é
+**idêntico nos três procedimentos** — ordem de índice, ordem do sort e
+desempate sorteado — porque a partir de n = 200 nenhum grupo de empate ocupa a
+fronteira de rank q nesse braço. É, dos números do programa, um dos que
+reproduzem entre ambientes.
+
+O p = 0,0025 que o acompanha pressupõe sete observações independentes, e os
+sete tamanhos são subamostras encaixadas de uma coleção de 725 frutos. O
+manuscrito passou a relatar o coeficiente como exploratório e sem valor-p
+(§4.3 na redação de 2026-10-27; **§5** depois da promoção de 2026-10-28). A citação acima fica como está, com esta ressalva anexada.
+
+Ver `findings/F008` para o mecanismo e `findings/F004`, nota da mesma data,
+para os números por procedimento.

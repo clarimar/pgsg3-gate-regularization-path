@@ -13,23 +13,29 @@
 
 
 Interpretive stability in prior-guided spectral attention is usually reported
-as the overlap of the top-k selected bands across runs. We give the conditions
-under which that overlap measures band selection, and show that a step-
-function prior over 281 near-infrared bands -- from our own earlier work --
-violates them. When a level set of the prior is larger than the selected set,
-the selection can fall entirely inside it, and the overlap registers only the
-ordering the gate carries there. That geometry creates the possibility of an
-artefact but does not produce one; three conditions together do, and we
-separate them: an oversized level set, ties that persist through training, and
-a deterministic rule that resolves them. The near-infrared prior meets all
-three when it also initialises the gate, saturating the plateau until its
-values are numerically identical: an overlap of 0.9418 falls to 0.7005 +-
-0.0068 under random tie resolution, against an exact expectation of 0.7012 for
-drawing 28 of 34 plateau bands twice. A continuous Raman prior meets none. A
-displacement-based control in that earlier study depends on neither the top-k
-selection nor the tie-breaking and is immune to this artefact; excluding the
-plateau bands lowers it by 0.018 (Pearson) or 0.051 (Spearman) at the largest
-sample size, and what survives still responds to n. Decile overlap grows with
-n without anchoring (+0.93, p = 0.003) and not under prior- initialisation
-(-0.32, p = 0.48). We report twenty pre-registered hypotheses, eight of which
-our criteria did not support.
+as the overlap of the top-k selected bands across runs. We disentangle
+prior-based gate initialisation from prior-based regularisation and examine
+their distinct effects on learned spectral selections. Initialising at a
+step-function prior over 281 near-infrared bands, from our own earlier work,
+leaves the prior's saturated level operationally inert: the gradient there is
+of order 10^-6 and the penalty cannot move it. That geometry creates the
+possibility of an artefact but does not produce one; three conditions together
+do, and we separate them: an oversized level set, ties that persist through
+training, and a deterministic rule that resolves them. The near-infrared prior meets all three; an overlap of 0.9418, at that
+codebase's convention of q = 28, falls to 0.7005 +- 0.0068 under random tie
+resolution, against an exact expectation of 0.7012 for drawing 28 of 34
+plateau bands twice. A continuous Raman prior
+meets none. Outside the saturated plateau, the gates retained data-associated
+structure, including positive alignment with a separate statistical reference
+across the 223 floor-level bands. A displacement-based control in that earlier
+study depends on neither the top-k selection nor the tie-breaking and is
+immune to this artefact; excluding the plateau bands lowers it by 0.018
+(Pearson) or 0.051 (Spearman) at the largest sample size, and what survives
+still responds to n. For identical stored gates, at the revision data's own
+convention of q = 29, the overlap ranged from 0.7443-0.7659 under one sorting
+implementation to 0.9452-0.9867 under another, and reached 1.0000 with
+index-based tie-breaking; when the selection boundary intersects a tied group,
+the overlap reflects the complete selection procedure rather than an
+identifiable property of the gates. We report twenty pre-registered
+hypotheses, eight of which our criteria did not support; the tie-breaking
+analysis was a post hoc diagnostic, reported separately from those verdicts.

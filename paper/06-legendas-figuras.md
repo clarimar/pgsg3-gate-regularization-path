@@ -54,8 +54,10 @@ arquivos de resultado, que não vou adivinhar.
 > a displacement correlation are different statistics, and a common vertical
 > scale would suggest an equivalence between them that does not hold.** Panel
 > (a) shows the growth observed over these seven sizes and is not offered as a
-> general law of growth; panel (b) shows high overlap with no statistically
-> detectable monotonic association with n; in panel (c) the vertical distance
+> general law of growth; panel (b) shows high overlap with no association to
+> report, the series being constant under two of the three selection
+> procedures and varying only under the sort's own tie order; in panel (c) the
+> vertical distance
 > between the two series is the observed difference between the correlations,
 > which is the plateau's contribution.
 >
@@ -64,6 +66,19 @@ arquivos de resultado, que não vou adivinhar.
 > figure is evidence of a causal relation, and the association in panels (a)
 > and (c) is not evidence that the gate recovers chemically relevant bands
 > (Sections 8.3 and 9.3.2).
+>
+> **Panel (b) is procedure- and environment-specific, and is plotted as drawn
+> rather than redrawn.** Its values come from the selection rule of the
+> published analysis — `numpy.argsort` with its own tie order, numpy 2.4.6 and
+> Python 3.14.6 — under which the decile falls entirely inside the prior's
+> tied plateau and the tie rule therefore decides the selected set
+> (Section 4.2.1). The same stored gates give 1.0000 at every size under
+> index-order tie-breaking, 0.7442 under randomised tie-breaking, and the
+> chance level under another build's tie order. Panel (b) is reproducible from
+> the versioned code and data in that environment, verified pixel-for-pixel,
+> and is **not** reproducible elsewhere. Panels (a) and (c) carry no such
+> dependence: no tie group sits on the selection boundary in panel (a) from
+> n = 200 upward, and panel (c) applies no selection operator at all.
 
 ## Figura 4
 

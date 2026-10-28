@@ -115,13 +115,498 @@ def test_correcoes_datadas_presentes():
     assert "0,701177" in f002 and "Jensen" in f002
 
 
+def test_etapa_b_item6_consistencia_tabela1_e_achados():
+    """Author's closing criterion 4: Table 1 and F001-F007 must stay
+    consistent with the new analyses. Findings and ADRs are never edited in
+    place; corrections go in dated notes that preserve the original text."""
+    import re
+    est = re.sub(r"\s+", " ", (RAIZ / "paper" / "00-estrutura.md").read_text())
+    # Tabela 1 e o texto da estrutura passam a citar o procedimento
+    assert "**1,0000** por índice" in est
+    assert "pela ordem do sort em numpy 2.4.6" in est
+    assert "F004, F008" in est
+    assert "+0,9286 nos três procedimentos**" in est
+    assert "sem associação a reportar" in est
+    assert "A decisão 6 não muda, mas o número passa a ser citado com o " \
+           "procedimento" in est
+    # F004 ganha nota datada, com o texto original preservado
+    f004 = re.sub(r"\s+", " ", (RAIZ / "findings"
+                  / "F004-estabilidade-interpretativa-e-funcao-dos-dados.md"
+                  ).read_text())
+    assert "Nota de 2026-10-27" in f004
+    assert "O texto acima fica como está" in f004
+    assert "**Nenhum veredito muda.**" in f004
+    assert "idêntico nos três procedimentos" in f004
+    assert "pressupõem sete observações independentes" in f004
+    assert "ficam aqui no registro original" in f004
+    # a ADR idem
+    adr = re.sub(r"\s+", " ", (RAIZ / "docs" / "adr"
+                 / "ADR-0001-escopo-e-datasets.md").read_text())
+    assert "Nota de 2026-10-27" in adr
+    assert "A decisão não muda" in adr
+    assert "A citação acima fica como está" in adr
+    # 9.3 compara por procedimento e sem valor-p
+    s9 = re.sub(r"\s+", " ", (RAIZ / "paper"
+                / "05-rascunho-s9-s10-s11.md").read_text())
+    assert "has no comparable figure to offer" in s9
+    assert "We give these rank correlations without p-values" in s9
+    assert "the other has no response to report that is a property of the " \
+           "gates" in s9
+
+
+def test_etapa_b_431_reprodutibilidade_para_o_leitor():
+    """Author's item 5: incorporate the non-portability into the discussion.
+    It concerns the published record, so it must be stated as what a reader
+    can and cannot reproduce, with the three consequences drawn."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "01-rascunho-resumo-e-s4.md").read_text())
+    assert "4.3 What a reader of the earlier work can and cannot reproduce" in t
+    # promovida a secao propria em 2026-10-28: a 4.3.1 deixou de existir
+    assert "4.3.1" not in t
+    assert "may not obtain the published figure" in t
+    assert "Nothing need have gone wrong" in t
+    assert "The rule is part of the estimator, not an implementation detail" in t
+    assert "need not be evidence of error in either" in t
+    # ... sob a condicao logica que o autor exigiu em 2026-10-27, sem a qual
+    # a frase vira desculpa geral para irreprodutibilidade
+    assert "or the point becomes a general excuse" in t
+    assert "It does not hold when both claim the same procedure" in t
+    assert "still demands investigation" in t
+    assert "and, if those agree, to keep looking" in t
+    # e nenhuma extrapolacao para a literatura
+    assert "We make no claim about how widely this affects" in t
+    assert "We have measured one prior, in one architecture, in two " \
+           "environments" in t
+
+
+def test_etapa_b_reporta_por_procedimento_e_nao_substitui():
+    """Stage B, author 2026-10-27: the contribution is the comparison between
+    procedures, not the replacement of the historical value by J = 1 or by
+    J = 0.744. Every affected number must name its procedure, the historical
+    row must survive with its environment stated, and the conclusion must be
+    that the Jaccard is a property of the whole selection procedure rather
+    than that the stability is simply artificial."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "01-rascunho-resumo-e-s4.md").read_text())
+    # as quatro linhas, cada uma com o seu procedimento
+    assert "ties broken by band index" in t and "1.0000** at every size" in t
+    assert "numpy 2.4.6 / Python 3.14.6 | 0.9452 to 0.9867" in t
+    assert "numpy 2.5.3 / Python 3.13.16 | 0.7443 to 0.7659" in t
+    assert "ties resolved at random, 200 draws | 0.7442 at every size" in t
+    # o historico e preservado, nao substituido
+    assert "preserved here as the reproduction of a specific procedure" in t
+    assert "not as a result another reader will obtain" in t
+    # a causa nao e atribuida a versao
+    assert "We do not claim the library version as the cause" in t
+    # a formulacao do autor, mais precisa que "estabilidade artificial"
+    assert ("the Jaccard is a property of the complete selection procedure, "
+            "tie rule included") in t
+    assert "not an identifiable property of the gates" in t
+    assert "stronger and more precise statement than calling the stability "\
+           "artificial" in t
+    # e o limite de escopo: a metrica nao e invalida em toda aplicacao
+    assert "It is also a bounded one" in t
+    assert "does not make the top-q overlap an invalid measure in general" in t
+    assert "the figure is a measurement of the gates" in t
+    assert "the deterministic value taken on its own does not identify " \
+           "spectral stability" in t
+    # a mudanca de coeficiente nao e mudanca na relacao -- texto que foi
+    # para a secao 5 na promocao de 2026-10-28
+    s5 = re.sub(r"\s+", " ", (RAIZ / "paper" / "08-rascunho-s5.md").read_text())
+    assert "is not a change in the relation between spectral stability and " \
+           "sample size" in s5
+    assert "No such relation changed; the data are the same bytes" in s5
+    assert "would repeat, one level up, the error the section is about" in s5
+    # 4.2: a leitura "similaridade fora do plato" era especifica do build
+    assert "we drew that conclusion in an earlier draft" in t
+    assert "A quantity that moves from near-unity to chance while the data "\
+           "are held fixed is not measuring the data" in t
+
+
+def test_etapa_b_43_sem_valor_p_sem_unidade_justificada():
+    """Author 2026-10-27: do not keep a coefficient and p-value from an
+    implementation whose rule was unspecified, and do not treat nested
+    subsamples as independent draws. The association stays exploratory.
+
+    Promoted to a section of its own on 2026-10-28, so this reads Section 5's
+    file; the tie-breaking consequences stayed in Section 4."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "08-rascunho-s5.md").read_text())
+    assert "## 5. Results — the response to sample size" in t
+    # a associacao que sobrevive e identica entre procedimentos
+    assert ("+0.9286 under index-order tie-breaking, under the sort's own tie "
+            "order, and under randomisation alike") in t
+    # e a que nao sobrevive nao tem associacao a reportar
+    assert "there is no association to report" in t
+    assert "a rank correlation is undefined on a constant" in t
+    assert "which is a result and not a missing value" in t
+    # o historico -0.3214 fica identificado, nao apagado
+    assert "−0.3214 in the environment of the published analysis" in t
+    assert "is retained as that environment's figure" in t
+    # os valores-p caem, com o motivo
+    assert "Both associations are **exploratory**" in t
+    assert "assumed a replication unit the design does not supply" in t
+    assert "drop the p-values rather than re-deriving a justification" in t
+
+
+def test_etapa_b_secao6_invariancia_aritmetica():
+    """Author's item 3: check the sensitivity of 0.9763-1.0000 BEFORE touching
+    the interpretation. The check is the tie on the boundary, which makes the
+    invariance arithmetic rather than a judgement."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "04-rascunho-s6-s7-s8.md").read_text())
+    assert "so we checked it rather than inferred it" in t
+    assert "No tie group sits on the selection boundary at rank q" in t
+    assert "the same figure to every digit" in t
+    assert "all give 0.9867" in t
+    assert "invariance is arithmetic rather than a judgement" in t
+    assert "need no qualification by sort kind" in t
+    # verificavel, nao afirmado: o veredicto de uma linha e a condicao
+    # suficiente sem ser mais forte do que o necessario (autor, 2026-10-28)
+    assert "ends with a single verdict line" in t
+    assert "or which was not measured at all" in t
+    assert "absence of ties across the whole spectrum is not required" in t
+    assert "the rule reordering equal values alone" in t
+
+
+def test_secao12_conclusoes_responde_as_tres_perguntas():
+    """Created by the integral audit of 2026-10-28: the paper had no
+    conclusions section. It must answer what was demonstrated, what was
+    observed, and what was not established -- and must integrate the
+    pre-stage-B contribution so the paper does not read as a study about
+    sorting algorithms."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "09-rascunho-s12.md").read_text())
+    assert "## 12. Conclusions" in t
+    # os dois papeis do prior, a contribuicao anterior a Etapa B
+    assert "separating the roles of prior-based initialisation and " \
+           "regularisation" in t
+    # o mecanismo demonstrado
+    assert "the selected subset depends on the tie-breaking rule" in t
+    assert ("Jaccard overlap is a property of the complete selection "
+            "procedure") in t
+    # o observado, com os gates identicos
+    assert "identical stored gates produced substantially different overlap" in t
+    # o que NAO foi estabelecido
+    assert "do not establish how frequently the mechanism occurs" in t
+    assert "How common they are elsewhere is a question we leave open" in t
+    # e a exigencia metodologica que resulta
+    assert "identify the selection procedure and verify whether ties " \
+           "intersect the" in t
+    assert "neither requires retraining" in t
+
+
+def test_secao12_nao_le_como_o_modelo_nao_aprende():
+    """The author's own caveat of 2026-10-28: the sentence limiting the
+    interpretation of stable selections must be confronted with the controls
+    in F001-F003. It holds for the SELECTION under prior-initialisation; it
+    does not hold as a claim about the gate, which F003 and Section 8.2 show
+    aligns with a data-derived reference at the prior's floor. Without the
+    floor clause the conclusion reads as 'the model does not learn'."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "09-rascunho-s12.md").read_text())
+    assert "It does not limit the interpretation of the gate as a whole" in t
+    assert "aligns positively with an external, data-derived reference" in t
+    assert "the same under a prior whose content has been destroyed" in t
+    assert "the top-decile metric never reads" in t
+    # e a imprecisao de "strongly constrained" foi corrigida, nao embutida
+    assert "not merely strong but inert in practice" in t
+    assert "gradient of order 10⁻⁶" in t
+    # mas sem afirmar imobilidade matematica: o autor recusou "do not move"
+    # em 2026-10-28, e o F007 mediu max|d| entre 1,2e-6 e 6,7e-6 no plato
+    assert "and\ndo not move" not in (RAIZ / "paper"
+                                      / "09-rascunho-s12.md").read_text()
+    # "far from constant" saiu por exigencia do autor em 2026-10-28: com
+    # deslocamentos de 1e-6 ela sugeria variacao expressiva
+    assert "far from constant" not in t
+    assert "exhibit small but nonzero changes" in t
+    assert "maximum displacements between 1.2 × 10⁻⁶ and 6.7 × 10⁻⁶" in t
+    assert "operational rather than mathematical immobility" in t
+    # e a referencia externa nao e verdade quimica
+    assert "a second statistical estimate from the same training data" in t
+    assert "not a demonstration that the gate recovers chemically true " \
+           "bands" in t
+    # as duas alteracoes ao texto do autor estao declaradas
+    assert "A cláusula do piso foi acrescentada" in t
+    assert '"Strongly constrained" foi precisado' in t
+    assert "declaradas aqui e não embutidas em silêncio" in t
+
+
+def test_secao10_separa_achado_de_limitacao_de_reprodutibilidade():
+    """Author 2026-10-28: the result is that selection can depend on the tie
+    rule; the LIMITATION is that the historical overlaps are not reproducible
+    without specifying the procedure. Two different statements."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md").read_text())
+    assert "conditional on the selection procedure used to resolve tied" in t
+    assert "reproducing the gate values alone does not guarantee" in t
+    assert "should not be generalised to experiments in which the selection " \
+           "boundary contains no ties" in t
+    assert "not a further finding" in t
+    # a falsa simetria da resposta a n saiu
+    assert "Unanchored overlap grows with n here and anchored overlap does " \
+           "not" not in t
+    assert "for which a rank correlation with n is undefined" in t
+    assert "cannot be interpreted as evidence of a sample-size response" in t
+    # e a hierarquia dos diagnosticos esta declarada na 9.4
+    assert "ordered by cost, which is not the same as being ordered by what" in t
+    assert "It does not substitute for the boundary inspection" in t
+    assert "settles the matter in one line and no retraining" in t
+
+
+def test_15_exige_doze_secoes():
+    """The consolidator must now expect twelve, so a lost Section 12 is a gap
+    and not a silently shorter paper."""
+    src = (RAIZ / "scripts" / "15_consolidar_manuscrito.py").read_text()
+    assert "SECOES_ESPERADAS = 12" in src
+    assert '"09-rascunho-s12.md", ["12. Conclusions"]' in src
+    assert "had no conclusion at all" in src
+
+
+def test_resumo_na_ordem_logica_do_autor():
+    """Author 2026-10-28: the abstract must carry BOTH contributions, in a
+    stated logical order, and the two abstract additions must not be bought
+    by dropping a standing requirement. Rewritten rather than appended."""
+    import re
+    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "02-resumo-C.md").read_text())
+    # 2. metodo: os dois papeis do prior, com a formulacao do autor
+    assert ("We disentangle prior-based gate initialisation from prior-based "
+            "regularisation") in t
+    assert "their distinct effects on learned spectral selections" in t
+    # 3. resultado: inercia operacional localizada
+    assert "leaves the prior's saturated level operationally inert" in t
+    # 4. contraponto: aprendizagem fora do plato, com "separate" e nao
+    # "external" -- a referencia e outro estimador sobre os mesmos dados
+    assert "Outside the saturated plateau, the gates retained data-associated" in t
+    assert "a separate statistical reference across the 223 floor-level bands" in t
+    assert "external statistical reference" not in t
+    # 5. o resultado metodologico, e 6. o limite de interpretacao
+    assert "the overlap reflects the complete selection procedure" in t
+    # e o estatuto post hoc declarado tambem no resumo
+    assert "the tie-breaking analysis was a post hoc diagnostic" in t
+
+
+def test_pre_registro_declara_o_post_hoc_antes_dos_resultados():
+    """Author's Table 1 condition, 2026-10-28: the tie-breaking analysis is a
+    post hoc discovery and must be identified as such BEFORE the results, not
+    only in the conclusion, so a reader knows which claims were committed in
+    advance."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md").read_text())
+    assert ("The tie-breaking analysis was not part of the original "
+            "pre-registered hypothesis set") in t
+    assert "post hoc diagnostic investigation" in t
+    assert ("reported separately from the pre-registered hypothesis verdicts "
+            "in Table 1") in t
+    assert "follows from the selection procedure itself" in t
+    assert "specific to the experimental settings examined here" in t
+    # e esta nos metodos, antes dos resultados, com o motivo
+    assert "We state this before the results rather than in the discussion" in t
+    assert "which claims were committed in advance" in t
+
+
+def test_15_recusa_resumo_partido_em_vez_de_truncar():
+    """On 2026-10-28 the abstract was rewritten with a line beginning '--',
+    which the prose filter read as a list bullet; the paragraph split and the
+    longest block was a 228-word fragment missing its first two sentences.
+    The generator reported 228 words and shipped it. A heuristic that
+    silently ships a shortened abstract is worse than one that stops."""
+    src = (RAIZ / "scripts" / "15_consolidar_manuscrito.py").read_text()
+    # "--" mid-prose is not a list marker; a hyphen plus a space is
+    assert 're.match(r"^[-*] ", s)' in src
+    assert '"--" mid-prose is not one' in src
+    # e mais de um bloco grande para em vez de escolher o maior
+    assert "prose blocks" in src and "of 40+ words" in src
+    assert "Taking the longest would " in src
+    assert "report its word count as the" in src
+
+
+def test_resumo_representa_o_artigo_depois_da_etapa_b():
+    """First integral-audit finding, 2026-10-28: the abstract approved on
+    24/10 carried two p-values Section 5 disowns and reported -0.32 as a
+    property of the gates. The author's decision was to REPLACE that sentence
+    with the tie-breaking evidence, not to patch the coefficients, because
+    correcting them would leave the false symmetry between the two arms."""
+    import re
+    r = re.sub(r"\s+", " ", (RAIZ / "paper" / "02-resumo-C.md").read_text())
+    # a frase antiga saiu inteira, com os dois valores-p
+    assert "Decile overlap grows with" not in r
+    assert "p = 0.003" not in r and "p = 0.48" not in r
+    # e no lugar entrou a evidencia central da Etapa B, com os mesmos gates
+    assert "For identical stored gates" in r
+    assert "0.7443-0.7659 under one sorting implementation" in r
+    assert "0.9452-0.9867 under another" in r
+    assert "1.0000 with index-based tie-breaking" in r
+    assert ("the overlap reflects the complete selection procedure rather "
+            "than an identifiable property of the gates") in r
+    # as duas convencoes de decil ficam marcadas, para que q=28 e q=29 nao
+    # sejam comparados diretamente (item 2 do autor)
+    assert "at that codebase's convention of q = 28" in r
+    assert "at the revision data's own convention of q = 29" in r
+
+
+def test_tabela1_h0_sem_contagem_por_construcao():
+    """H0's criterion is existential and defines no per-partition tally, so
+    the missing k/n is correct and the reason belongs in the cell. Adding 5/5
+    would impose a unit the pre-registration does not have."""
+    import re
+    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "00-estrutura.md").read_text())
+    assert "sem contagem por construção" in t
+    assert "o critério é existencial" in t
+    assert "não define tally por partição" in t
+    assert "imporia uma unidade que o pré-registro não tem" in t
+    # e o 2/5 de H5a fica identificado como complemento, com a exaustividade
+    f001 = re.sub(r"\s+", " ", (RAIZ / "findings"
+                  / "F001-caminho-de-regularizacao.md").read_text())
+    assert "o 2/5 de H5a" in f001
+    assert "complemento aritmético do 3/5" in f001
+    assert "exaustiva e mutuamente exclusiva" in f001
+    assert "não um número que este achado" in f001
+
+
+def test_tres_niveis_de_evidencia_separados():
+    """Author 2026-10-28: the manuscript must distinguish the demonstrated
+    computational mechanism, the observed experimental consequence, and the
+    unestablished general prevalence -- with the contribution in the first two
+    and the third offered as a question, never as a conclusion."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "01-rascunho-resumo-e-s4.md").read_text())
+    assert "**The computational mechanism.**" in t
+    assert "**The experimental consequence.**" in t
+    assert "**The general prevalence.**" in t
+    assert "**Demonstrated**, and not empirically" in t
+    assert "**Observed**, in this dataset" in t
+    assert "**Not established.**" in t
+    assert "offered as a question rather than a finding" in t
+    assert "The contribution of this paper is the first two rows" in t
+    # e nenhuma afirmacao de prevalencia escapando logo depois do disclaimer
+    assert "is not unusual, and the diagnosis is cheap" not in t
+    assert "we are careful not to make one in the next breath either" in t
+    assert "a question about the literature that we did not study" in t
+    # a introducao nao afirma que a codificacao e amplamente reproduzida
+    i = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md").read_text())
+    assert "one widely reproduced way of encoding a prior" not in i
+    assert "that we used in our own earlier work violates them" in i
+    assert "How often other encodings do is not something we measured" in i
+
+
+def test_15_consolida_sem_perder_nem_inventar():
+    """The consolidated manuscript is a build step over the drafts. It must
+    copy the English verbatim, report every block it drops, anchor Table 1 on
+    its own header rather than on the first table that matches, flag the two
+    abstracts, and emit the section gap instead of inventing a Section 5."""
+    src = (RAIZ / "scripts" / "15_consolidar_manuscrito.py").read_text()
+    # a Tabela 1 e ancorada no cabecalho dela, nao na primeira que casar
+    assert "veredito pelo critério | o que o resultado " in src
+    assert "can ship the wrong" in src
+    assert "rather than letting it match whichever table comes first" in src
+    # os dois resumos sao sinalizados, nao resolvidos por delecao
+    assert "TWO ABSTRACTS EXIST" in src
+    assert "the drafts are not the place to " in src
+    # o vao de secao sai como vao, e a verificacao fica depois de fechado
+    assert "GAP:" in src
+    assert "with a number invented to" in src
+    assert "settle, not this script" in src
+    # e a secao 5, promovida em 2026-10-28, esta na ORDEM
+    assert '"08-rascunho-s5.md", ["5. Results — the response to sample size"]' in src
+    assert "THE SECTION 5 GAP, AND HOW IT WAS CLOSED" in src
+    assert "the next renumbering will need" in src
+    # o consolidado nomeia o conteudo de que foi construido, de forma
+    # DETERMINISTICA: a versao anterior punha a revisao git e a contagem de
+    # arquivos sujos no cabecalho, o que fez o arquivo gerado depender da
+    # arvore de trabalho e quebrou a entrega de 2026-10-28
+    assert "Source digest:" in src
+    assert "whatever the git state" in src
+    assert "hashlib.sha256()" in src
+    assert "it identifies the content that was consolidated" in src
+    assert "Built from:" not in src
+    # a revisao git vai para o stdout, nao para o artefato
+    assert '"rev-parse", "--short", "HEAD"' in src
+    assert "without contaminating the artefact" in src
+    # e um bloco esperado que falte interrompe, em vez de abrir um buraco
+    assert "manuscript with a hole in it" in src
+    # o arquivo gerado se declara gerado
+    assert "Do not edit this" in src
+
+
+def test_14_veredicto_de_uma_linha_nao_pode_ser_truncado():
+    """The author's partition run of 2026-10-27 was piped through `tail -20`
+    and the rows that mattered were above the cut. A check whose conclusion
+    can be cropped off is not a check, so the verdict goes last and names the
+    directories at fault."""
+    src = (RAIZ / "scripts" / "14_etapa_b_por_procedimento.py").read_text()
+    assert "SECTION 6 VERDICT over" in src
+    assert "TIE ON THE BOUNDARY in" in src
+    assert "PROCEDURES DISAGREE in" in src
+    assert "NOT MEASURED in" in src
+    assert "these are not covered by the verdict" in src
+    assert "=> rule-invariant" in src
+    assert "=> NOT established; see the lines above" in src
+    assert "cannot hide a non-zero bnd" in src
+
+
+def test_etapa_b_legenda_fig3_declara_regra_e_ambiente():
+    """Author's item 4: the caption must declare rule, environment and origin,
+    and the panel is plotted as drawn rather than redrawn."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "06-legendas-figuras.md").read_text())
+    assert "procedure- and environment-specific" in t
+    assert "plotted as drawn" in t and "rather than redrawn" in t
+    assert "numpy 2.4.6 and" in t and "Python 3.14.6" in t
+    assert "verified pixel-for-pixel" in t
+    assert "**not** reproducible elsewhere" in t
+    # e os paineis (a) e (c) nao carregam a dependencia
+    assert "Panels (a) and (c) carry no such" in t
+    assert "applies no selection operator at all" in t
+    # a frase antiga, que afirmava ausencia de associacao detectavel, saiu
+    assert "no statistically detectable monotonic association" not in t
+
+
+def test_14_mede_a_fronteira_e_nao_conta_empates():
+    """The criterion for rule-dependence is a tie group spanning rank q, not
+    the presence of ties: n = 700 has ties inside the selected set and every
+    procedure still agrees to every digit."""
+    src = (RAIZ / "scripts" / "14_etapa_b_por_procedimento.py").read_text()
+    assert "def empate_na_fronteira" in src
+    assert "ord_desc[q - 1] == ord_desc[q]" in src
+    assert "Ties strictly inside the" in src
+    assert "different statements" in src
+    # toda associacao sai marcada como exploratoria, com o motivo
+    assert "EXPLORATORY in every row" in src
+    assert "are not independent draws" in src
+    # e o que o script NAO resolve fica dito
+    assert "Does not settle: identity of selected sets" in src
+
+
 def test_rascunho_nao_afirma_ausencia_total_de_empate():
     """The draft said the unanchored arm has no ties and the two rules agree
     to the last digit. True from n = 200, false below it. Corrected
-    2026-10-24; the absolute phrasing must not come back."""
-    t = (RAIZ / "paper" / "01-rascunho-resumo-e-s4.md").read_text()
+    2026-10-24; the absolute phrasing must not come back.
+
+    Corrected again 2026-10-27 (stage B): "carries no ties at all" from
+    n = 200 is itself false -- n = 700 has two tied values INSIDE the selected
+    set. What makes a selection rule-dependent is a tie group spanning the
+    boundary at rank q, not the presence of ties, and measurement shows no
+    group spans it from n = 200 upward. The criterion replaced the count."""
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "08-rascunho-s5.md").read_text())
     assert "where no ties occur" not in t
-    assert "From n = 200 upward it carries no ties at all" in t
+    assert "From n = 200 upward it carries no ties at all" not in t
+    assert "The criterion is not whether ties exist but whether one sits" in t
+    assert "on the boundary** at rank q" in t
+    assert "at n = 700 two tied values sit inside the selected set and change" in t
     assert "two orders of magnitude below" in t
 
 
@@ -193,6 +678,10 @@ def test_resumo_C_carrega_as_quatro_exigencias():
     assert "neither the top-k selection nor the tie-breaking" in t
     # 4. the eight refutations declared, not buried
     assert "eight of which our criteria did not support" in t
+    # The rewrite of 2026-10-28 compressed the abstract to fit two new
+    # contributions and dropped requirements 1 and 2 in the process. This
+    # test caught it. The two assertions above are the guard; this comment
+    # is the record of what they are for.
 
 
 def test_estrutura_concilia_com_o_ADR_0003():

@@ -237,3 +237,45 @@ E[J] > J(E[k]) por Jensen. Os exatos são **0,701177** (q = 28) e **0,744473**
 
 Nenhum veredito desta nota muda: 0,7005 ± 0,0068 fica a −0,10 sd do exato. Os
 números de chance desta nota leem-se **0,7012** e **0,7445**.
+
+---
+
+## Nota de 2026-10-27 — os números deste achado são por procedimento (Etapa B)
+
+O texto acima fica como está. O que segue não corrige nenhum veredito: corrige
+o que os números **são**.
+
+O `findings/F008` estabeleceu que a sobreposição determinística top-q é
+propriedade da regra de desempate, não dos gates, quando a seleção corta um
+nível de empate exato. Os valores registrados aqui foram obtidos com
+`np.argsort` sem `kind=`, cuja ordem entre valores iguais não é especificada
+pela linguagem. Então:
+
+| número deste achado | o que ele é |
+| --- | --- |
+| J = 0,9452–0,9867 nos sete tamanhos | a ordem de empate do `argsort` em numpy 2.4.6 / Python 3.14.6 |
+| ρ(J, n) = −0,3214 (p = 0,4821) no braço ancorado | a mesma ordem; por índice e sorteada a série é **constante**, e a correlação é indefinida |
+| J = 0,7442 ± 0,0063 sorteado, E[J] = 0,7445 | reproduz entre ambientes; a chave de desempate é aleatória por construção |
+| ρ(J, n) = +0,9286 no braço sem ancoragem | **idêntico nos três procedimentos**; nenhum grupo de empate ocupa a fronteira de rank q a partir de n = 200 |
+
+**Nenhum veredito muda.** H5c, H13c e os demais permanecem como registrados:
+o braço ancorado não responde a n, e continua não respondendo em qualquer
+procedimento — por índice porque a série é constante em 1,0000, sorteada porque
+é constante em 0,7442, e pela ordem do sort porque o que varia é a ordem. A
+conclusão qualitativa é a mesma; a sua base é mais estreita do que o texto
+acima sugere.
+
+**O que sai dos valores-p.** Os p = 0,0025 e p = 0,4821 pressupõem sete
+observações independentes. Os sete tamanhos são subamostras encaixadas de uma
+coleção de 725 frutos e as dez execuções dentro de um tamanho compartilham o
+conjunto de treino daquele tamanho. O manuscrito passou a relatar os
+coeficientes como exploratórios e a omitir os valores-p, em vez de rederivar
+uma justificativa que não existe nestes artefatos. Os valores ficam aqui no
+registro original, identificados pelo que pressupõem.
+
+**O que reproduz e o que não reproduz.** A linha sorteada e o +0,9286 do braço
+sem ancoragem reproduzem em dois ambientes. A faixa 0,9452–0,9867 e o −0,3214
+não reproduzem fora do ambiente em que foram obtidos, e o
+`scripts/13_dependencia_do_sort.py` e o `scripts/14_etapa_b_por_procedimento.py`
+imprimem ambiente, hashes das entradas, q, convenção de agregação e conjuntos
+selecionados para que a comparação entre ambientes seja arquivo por arquivo.

@@ -27,8 +27,9 @@ would give.
 
 This paper examines the conditions under which that overlap means what it is
 taken to mean. The conditions are geometric, they are checkable before any
-model is trained, and one widely reproduced way of encoding a prior violates
-them.
+model is trained, and the way of encoding a prior that we used in our own
+earlier work violates them. How often other encodings do is not something we
+measured, and we do not assert it.
 
 ### 1.1 What the interpretive claim would have to assert
 
@@ -273,6 +274,18 @@ something other than what it was written to measure, the original text is kept
 and the misreading is reported alongside the verdict. Table 1 lists all twenty
 hypotheses with their verdicts and, in a separate column, the interpretation we
 reached afterwards. Eight were not supported.
+
+**The tie-breaking analysis was not part of the original pre-registered
+hypothesis set.** It was introduced as a post hoc diagnostic investigation
+after the observed stability patterns raised questions about the
+interpretation of top-q overlap. Accordingly, the results of this analysis are
+reported separately from the pre-registered hypothesis verdicts in Table 1.
+The computational dependence of top-q selection on boundary ties follows from
+the selection procedure itself; its observed magnitude and consequences are
+specific to the experimental settings examined here. We state this before the
+results rather than in the discussion, because a reader is entitled to know
+which claims were committed in advance and which were not before reading
+either.
 
 ---
 

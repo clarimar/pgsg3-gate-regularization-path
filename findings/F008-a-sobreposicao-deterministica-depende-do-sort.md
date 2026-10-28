@@ -456,3 +456,13 @@ A saída imprimiu `[pypdfium2 ?]` nas cinco linhas. O `pypdfium2` 5.x não expõ
 `__version__`, e o meu `getattr(..., '?')` degradava para interrogação — um campo
 de procedência relatando que não conhece a própria ferramenta, num script cuja
 função é procedência. Corrigido para ler `importlib.metadata.version`.
+
+---
+
+## Nota de 2026-10-28 — renumeração
+
+A lista de afirmações afetadas acima cita a **§4.3** do rascunho de 24/10. Em
+2026-10-28 o autor promoveu esse conteúdo a **§5** independente, mantendo na §4
+as consequências do desempate para a reprodutibilidade (agora §4.3). O item 2
+daquela lista passa a se referir à §5. Nenhum número mudou; só a numeração da
+seção que os relata.

@@ -41,7 +41,29 @@ All runs reported here use θ₀ = 0, so no gate parameter is saturated, the cou
 of inert bands is zero in every cell, and the analysis script verifies the
 absence of exact ties among the sorted values before reporting any overlap.
 These figures are therefore genuine agreements among distinguishable values, at
-q = 29. The 0.9418 of Section 4 comes from a different configuration — the
+q = 29.
+
+That last point is the one Section 4 makes load-bearing, so we checked it
+rather than inferred it. No tie group sits on the selection boundary at rank q
+in any run of this arm, and a tie rule can only reorder values that are exactly
+equal — so index-order tie-breaking, the sort's own order and randomised
+tie-breaking return **the same figure to every digit** here. On the versioned
+control artefacts at λ = 1 the three procedures all give 0.9867, and the same
+holds in the partition directories from which the range above is computed.
+The invariance is arithmetic rather than a judgement: with nothing tied at the
+boundary there is nothing for a rule to decide. These numbers consequently
+need no qualification by sort kind, which is precisely what distinguishes them
+from Section 4's.
+
+Two things make that statement checkable rather than asserted.
+`scripts/14_etapa_b_por_procedimento.py` tests the boundary condition in every
+directory given to it and ends with a single verdict line naming any directory
+where a tie group spans the boundary, where the procedures disagree, or which
+was not measured at all. And the condition is sufficient for what we need from
+it without being stronger than necessary: absence of ties across the whole
+spectrum is not required, only that no tie group spans the selection boundary,
+and that the ordering is over the same values with the rule reordering equal
+values alone. The 0.9418 of Section 4 comes from a different configuration — the
 prior in the initialisation, at q = 28 — and the two must not be compared
 directly. What makes the controls damaging to the interpretation here is not
 that the numbers are artefacts; it is that a prior anticorrelated with the

@@ -66,6 +66,9 @@ documentado na fonte, não inferido. A §2 declara os três números.
 **Faixa de Jaccard: o ADR estava certo, o erro era meu.** `gate_metrics.csv`
 registra `q = 29` por linha, e ao q = 29 a recomputação casa exatamente com os
 valores armazenados — faixa 0,9452--0,9867, que é o 0,945--0,987 da decisão 6.
+**Etapa B, 2026-10-27:** essa faixa é a da ordem de empate do `numpy.argsort`
+em numpy 2.4.6; por índice dá 1,0000 e sorteada dá 0,7442 (F008). A decisão 6
+não muda, mas o número passa a ser citado com o procedimento.
 O meu `check_gates_r2.py` usava `int(p × 0,10)` = 28, truncando, e foi essa
 diferença de convenção que criou a falsa divergência. **Nada a corrigir no
 ADR**; corrigido o F004, que reportava a divergência como se fosse dos dados.
@@ -96,7 +99,8 @@ constante com n — seleção já estabilizada, sinal fraco demais, procedimento
 estruturalmente insensível aos dados.
 
 O enunciado que vai ao manuscrito é o específico: neste experimento a
-estabilidade sem ancoragem cresce com n (ρ = +0,9286, p = 0,0025, variação de
+estabilidade sem ancoragem cresce com n (ρ = +0,9286 nos três procedimentos,
+exploratória e sem valor-p após a Etapa B, variação de
 39×) e a estabilidade sob prior na inicialização permanece em 0,95–1,00 e
 praticamente invariável (ρ = −0,3063, p = 0,5040); isso é evidência de que a
 métrica ancorada **não capta o mesmo fenômeno** que a condição de controle.
@@ -277,7 +281,7 @@ as 34 bandas e o decil de 28 ou 29.
 | platô bit-idêntico | 1/34 valores distintos, amplitude 0,0e+00 | F002, F004 |
 | J publicado reproduzido | 0,9418, idêntico | F002 |
 | colapso ao sortear empates, célula publicada (**q = 28**) | 0,7005 ± 0,0068 contra E[J] = 0,7012 | F002 |
-| **[v3]** os sete tamanhos do pgsg_1 R2 (**q = 29**) | J 0,9452–0,9867 → **0,7442 ± 0,0063** contra E[J] = **0,7445** | F004 |
+| **[v3]** os sete tamanhos do pgsg_1 R2 (**q = 29**) | J **1,0000** por índice; **0,9452–0,9867** pela ordem do sort em numpy 2.4.6; **0,7443–0,7659** em numpy 2.5.3 → **0,7442 ± 0,0063** sorteado, contra E[J] = **0,7445** | F004, F008 |
 | **[v3]** o sorteado é idêntico nas 7 células | o gate não entra no cálculo: só (q, L) | F004 |
 | **J rastreia similaridade fora do platô** | 1,0000 em sd = 0 a 0,7500 em sd = 10⁻²; publicado ≈ sd 1,5×10⁻⁴ | F002 |
 
@@ -291,8 +295,8 @@ não pode ficar de fora.
 
 | afirmação | número | origem |
 | --- | --- | --- |
-| sem ancoragem, cresce com n | **[v3]** 0,0898 → 0,5658; ρ = +0,9286, p = 0,0025 | F004 |
-| sob prior na inicialização, invariável | **[v3]** 0,9452–0,9867; ρ = −0,3214, p = 0,4821 | F004 |
+| sem ancoragem, cresce com n | **[v3]** → 0,5658; ρ = **+0,9286 nos três procedimentos**; exploratória, sem valor-p | F004, F008 |
+| sob prior na inicialização, invariável | **[v3]** sem associação a reportar: série constante por índice e sorteada; ρ = −0,3214 só pela ordem do sort em numpy 2.4.6 | F004, F008 |
 | variação coberta | n de 30 a 1.158, fator 39 | F004 |
 
 Afirmação: as duas condições **não captam o mesmo fenômeno**. Sinal de alerta
@@ -419,6 +423,31 @@ todos eles artefato de desempate, em qualquer q.
 
 ---
 
+### 12. Conclusões **[v5, criada em 2026-10-28]**
+
+Criada pela auditoria integral: o plano previa onze seções e nenhuma era uma
+conclusão, e o manuscrito terminava em Trabalho futuro. A numeração de 1 a 11
+é preservada.
+
+Responde a três perguntas e a nada mais — não repete a discussão nem lista
+recomendações, que são a §9.4:
+
+1. **O que foi demonstrado** — a dependência da seleção top-q em relação ao
+   desempate quando um grupo de valores iguais atravessa a fronteira.
+2. **O que foi observado** — variação substancial do Jaccard para gates
+   idênticos, sob os procedimentos e implementações examinados.
+3. **O que não foi estabelecido** — a prevalência do mecanismo em outras
+   arquiteturas, priors, conjuntos de dados e implementações.
+
+E integra a contribuição anterior à Etapa B: o efeito dos dois papéis do
+prior, inicialização e regularização, sobre o comportamento dos gates. Sem
+ela o artigo pareceria um estudo sobre algoritmos de ordenação.
+
+A cláusula do piso é obrigatória na primeira frase sobre interpretação: F001
+sustenta a inércia no platô, F003 e a §8.2 sustentam o alinhamento com a
+referência externa no piso, e sem a segunda a conclusão é lida como "o modelo
+não aprende".
+
 ## Tabela 1 — as vinte hipóteses pré-registradas **[v2: colunas separadas]**
 
 > **Auditoria de 2026-10-26, contra `F001`–`F007`.** Os vinte vereditos e as
@@ -451,7 +480,7 @@ de uma regra mal redigida, e apagá-lo exigiria reescrever o critério depois do
 
 | | enunciado | veredito pelo critério | o que o resultado sustenta |
 | --- | --- | --- | --- |
-| H0 | existe λ com descolamento e estabilidade | suportada | — |
+| H0 | existe λ com descolamento e estabilidade | suportada | **sem contagem por construção:** o critério é existencial — "existe uma faixa de λ" com ρ < 0,95, R² a 1 DP do melhor e Jaccard ≥ 0,90 (`docs/protocolo_hipoteses.md`) — e não define tally por partição. Acrescentar *k/n* aqui imporia uma unidade que o pré-registro não tem |
 | H5a | o máximo interior transporta | não suportada, 2/5 | a curva satura em vez de picar |
 | H5b | o gate ancorado supera o prior sozinho | suportada, 5/5 | — |
 | H5c | a posição de λ\* é estável | suportada, 5/5 **(formal)** | **passou trivialmente e não conta como confirmação:** a vizinhança de λ=1 foi definida como {0,7; 1; 10} e λ=10 é ao mesmo tempo vizinho de grade e borda, logo o teste não distingue *estável em 1* de *encostado no teto*. Falha de redação do critério (F001) |
