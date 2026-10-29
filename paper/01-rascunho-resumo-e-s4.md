@@ -149,7 +149,7 @@ the data.
 Resolving the ties at random on the archived gate — the same gates, the same q,
 the same formula, only the tie rule changed — gives 0.7005 +- 0.0068 over 200
 draws, against the exact chance value of 0.7012 at that codebase's convention
-(q = 28). The reported 0.9418 is reproduced by the deterministic rule **in the
+(q = 28; Figure 2). The reported 0.9418 is reproduced by the deterministic rule **in the
 environment in which it was obtained**, and that qualification is not a
 formality: the next paragraph is the reason for it.
 

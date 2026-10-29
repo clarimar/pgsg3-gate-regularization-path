@@ -77,6 +77,41 @@ sustentação está fora deste artigo. A coluna final diz quem pode fechar.
 | 4.2, 9 | o gradiente de ordem 10⁻⁶ e o mecanismo da saturação | `[autores-incerteza]`, se os autores decidirem citar trabalho em submissão | autores |
 | 2.2 | o otimizador, se nomeado nos métodos | fonte do Adam | autores |
 
+## A frase da §2.5 — a alternativa não precisa de fonte nenhuma
+
+O ponto mais exposto da auditoria tem saída sem depender de bibliografia, e é
+decisão do autor entre duas rotas. **Nada foi alterado no texto.**
+
+São duas frases, e as duas afirmam prática alheia sem fonte:
+
+| onde | como está |
+| --- | --- |
+| §2.5 (`03-rascunho`, l. 221) | *"A chance level for a Jaccard index over a tied block of L bands is often quoted as q / (2L − q)."* |
+| §4.2.1 (`01-rascunho`, l. 159) | *"We report the exact hypergeometric expectation E[J] = sum_k P(k) k/(2q-k), and not the ratio q/(2L-q) that the band-selection literature uses."* |
+
+**Rota A — citar quem usa a razão.** Mantém as frases como estão e depende de
+pelo menos uma fonte que use `q/(2L−q)` como nível de acaso. Só os autores
+podem fechar.
+
+**Rota B — afirmar só o que este repositório demonstra.** O `F004` registra, em
+correção de 2026-10-24, que *este programa* usou `q/(2L−q)` como se fosse o
+valor exato — *"usam a aproximação `q/(2L−q)` como se fosse o valor exato"* —
+e o `F002` traz a derivação e os exatos, 0,701177 e 0,744473. Então a afirmação
+pode ser sobre nós, verificável nos próprios achados:
+
+- §2.5: *"A chance level for a Jaccard index over a tied block of L bands may
+  be computed as q / (2L − q). That expression is not the expected Jaccard
+  index."* — tira a afirmação sobre a prática de terceiros e mantém a
+  matemática, que é o que o parágrafo precisa.
+- §4.2.1: *"We report the exact hypergeometric expectation
+  E[J] = sum_k P(k) k/(2q-k), and not the ratio q/(2L-q), which we had used
+  ourselves as if it were exact."* — a atribuição passa a ser a nós, com o
+  F004 por trás.
+
+A rota B é a única que fecha sem bibliografia, e enfraquece a frase: o artigo
+deixa de dizer que a literatura erra e passa a dizer que nós erramos e
+corrigimos. É menos ambicioso e é o que está demonstrado.
+
 ## Como isto fecha
 
 `scripts/17_citacoes.py` confere, e nenhuma dessas conferências é opinião:

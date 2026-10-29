@@ -5,7 +5,7 @@ The English text is copied verbatim; the Portuguese drafting apparatus is
 left behind and listed at the end of the generator's output. Do not edit this
 file -- edit the drafts and run the generator again.
 
-Source digest: **3ce6db89ee6b735f** — SHA-256 over the 11 draft files this was
+Source digest: **21d1ab2fb53909be** — SHA-256 over the 11 draft files this was
 built from, truncated. Two copies with the same digest were built from the same
 sources, whatever the git state. The findings in `findings/` and Table 1 below
 belong with this digest; the generator prints the git revision alongside it.
@@ -444,7 +444,7 @@ the data.
 Resolving the ties at random on the archived gate — the same gates, the same q,
 the same formula, only the tie rule changed — gives 0.7005 +- 0.0068 over 200
 draws, against the exact chance value of 0.7012 at that codebase's convention
-(q = 28). The reported 0.9418 is reproduced by the deterministic rule **in the
+(q = 28; Figure 2). The reported 0.9418 is reproduced by the deterministic rule **in the
 environment in which it was obtained**, and that qualification is not a
 formality: the next paragraph is the reason for it.
 
@@ -1440,7 +1440,7 @@ cheap to ask.
 
 ## Figure captions
 
-## Figura 1
+## Figure 1
 
 > **The near-infrared literature prior.** The prior assigns one constant value
 > to each reported absorption region — 0.6 to 680–700 nm, 1.0 to 900–1000 nm,
@@ -1457,7 +1457,7 @@ cheap to ask.
 > The plateau is a property of this construction and not of the
 > normalisation.
 
-## Figura 2
+## Figure 2
 
 > **Overlap of the top-decile gated bands across seeds, by how ties are
 > resolved.** Filled markers are the seven training sizes of the earlier
@@ -1474,7 +1474,7 @@ cheap to ask.
 > inside a plateau of one distinct value and the gate values then enter the
 > statistic nowhere.
 
-## Figura 3
+## Figure 3
 
 > **Response of two stability measures to the training set size.** Panel (a):
 > top-decile overlap across seeds with the prior kept out of the
@@ -1515,7 +1515,7 @@ cheap to ask.
 > dependence: no tie group sits on the selection boundary in panel (a) from
 > n = 200 upward, and panel (c) applies no selection operator at all.
 
-## Figura 4
+## Figure 4
 
 > **The Raman control.** Panel (a): the Raman prior, a sum of Gaussians over
 > the 1870 Raman shifts, which takes 545 distinct values and attains its
@@ -1543,7 +1543,7 @@ cheap to ask.
 > convention of the code that produced the Raman run. It is not mixed with the
 > q = 29 of Figures 2 and 3 (Section 2.4).
 
-## Figura 5
+## Figure 5
 
 > **Within-level agreement between the gate and the separate statistical
 > reference, by

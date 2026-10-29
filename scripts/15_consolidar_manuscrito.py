@@ -190,7 +190,7 @@ def main() -> None:
     # captions, verbatim
     pl = d / LEGENDAS
     bs = blocos(pl.read_text())
-    legendas = [c for t, c in bs if t.startswith("Figura")]
+    legendas = [c for t, c in bs if t.startswith("Figure")]
     if len(legendas) != 5:
         raise SystemExit(f"{LEGENDAS}: expected 5 figure blocks, found "
                          f"{len(legendas)}")
@@ -198,7 +198,7 @@ def main() -> None:
         c.rstrip() + "\n" for c in legendas))
     print(f"  {LEGENDAS:<30} 5 captions")
     for t, c in bs:
-        if not t.startswith("Figura") and t != "__PROSA__":
+        if not t.startswith("Figure") and t != "__PROSA__":
             descartados.append((LEGENDAS, t, len(c.splitlines())))
 
     # Table 1, from the structure document, verbatim. Anchored on its own

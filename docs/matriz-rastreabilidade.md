@@ -3,11 +3,11 @@
 Gerado por `scripts/16_matriz_rastreabilidade.py`. Não editar: a categoria de cada
 teste é declarada no próprio teste, por marcador `pytest`.
 
-256 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
+260 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
 nível do módulo, lida da fonte por AST — não é item coletado pelo pytest nem teste executado. Casos
 parametrizados somam +15 itens na coleta.
 
-## semantico (26)
+## semantico (29)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -37,8 +37,11 @@ parametrizados somam +15 itens na coleta.
 | `test_highlights_e_keywords_nao_divergem_entre_as_duas_fontes` | The five highlights and the six keywords now live in three places: the | `07-declaracoes-submissao.md`, `10-highlights.md`, `11-palavras-chave.md` |
 | `test_12_audita_os_pontos_que_exigem_citacao` | The reference audit of 2026-10-29. The manuscript has no citations at | `12-referencias.md`, `15_consolidar_manuscrito.py` |
 | `test_texto_declara_a_grade_e_o_truncamento` | F009's two text corrections, 2026-10-29. Both state a measured fact and | `03-rascunho-s1-s2-s3.md`, `06-legendas-figuras.md` |
+| `test_cada_figura_e_citada_e_as_legendas_estao_em_ingles` | Two defects found by the conformity scan of 2026-10-29, both fixed in | `01-rascunho-resumo-e-s4.md`, `06-legendas-figuras.md`, `15_consolidar_manuscrito.py` |
+| `test_12_oferece_rota_sem_bibliografia_para_a_frase_da_secao_2_5` | The audit's most exposed point has a way out that needs no reference, | `01-rascunho-resumo-e-s4.md`, `03-rascunho-s1-s2-s3.md`, `12-referencias.md` |
+| `test_07_registra_a_conformidade_medida_sem_alterar_a_citacao_do_autor` | The language rule, measured: British throughout, one American form, and | `05-rascunho-s9-s10-s11.md`, `07-declaracoes-submissao.md` |
 
-## estrutural (15)
+## estrutural (16)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -57,6 +60,7 @@ parametrizados somam +15 itens na coleta.
 | `test_16_nao_emite_linha_semantica_sem_fonte` | A semantic row with no source is a broken traceability link. | `16_matriz_rastreabilidade.py` |
 | `test_15_emite_a_materia_de_frente_fora_da_numeracao` | Front matter, added 2026-10-29 after the second reading of the guide. | `02-resumo-C.md`, `10-highlights.md`, `11-palavras-chave.md` |
 | `test_17_varre_os_rascunhos_que_a_ordem_declara` | The scanner takes its file list from the consolidator's ORDEM, not from | `00-estrutura.md`, `02-resumo-C.md`, `06-legendas-figuras.md` |
+| `test_18_nao_chama_de_mistura_o_que_e_ingles_britanico` | The guide: "write in American or British English but not a combination | — |
 
 ## numerico (9)
 

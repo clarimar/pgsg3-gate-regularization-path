@@ -2235,3 +2235,125 @@ def test_texto_declara_a_grade_e_o_truncamento():
     assert "truncated by the instrument's range, which ends at 1149 nm" in leg
     assert "17 of the bands a full 100 nm window would hold" in leg
     assert "plateau at 900–999 nm is covered in full" in leg
+
+
+def _mod18():
+    import importlib.util
+    cam = RAIZ / "scripts" / "18_conformidade.py"
+    esp = importlib.util.spec_from_file_location("c18", cam)
+    m = importlib.util.module_from_spec(esp)
+    esp.loader.exec_module(m)
+    return m
+
+
+@pytest.mark.estrutural
+def test_18_nao_chama_de_mistura_o_que_e_ingles_britanico():
+    """The guide: "write in American or British English but not a combination
+    of both". A checker for that is only useful if it does not push a correct
+    text into an incorrect one, so three classes are excluded by name:
+
+      - British English uses BOTH "program" (computer code) and "programme"
+        (a plan or project), and both "license" (verb) and "licence" (noun).
+        The manuscript uses each correctly, in that sense.
+      - "size", "sized", "oversized" are the same word in both variants and
+        are not -ise/-ize verb forms. This checker reported "oversized" as an
+        American outlier on its first run, in an abstract that is British
+        throughout.
+      - "precise", "noise", "wise", "promise" and their kin end in -ise
+        without being British spellings.
+    """
+    m = _mod18()
+    pbr = next(p for n, p, _ in m.PARES if n.startswith("-ise"))
+    pam = next(p for n, _, p in m.PARES if n.startswith("-ise"))
+    assert m.ocorrencias(pam, "an oversized level set of size 34") == []
+    assert m.ocorrencias(pbr, "a precise and concise noise, otherwise") == []
+    assert m.ocorrencias(pbr, "this programme and that program") == []
+    assert m.ocorrencias(pam, "the licence the objective does not license") == []
+    # and it does catch a real mixed pair
+    assert m.ocorrencias(pbr, "prior-based initialisation") == ["initialisation"]
+    assert m.ocorrencias(pam, "prior-based initialization") == ["initialization"]
+
+
+@pytest.mark.semantico
+def test_cada_figura_e_citada_e_as_legendas_estao_em_ingles():
+    """Two defects found by the conformity scan of 2026-10-29, both fixed in
+    the same commit, both in what the guide requires of every submission.
+
+    FIGURE 2 WAS CITED NOWHERE. The guide requires each figure to be cited in
+    the text, and Figure 2 -- the overlap by tie rule against the exact
+    hypergeometric line, one of the paper's central figures -- had no citation
+    at all. It is now cited where the randomised-tie result is reported, which
+    is what the figure plots.
+
+    THE CAPTION HEADINGS WERE IN PORTUGUESE. The caption text was English and
+    the headings read "Figura N", and the generator copied them into an
+    otherwise English manuscript. The drafts and the generator now agree on
+    "Figure N", so the artefact carries no Portuguese label.
+    """
+    import re
+    leg = (RAIZ / "paper" / "06-legendas-figuras.md").read_text()
+    for n in range(1, 6):
+        assert f"## Figure {n}" in leg, n
+        assert f"## Figura {n}" not in leg, n
+    src = (RAIZ / "scripts" / "15_consolidar_manuscrito.py").read_text()
+    assert 'if t.startswith("Figure")' in src
+    assert 'startswith("Figura")' not in src
+    # Figure 2 cited where 0.7005 is reported, in 4.2.1
+    s4 = re.sub(r"\s+", " ",
+                (RAIZ / "paper" / "01-rascunho-resumo-e-s4.md").read_text())
+    assert "at that codebase's convention (q = 28; Figure 2)" in s4
+
+
+@pytest.mark.semantico
+def test_12_oferece_rota_sem_bibliografia_para_a_frase_da_secao_2_5():
+    """The audit's most exposed point has a way out that needs no reference,
+    and the file must carry both routes rather than only the one that waits on
+    the authors. Two sentences assert what others do with q/(2L-q) and cite
+    nobody. Route A keeps them and needs a source. Route B says only what this
+    repository demonstrates: F004 records, in a correction of 2026-10-24, that
+    THIS programme used the ratio as if it were exact.
+
+    Route B weakens the claim, and the file must say so: the paper stops
+    saying the literature is wrong and says we were wrong and corrected it.
+    A test that guarded the proposal without guarding that sentence would let
+    the weakening be presented as a free win.
+    """
+    import re
+    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "12-referencias.md").read_text())
+    assert "Nada foi alterado no texto" in t
+    assert "Rota A — citar quem usa a razão" in t
+    assert "Rota B — afirmar só o que este repositório demonstra" in t
+    assert "which we had used ourselves as if it were exact" in t
+    assert "That expression is not the expected Jaccard index" in t
+    assert "enfraquece a frase" in t
+    assert "nós erramos e corrigimos" in t
+    # e o texto do manuscrito continua como estava, nas duas frases
+    s3 = re.sub(r"\s+", " ",
+                (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md").read_text())
+    assert "is often quoted as q / (2L − q)" in s3
+    s4 = re.sub(r"\s+", " ",
+                (RAIZ / "paper" / "01-rascunho-resumo-e-s4.md").read_text())
+    assert "that the band-selection literature uses" in s4
+
+
+@pytest.mark.semantico
+def test_07_registra_a_conformidade_medida_sem_alterar_a_citacao_do_autor():
+    """The language rule, measured: British throughout, one American form, and
+    that form sits inside the blockquote Section 9.3 presents as the authors'
+    own statement. The blockquote is this programme's device for marking text
+    the assistant does not rewrite, so the outlier is reported and left, with
+    both defensible outcomes named. The record must also keep the two pairs
+    that are NOT mixing, so that a later pass does not 'fix' a correct text.
+    """
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "07-declaracoes-submissao.md").read_text())
+    assert "Conformidade medida, 2026-10-29" in t
+    assert "não era citada em lugar nenhum do texto" in t
+    assert "rascunho e gerador passaram a dizer `## Figure N`" in t
+    assert "Não a alterei" in t and "não reescrevo" in t
+    assert "Não contado como mistura" in t
+    assert "`program` (código) contra `programme` (projeto)" in t
+    # a forma americana continua lá, intacta, no bloco do autor
+    bruto = (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md").read_text()
+    assert "prior-based initialization" in bruto

@@ -137,7 +137,7 @@ ScienceDirect. Citado literalmente onde o guia é literal.
 | **referências** | número entre colchetes no texto, numeradas por ordem de aparição, periódicos abreviados pela LTWA; no envio qualquer estilo consistente é aceito | a conferir na montagem final |
 | **figuras** | vetor em EPS ou PDF, **fontes embutidas**; legenda em cada item; cada figura citada no texto | **conforme**: as cinco são PDF vetorial, `pdffonts` reporta `emb=yes` em todas, DejaVu subsetado |
 | **tabelas** | texto editável, não imagem; sem réguas verticais nem sombreamento | a conferir na montagem final |
-| **idioma** | *"We recommend that you write in American or British English but not a combination of both."* | a conferir |
+| **idioma** | *"We recommend that you write in American or British English but not a combination of both."* | **medido em 2026-10-29** por `scripts/18_conformidade.py`: inglês britânico em todo o manuscrito, com **uma** exceção — `initialization`, dentro da citação em bloco da §9.3 que o texto apresenta como declaração dos autores. Decisão do autor, na §2.5 |
 | **formato do fonte** | `.doc`/`.docx` ou `.tex`; coluna única no Word; *"A PDF is not an acceptable source file."* | o manuscrito está em Markdown; a conversão é etapa de envio |
 | limite global do artigo | nenhum declarado para artigos completos; comunicações curtas não passam de quatro páginas impressas | não aplicável |
 | resumo gráfico | o guia não menciona | não aplicável |
@@ -345,3 +345,33 @@ de IA na declaração da §1.1; a declaração de conflito de interesses pela
 ferramenta da revista; as contribuições CRediT; e a declaração de
 disponibilidade de dados nas condições que a §4 lista. Os highlights e as
 palavras-chave estão aprovados e ainda não inseridos no manuscrito.
+
+---
+
+## 6. Conformidade medida, 2026-10-29
+
+`scripts/18_conformidade.py` mede o que das exigências do guia é aritmética
+sobre o texto, e nada do que ele mede é juízo sobre a escrita.
+
+**Dois defeitos encontrados e corrigidos no mesmo dia.** A Figura 2 — a
+sobreposição por regra de desempate contra a esperança hipergeométrica exata,
+uma das figuras centrais — **não era citada em lugar nenhum do texto**, e o
+guia exige que cada figura seja citada. Passou a ser citada onde o resultado
+de desempate aleatório é reportado, que é o que ela mostra. E as legendas
+tinham cabeçalho em português, `## Figura N`, copiado para um manuscrito em
+inglês; rascunho e gerador passaram a dizer `## Figure N`.
+
+**Um ponto aberto, de uma linha.** O manuscrito é britânico de ponta a ponta —
+`initialisation` 25 vezes, `randomised`, `behaviour`, `modelling`, `analysed`,
+`centred` — com uma única forma americana: `initialization`, em
+`05-rascunho-s9-s10-s11.md:84`, dentro da citação em bloco que a §9.3
+apresenta como *"The statement we make is the author's"*. Não a alterei: o
+bloco é o dispositivo que este programa usa para marcar texto do autor que eu
+não reescrevo. As duas saídas defensáveis são grafá-la `initialisation`, por
+ser prosa dos próprios autores adotada no artigo, ou mantê-la e aceitar a
+mistura que o guia desaconselha. É decisão do autor.
+
+**Não contado como mistura:** `program` (código) contra `programme` (projeto),
+e `license` (verbo) contra `licence` (substantivo). O inglês britânico usa as
+duas formas de cada par, e o manuscrito usa cada uma corretamente; um
+verificador que as apontasse empurraria um texto correto para o errado.

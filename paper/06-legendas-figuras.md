@@ -9,7 +9,7 @@ arquivos de resultado, que não vou adivinhar.
 
 ---
 
-## Figura 1
+## Figure 1
 
 > **The near-infrared literature prior.** The prior assigns one constant value
 > to each reported absorption region — 0.6 to 680–700 nm, 1.0 to 900–1000 nm,
@@ -26,7 +26,7 @@ arquivos de resultado, que não vou adivinhar.
 > The plateau is a property of this construction and not of the
 > normalisation.
 
-## Figura 2
+## Figure 2
 
 > **Overlap of the top-decile gated bands across seeds, by how ties are
 > resolved.** Filled markers are the seven training sizes of the earlier
@@ -43,7 +43,7 @@ arquivos de resultado, que não vou adivinhar.
 > inside a plateau of one distinct value and the gate values then enter the
 > statistic nowhere.
 
-## Figura 3
+## Figure 3
 
 > **Response of two stability measures to the training set size.** Panel (a):
 > top-decile overlap across seeds with the prior kept out of the
@@ -84,7 +84,7 @@ arquivos de resultado, que não vou adivinhar.
 > dependence: no tie group sits on the selection boundary in panel (a) from
 > n = 200 upward, and panel (c) applies no selection operator at all.
 
-## Figura 4
+## Figure 4
 
 > **The Raman control.** Panel (a): the Raman prior, a sum of Gaussians over
 > the 1870 Raman shifts, which takes 545 distinct values and attains its
@@ -112,7 +112,7 @@ arquivos de resultado, que não vou adivinhar.
 > convention of the code that produced the Raman run. It is not mixed with the
 > q = 29 of Figures 2 and 3 (Section 2.4).
 
-## Figura 5
+## Figure 5
 
 > **Within-level agreement between the gate and the separate statistical
 > reference, by
