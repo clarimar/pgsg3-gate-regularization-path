@@ -26,6 +26,14 @@
 # Recusado pelo autor: escrever `0.7005±0.0068` sem espaços para o
 # contador registrar um token em vez de três.
 #
+# Quarta decisão, 2026-10-29, sem custo de palavra: `at that codebase's
+# convention of q = 28` passou a `at the published convention of q = 28`,
+# aprovada pelo autor com a condição de q = 28 continuar explícito ao lado.
+# Motivo: o guia exige *"Abstracts must be able to stand alone"*, e `that
+# codebase` ficou sem antecedente quando `from our own earlier work` saiu da
+# terceira frase. Duas palavras por duas; 249 continuam 249. Fica em paralelo
+# com `at the revision convention of q = 29`.
+#
 # Não tocado: a enumeração das três condições; `permits an artefact but
 # does not produce one`; o modelo nulo nomeado com o seu q = 28; a
 # cláusula do gradiente, que é o que define `operationally inert` dentro
@@ -45,7 +53,7 @@ the prior's saturated level operationally inert, with gradients of order
 does not produce one; three conditions together do: an oversized level
 set, ties surviving training, and a deterministic tie rule. The
 near-infrared prior meets all three, a continuous Raman prior none:
-overlap of 0.9418, at that codebase's convention of q = 28, falls to
+overlap of 0.9418, at the published convention of q = 28, falls to
 0.7005 +- 0.0068 under random tie-breaking, against the exact expectation,
 0.7012, for drawing 28 of 34 plateau bands twice. Outside the saturated
 plateau, the gates retained data-associated structure, aligning positively

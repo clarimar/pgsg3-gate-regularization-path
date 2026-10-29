@@ -375,3 +375,27 @@ mistura que o guia desaconselha. É decisão do autor.
 e `license` (verbo) contra `licence` (substantivo). O inglês britânico usa as
 duas formas de cada par, e o manuscrito usa cada uma corretamente; um
 verificador que as apontasse empurraria um texto correto para o errado.
+
+---
+
+## 7. As quatro decisões de 2026-10-29
+
+| item | decisão do autor | estado |
+| --- | --- | --- |
+| resumo | usar `at the published convention`, **desde que q = 28 continue explícito ao lado** | **aplicado**; 249 palavras, sem custo, e o guarda do teste exige o `q = 28` ao lado |
+| §2.5 | rota A se o procedimento deriva de metodologia publicada; se for definição original do estudo, a atribuição deve ser nossa | **condicional, e a condição não foi satisfeita**: a busca de 2026-10-29 não achou fonte que use `q/(2L−q)` como nível de acaso. Registrado na §2.5 de `12-referencias.md`, com a ressalva de que não achar não demonstra não existir |
+| `initialization` | manter verbatim dentro da citação literal; grafia britânica na redação autoral | **aplicado no verificador, não no texto**: `18_conformidade.py` passou a contar prosa autoral e citação literal **separadamente**, e o manuscrito não tem nenhuma forma fora da variante em prosa autoral |
+| conversão | `.tex`, como formato principal | aceito; a montagem é o próximo incremento |
+
+**O que a terceira decisão mudou no verificador, e por quê.** Antes ele exigia
+uma única variante em todo o texto, e com isso pedia que uma citação literal
+fosse alterada para satisfazer uma regra de redação — o que é pior do que a
+mistura que a regra evita. Agora ele separa as duas populações pelos
+marcadores de citação em bloco, relata as duas, e só conta defeito o que
+estiver em prosa autoral. As legendas das figuras também são blocos citados em
+Markdown, mas são texto autoral, e por isso voltam para o lado autoral antes
+da contagem.
+
+Com isso o manuscrito **não tem nenhum defeito no que esse verificador mede**:
+uma variante em prosa autoral, as cinco figuras e a Tabela 1 citadas, legendas
+contíguas. O `--strict` sai com 0.

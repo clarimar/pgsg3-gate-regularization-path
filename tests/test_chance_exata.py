@@ -527,7 +527,14 @@ def test_resumo_representa_o_artigo_depois_da_etapa_b():
             "than an identifiable property of the gates") in r
     # as duas convencoes de decil ficam marcadas, para que q=28 e q=29 nao
     # sejam comparados diretamente (item 2 do autor)
-    assert "at that codebase's convention of q = 28" in r
+    # Reworded by the author on 2026-10-29, at no cost in words, because the
+    # guide requires "Abstracts must be able to stand alone": "that codebase"
+    # had lost its antecedent when "from our own earlier work" came out of the
+    # third sentence on 2026-10-28, and a demonstrative that points forward
+    # does not hold in a text read on its own. Approved on the condition that
+    # q = 28 stay explicit beside it, which the assertion enforces.
+    assert "at the published convention of q = 28" in r
+    assert "that codebase's convention" not in r
     # Reworded by the author on 2026-10-28, in the compression to the
     # journal's 250-word limit: "at the revision data's own convention of
     # q = 29" became "at the revision convention of q = 29", two words. The
@@ -2357,3 +2364,105 @@ def test_07_registra_a_conformidade_medida_sem_alterar_a_citacao_do_autor():
     # a forma americana continua lá, intacta, no bloco do autor
     bruto = (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md").read_text()
     assert "prior-based initialization" in bruto
+
+
+@pytest.mark.estrutural
+def test_18_separa_prosa_autoral_de_citacao_literal():
+    """The author's decision of 2026-10-29: a verbatim quotation is reproduced
+    as it was written, so an outlier inside one is not a defect; British
+    spelling is required of authorial prose only.
+
+    Before this, the checker demanded one variant everywhere, which amounted
+    to asking that a quotation be altered to satisfy a rule about writing --
+    worse than the mixing the rule exists to prevent. The split is measured on
+    blockquote markers, because that is how this manuscript marks quotation.
+
+    Figure captions are blockquotes too, and they ARE authorial, so they are
+    counted on the authorial side. A test that did not pin that down would let
+    a caption's spelling go unchecked.
+    """
+    m = _mod18()
+    autoral, citado = m.separa_citacoes(
+        "authorial line\n> quoted line\n  > indented quote\nmore authorial\n")
+    assert "authorial line" in autoral and "more authorial" in autoral
+    assert "quoted line" in citado and "indented quote" in citado
+    assert "quoted line" not in autoral
+    src = (RAIZ / "scripts" / "18_conformidade.py").read_text()
+    # as legendas voltam para o lado autoral
+    assert 'autoral = autoral_corpo + "\\n" + legendas' in src
+    # e so a prosa autoral gera defeito
+    assert "form(s) in AUTHORIAL prose" in src
+
+
+@pytest.mark.semantico
+def test_12_fecha_o_conjunto_raman_por_concordancia_declarada():
+    """The Raman dataset, identified on 2026-10-29. "bioprocess_substrates"
+    and "RamanBench" named no publication; the search closed both. The
+    identification of the local file with the public deposit rests on three
+    exact agreements with what the manuscript already declares -- 6960
+    spectra, 1870 shifts plus eight targets against 1878 columns, glucose
+    among the targets -- and NOT on a name match, because the name
+    "bioprocess_substrates" appears in none of the sources.
+
+    The record must say that, and must leave the confirmation with the author,
+    who ingested the file. A dataset identified by three matching numbers and
+    presented as identified by name would be the kind of quiet overreach this
+    audit exists to prevent.
+    """
+    import re
+    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "12-referencias.md").read_text())
+    assert "doi:10.1016/j.measurement.2025.118884" in t
+    assert "Measurement 258 (2026) 118884" in t
+    assert "arXiv:2605.02003v1" in t
+    assert "chlange/SubstrateMixRaman" in t and "CC BY 4.0" in t
+    assert "é por concordância aritmética e não por nome" in t
+    assert "não aparece** em nenhuma das fontes" in t
+    assert "é o autor quem a confirma" in t
+
+
+@pytest.mark.semantico
+def test_12_registra_o_dossie_e_os_tres_destinos():
+    """The dossier the author asked for on 2026-10-29, and the complication it
+    exposes. "our own earlier work" and "the earlier study" may point at
+    DIFFERENT papers, and one of them cannot be cited as published: F004
+    records that the seven-size gate vectors come from the pgsg_1 R2 revision,
+    whose manuscript was rejected and will not be resubmitted, while the same
+    finding calls q = 28 "a definição do código publicado", and ADR-0003 ties
+    the displacement control to the accepted modalities paper.
+
+    Three destinations, not one. The file must hold the dossier with file and
+    line for each claim, and must not resolve the attribution, which is the
+    authors'.
+    """
+    import re
+    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "12-referencias.md").read_text())
+    assert "Dossiê" in t
+    assert "Gate Topology and Reproducibility of Prior-Guided Spectral Gating" in t
+    assert "C. J. Coelho e G. Coelho" in t
+    assert "prior-guided-spectral-gating" in t
+    assert "manuscrito **rejeitado**, não será ressubmetido" in t
+    assert "Três destinos, não um" in t
+    assert "Nenhuma dessas três atribuições é minha para fechar" in t
+    # a busca pela razao, e o que ela nao demonstra
+    assert "Não encontrei nenhuma" in t
+    assert "Não ter encontrado não demonstra que não exista" in t
+
+
+@pytest.mark.semantico
+def test_07_registra_as_quatro_decisoes_e_a_condicao_nao_satisfeita():
+    """The author's four decisions of 2026-10-29. Three are applied and one is
+    conditional, and the record must not present the conditional one as
+    settled: route A for Section 2.5 holds only if the ratio derives from a
+    published methodology, and the search did not find one. A table that
+    listed it as "decided" would turn an open question into a closed one.
+    """
+    import re
+    t = re.sub(r"\s+", " ",
+               (RAIZ / "paper" / "07-declaracoes-submissao.md").read_text())
+    assert "As quatro decisões de 2026-10-29" in t
+    assert "desde que q = 28 continue explícito ao lado" in t
+    assert "condicional, e a condição não foi satisfeita" in t
+    assert "manter verbatim dentro da citação literal" in t
+    assert "`.tex`, como formato principal" in t
+    # e o motivo da mudanca no verificador fica dito
+    assert "pedia que uma citação literal fosse alterada" in t

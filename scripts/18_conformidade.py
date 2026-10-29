@@ -12,6 +12,14 @@ counts prose. This script counts.
      English but not a combination of both." The check reports the variant the
      manuscript uses and every outlier against it, with file and line.
 
+     AUTHORIAL PROSE AND VERBATIM QUOTATION ARE COUNTED APART, by the author's
+     decision of 2026-10-29: a quotation is reproduced as it was written, so
+     an outlier inside one is not a defect, and British spelling is required
+     of authorial prose only. The manuscript's quotations are blockquotes,
+     lines beginning "> ", which is what the split is measured on. A checker
+     that demanded one variant everywhere would be asking for a quotation to
+     be altered.
+
      Two pairs are NOT mixing and are excluded on purpose. British English
      uses "program" for computer code and "programme" for a plan or project,
      and "license" for the verb against "licence" for the noun. A checker that
@@ -91,6 +99,20 @@ def head(t: str) -> None:
     print(f"\n{SEP}\n{t}\n{SEP}")
 
 
+def separa_citacoes(texto: str) -> tuple[str, str]:
+    """(authorial prose, verbatim quotation), split on blockquote markers.
+
+    A quotation in this manuscript is a blockquote. The caption block is one
+    too, and captions ARE authorial, so the split is applied to the body only
+    -- the caller passes the body, and the captions come back through the
+    authorial side.
+    """
+    autoral, citado = [], []
+    for linha in texto.splitlines():
+        (citado if linha.lstrip().startswith(">") else autoral).append(linha)
+    return "\n".join(autoral), "\n".join(citado)
+
+
 def ocorrencias(padrao: str, texto: str) -> list[str]:
     saida = []
     for m in re.finditer(padrao, texto, re.I):
@@ -140,6 +162,10 @@ def main() -> int:
     defeitos: list[str] = []
 
     head("Spelling: American or British, but not both")
+    # Captions are blockquotes and are authorial, so they are moved to the
+    # authorial side before the split is read.
+    autoral_corpo, citado = separa_citacoes(corpo)
+    autoral = autoral_corpo + "\n" + legendas
     br_total, am_total = 0, 0
     detalhe: list[tuple[str, Counter, Counter]] = []
     for nome, pbr, pam in PARES:
@@ -158,16 +184,28 @@ def main() -> int:
         if sum(dentro.values()) or sum(fora.values()):
             print(f"\n  {nome}")
             print(f"    in variant : {dict(dentro.most_common(8)) or 'none'}")
-            if fora:
-                print(f"    OUTLIERS   : {dict(fora)}")
-                for w in fora:
-                    for loc in onde(w):
-                        print(f"      {w} at {loc}")
-                defeitos.append(
-                    f"{sum(fora.values())} {variante}-inconsistent form(s) "
-                    f"in {nome}: {sorted(fora)}")
-            else:
+            if not fora:
                 print("    OUTLIERS   : none")
+                continue
+            pbr = next(p for n, p, _ in PARES if n == nome)
+            pam = next(p for n, _, p in PARES if n == nome)
+            padrao_fora = pam if variante == "British" else pbr
+            em_autoral = Counter(ocorrencias(padrao_fora, autoral))
+            em_citado = Counter(ocorrencias(padrao_fora, citado))
+            print(f"    OUTLIERS   : {dict(fora)}")
+            print(f"      in authorial prose : "
+                  f"{dict(em_autoral) or 'none'}")
+            print(f"      in verbatim quotes : "
+                  f"{dict(em_citado) or 'none'}   (exempt: a quotation is "
+                  f"reproduced, not spelled)")
+            for w in fora:
+                for loc in onde(w):
+                    print(f"      {w} at {loc}")
+            if em_autoral:
+                defeitos.append(
+                    f"{sum(em_autoral.values())} {variante}-inconsistent "
+                    f"form(s) in AUTHORIAL prose, {nome}: "
+                    f"{sorted(em_autoral)}")
     print("\n  Not counted as mixing, because British English uses both:")
     print("    program (code) / programme (project); "
           "license (verb) / licence (noun)")
@@ -193,8 +231,11 @@ def main() -> int:
         for d in defeitos:
             print(f"  DEFECT: {d}")
     else:
-        print("  No defect in what is measured here: one spelling variant,")
-        print("  every figure and table cited, captions contiguous.")
+        print("  No defect in what is measured here: one spelling variant in")
+        print("  authorial prose, every figure and table cited, captions")
+        print("  contiguous. An outlier inside a verbatim quotation, if any is")
+        print("  listed above, is exempt by the author's decision of")
+        print("  2026-10-29 and is not counted as a defect.")
     print("\n  Not measured: whether a citation sits in the right sentence,")
     print("  whether the English reads well, or whether the converted tables")
     print("  carry vertical rules -- that last is a property of the converted")
