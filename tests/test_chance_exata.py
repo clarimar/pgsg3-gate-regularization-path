@@ -45,6 +45,24 @@ import pytest
 
 RAIZ = Path(__file__).resolve().parents[1]
 
+LIMITE_RESUMO = 250  # Chemolab, guide for authors: "does not exceed 250 words"
+
+
+def _resumo_prosa(nome: str = "02-resumo-C.md") -> str:
+    """The abstract alone, with its commented decision history stripped.
+
+    Added 2026-10-28. The history above the '---' separator now QUOTES English
+    fragments of the abstract, including one the author decided to REMOVE. An
+    assertion run over the whole file could therefore be satisfied by the note
+    that records the removal, which is the opposite of a guard. Every claim
+    about the abstract is checked against the prose that will be submitted.
+    """
+    import re
+    bruto = (RAIZ / "paper" / nome).read_text()
+    partes = bruto.split("\n---\n", 1)
+    assert len(partes) == 2, f"{nome} lost its '---' separator"
+    return re.sub(r"\s+", " ", partes[1]).strip()
+
 
 def _mod():
     cam = RAIZ / "scripts" / "check_gates_r2.py"
@@ -432,7 +450,7 @@ def test_resumo_na_ordem_logica_do_autor():
     stated logical order, and the two abstract additions must not be bought
     by dropping a standing requirement. Rewritten rather than appended."""
     import re
-    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "02-resumo-C.md").read_text())
+    t = _resumo_prosa("02-resumo-C.md")
     # 2. metodo: os dois papeis do prior, com a formulacao do autor
     assert ("We disentangle prior-based gate initialisation from prior-based "
             "regularisation") in t
@@ -496,7 +514,7 @@ def test_resumo_representa_o_artigo_depois_da_etapa_b():
     with the tie-breaking evidence, not to patch the coefficients, because
     correcting them would leave the false symmetry between the two arms."""
     import re
-    r = re.sub(r"\s+", " ", (RAIZ / "paper" / "02-resumo-C.md").read_text())
+    r = _resumo_prosa("02-resumo-C.md")
     # a frase antiga saiu inteira, com os dois valores-p
     assert "Decile overlap grows with" not in r
     assert "p = 0.003" not in r and "p = 0.48" not in r
@@ -510,7 +528,16 @@ def test_resumo_representa_o_artigo_depois_da_etapa_b():
     # as duas convencoes de decil ficam marcadas, para que q=28 e q=29 nao
     # sejam comparados diretamente (item 2 do autor)
     assert "at that codebase's convention of q = 28" in r
-    assert "at the revision data's own convention of q = 29" in r
+    # Reworded by the author on 2026-10-28, in the compression to the
+    # journal's 250-word limit: "at the revision data's own convention of
+    # q = 29" became "at the revision convention of q = 29", two words. The
+    # requirement is unchanged -- q = 29 stays attributed to the revision and
+    # separate from the q = 28 cell -- and the author chose this over cutting
+    # the verb "examine", whose removal would have left "disentangle X from Y
+    # and their effects" syntactically ambiguous. The guard follows the
+    # author's wording; it does not keep a wording the author retired.
+    assert "at the revision convention of q = 29" in r
+    assert "at the revision data's own convention" not in r
 
 
 @pytest.mark.semantico
@@ -823,9 +850,7 @@ def test_resumo_C_carrega_as_quatro_exigencias():
     """The four binding requirements the author attached to approving
     register C, 2026-10-24. Recorded in 00-estrutura.md, 'Registro
     editorial'; two of them correct C's own first draft."""
-    import re
-    # the file is wrapped prose, so match on collapsed whitespace
-    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "02-resumo-C.md").read_text())
+    t = _resumo_prosa("02-resumo-C.md")
     # 1. a plateau larger than q creates the possibility, not the defect
     assert "does not produce one" in t
     assert "only if" not in t          # the overstated phrasing, retired
@@ -996,7 +1021,7 @@ def test_resumo_suspende_a_sustentacao_integral():
     tie-breaking artefact but not that the displacement control sustains the
     earlier interpretation in full."""
     import re
-    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "02-resumo-C.md").read_text())
+    t = _resumo_prosa("02-resumo-C.md")
     assert "is what supports its interpretive claim" not in t
     assert "is immune to this artefact" in t
     assert "lowers it by 0.018 (Pearson) or 0.051 (Spearman)" in t
@@ -1767,11 +1792,19 @@ def test_07_separa_exigencia_confirmada_de_nao_verificada():
     assert "each a maximum of 85 characters, including spaces" in t
     assert "1 to 7 keywords" in t
     assert "Authors must declare the use of generative AI tools" in t
-    # o resumo contra o limite: a conta, e a decisao que ela nao toma
+    # o resumo contra o limite: a conta, e quem tomou a decisao
     assert "excesso **54**" in t
-    assert "chega-se a **253** — três acima" in t
-    assert "retirar conteúdo ou encurtar uma formulação" in t
-    assert "isso é decisão do autor" in t
+    # Updated 2026-10-28. The earlier guard asserted the 253-word floor I had
+    # reported. That floor was invalid -- the route to it removed four
+    # fragments the suite requires of the abstract -- so the guard now holds
+    # the correction in place instead of the error: the real floor, the
+    # corrected inventory, and the three decisions that closed the gap.
+    assert "Esse número era inválido" in t
+    assert "são **21**, em quatro funções de teste" in t
+    assert "**145 palavras literais**" in t
+    assert "O piso real da compressão é 266 palavras" in t
+    assert "As últimas 17 palavras saíram por três decisões do autor" in t
+    assert "Recusado pelo autor" in t and "sem espaços em torno do ±" in t
     # e as figuras conferidas, nao supostas
     assert "pdffonts` reporta `emb=yes` em todas" in t
     assert "Nada entra como conforme por analogia" in t
@@ -1865,3 +1898,120 @@ def test_f007_corrige_o_espacamento_e_separa_proveniencia():
     assert "associação exploratória**" in t
     assert "não uso a correlação entre P2 e max |d| como evidência" in t
     assert "compartilham dependência matemática" in t
+
+
+@pytest.mark.semantico
+def test_resumo_cabe_no_limite_confirmado_do_chemolab():
+    """The journal's limit, read at the source on 2026-10-28: "You are
+    required to provide a concise and factual abstract which does not exceed
+    250 words." Quoted verbatim in 07-declaracoes-submissao.md.
+
+    Two things are checked, and the second matters as much as the first. The
+    abstract must fit the limit; and the count declared in the file's own
+    header must be the measured count, so that a later edit cannot leave a
+    stale number standing next to a text that no longer has it. The unit is
+    whitespace-separated tokens, which is what the Word counter approximates
+    and which the file states.
+    """
+    import re
+    prosa = _resumo_prosa()
+    medido = len(prosa.split())
+    assert medido <= LIMITE_RESUMO, f"abstract at {medido} words"
+    bruto = (RAIZ / "paper" / "02-resumo-C.md").read_text()
+    declarado = re.search(r"(\d+) palavras por espaço em branco", bruto)
+    assert declarado, "the abstract file no longer declares its word count"
+    assert int(declarado.group(1)) == medido, (
+        f"header says {declarado.group(1)}, measured {medido}")
+    # the removed framing sentence must not creep back in
+    assert "Interpretive stability in prior-guided" not in prosa
+
+
+@pytest.mark.semantico
+def test_highlights_nao_convertem_resultado_fraco_em_ausencia():
+    """The three corrections the author approved on 2026-10-28. A highlight is
+    read on its own, with no sentence beside it to qualify it, so each of the
+    three earlier wordings failed a test the manuscript itself applies:
+
+    H4 claimed alignment at the floor "not at its plateau", which Figure 5's
+    caption explicitly refuses -- a weaker result at the plateau is not
+    evidence of absence there. H3 used "operationally inert", a term defined
+    only inside the abstract by its gradient clause; alone in a bullet it
+    invites the mathematical-immobility reading F007 refutes (max |d| between
+    1.2e-6 and 6.7e-6, small and NONZERO). H2 said "different sort rules",
+    conflating the sorting implementation with the tie rule, which F008 keeps
+    apart.
+    """
+    import re
+    bruto = (RAIZ / "paper" / "07-declaracoes-submissao.md").read_text()
+    t = re.sub(r"\s+", " ", bruto)
+    # The retired wordings are QUOTED in the note that records why they were
+    # retired, so the check reads the TABLE ROWS and not the section: a guard
+    # that a correction note can satisfy guards nothing. Same lesson as the
+    # abstract header, found the same day.
+    secao = bruto.split("### 2.1", 1)[1].split("\n### ", 1)[0]
+    linhas = [l for l in secao.splitlines()
+              if re.match(r"^\|\s*\d+\s*\|", l)]
+    textos = [l.split("|")[2].strip() for l in linhas]
+    declarados = [int(l.split("|")[1].strip()) for l in linhas]
+    assert 3 <= len(textos) <= 5, f"{len(textos)} highlights, the guide says 3 to 5"
+    for n, h in zip(declarados, textos):
+        assert len(h) == n, (h, len(h), n)      # contagem declarada = medida
+        assert len(h) <= 85, (h, len(h))        # limite do guia
+    assert textos == [
+        "Top-q overlap depends on the tie rule when the boundary cuts equal "
+        "gate values",
+        "The same stored gates gave overlaps of 0.744 to 1.000 across sorting "
+        "procedures",
+        "Prior-based initialisation makes the saturated level unresponsive to "
+        "the penalty",
+        "Gates align with a separate statistical reference at the prior's "
+        "223-band floor",
+        "Check boundary ties before reading overlap as reproducible band "
+        "selection",
+    ]
+    # e as tres redacoes retiradas ficam registradas como retiradas
+    assert "afirmava o que a legenda da Figura 5 **recusa explicitamente**" in t
+    assert "pequeno e **não nulo**" in t
+    assert "fundia implementação de ordenação e regra" in t
+    # o limite do guia e a contagem declarada, nao suposta
+    assert "o limite é 85" in t
+    assert "medida e não estimada" in t
+
+
+@pytest.mark.estrutural
+def test_16_nao_emite_linha_semantica_sem_fonte():
+    """A semantic row with no source is a broken traceability link.
+
+    Found in the author's run of 2026-10-28, immediately after the abstract
+    compression. The four abstract tests had been redirected from reading
+    `paper/02-resumo-C.md` to a helper, `_resumo_prosa`, which reads the file
+    for them. The matrix takes each test's sources from the string literals in
+    the test body, so three semantic rows -- the four binding requirements of
+    register C, the author's logical order, and the Stage B evidence -- were
+    printed with no source at all. `--check` passed throughout: the stored
+    matrix matched the generated one, and both had lost the same link.
+
+    The repair was to have the callers name the file they guard, so the link
+    comes from a literal the test really passes to the reader rather than from
+    a comment. This test is the barrier: the matrix's purpose is
+    decision -> source -> test, and a row missing the middle term is not a
+    formatting defect.
+    """
+    import ast
+    import importlib.util
+    cam = RAIZ / "scripts" / "16_matriz_rastreabilidade.py"
+    esp = importlib.util.spec_from_file_location("m16", cam)
+    m16 = importlib.util.module_from_spec(esp)
+    esp.loader.exec_module(m16)
+    orfas = []
+    for f in sorted((RAIZ / "tests").glob("test_*.py")):
+        texto = f.read_text()
+        for no in ast.walk(ast.parse(texto)):
+            if not (isinstance(no, ast.FunctionDef)
+                    and no.name.startswith("test_")):
+                continue
+            marcas = [d.attr for d in no.decorator_list
+                      if isinstance(d, ast.Attribute)]
+            if "semantico" in marcas and not m16.fontes_citadas(no, texto):
+                orfas.append(no.name)
+    assert not orfas, f"semantic tests with no source: {orfas}"

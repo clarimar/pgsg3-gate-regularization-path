@@ -3,11 +3,11 @@
 Gerado por `scripts/16_matriz_rastreabilidade.py`. Não editar: a categoria de cada
 teste é declarada no próprio teste, por marcador `pytest`.
 
-246 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
+249 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
 nível do módulo, lida da fonte por AST — não é item coletado pelo pytest nem teste executado. Casos
 parametrizados somam +15 itens na coleta.
 
-## semantico (21)
+## semantico (23)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -32,8 +32,10 @@ parametrizados somam +15 itens na coleta.
 | `test_prior_nao_e_descrito_como_min_max` | The literature prior is not min-max normalised: make_literature_prior | `03-rascunho-s1-s2-s3.md`, `F002-o-que-as-metricas-interpretativas-medem.md`, `paper/03-rascunho-s1-s2-s3.md` |
 | `test_f008_separa_o_medido_do_inferido` | The finding must keep three things apart: what was measured here, what | `F008-a-sobreposicao-deterministica-depende-do-sort.md` |
 | `test_07_separa_exigencia_confirmada_de_nao_verificada` | The submission matter must keep the two categories apart: what was read | `07-declaracoes-submissao.md` |
+| `test_resumo_cabe_no_limite_confirmado_do_chemolab` | The journal's limit, read at the source on 2026-10-28: "You are | `02-resumo-C.md` |
+| `test_highlights_nao_convertem_resultado_fraco_em_ausencia` | The three corrections the author approved on 2026-10-28. A highlight is | `07-declaracoes-submissao.md` |
 
-## estrutural (12)
+## estrutural (13)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -49,6 +51,7 @@ parametrizados somam +15 itens na coleta.
 | `test_13_nao_esconde_um_sd_nao_nulo_atras_do_arredondamento` | Author's Raman run, 2026-10-27: the table printed sd as 0.0000 in all | `13_dependencia_do_sort.py` |
 | `test_12_nao_chama_verificada_uma_figura_sem_entradas` | Reproducibility of a procedure is not conformity of a submitted file. | `12_verifica_figuras.py`, `pyproject.toml` |
 | `test_09_garante_dtype_antes_de_comparar_bits` | view(np.int64) presupposes the array really is float64, which the | `09_controle_deslocamento.py` |
+| `test_16_nao_emite_linha_semantica_sem_fonte` | A semantic row with no source is a broken traceability link. | `16_matriz_rastreabilidade.py` |
 
 ## numerico (7)
 

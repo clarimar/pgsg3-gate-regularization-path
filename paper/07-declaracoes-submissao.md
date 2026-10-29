@@ -123,9 +123,9 @@ ScienceDirect. Citado literalmente onde o guia é literal.
 
 | exigência | o guia diz | estado do manuscrito |
 | --- | --- | --- |
-| **resumo** | *"You are required to provide a concise and factual abstract which does not exceed 250 words."* | **304 palavras — 54 acima** |
-| **highlights** | *"Highlights should consist of 3 to 5 bullet points, each a maximum of 85 characters, including spaces."* | **ausentes**; cinco candidatos na §2.1 abaixo, todos dentro do limite |
-| **palavras-chave** | *"You are required to provide 1 to 7 keywords for indexing purposes."* | **ausentes**; seis candidatas na §2.2 |
+| **resumo** | *"You are required to provide a concise and factual abstract which does not exceed 250 words."* | **conforme desde 2026-10-28**: 249 palavras, uma de margem; era 304, e a compressão está na §2.3 |
+| **highlights** | *"Highlights should consist of 3 to 5 bullet points, each a maximum of 85 characters, including spaces."* | **aprovados em 2026-10-28**: os cinco da §2.1, três deles corrigidos no mesmo dia; ainda não inseridos no manuscrito |
+| **palavras-chave** | *"You are required to provide 1 to 7 keywords for indexing purposes."* | **aprovadas em 2026-10-28**: as seis da §2.2; ainda não inseridas no manuscrito |
 | **disponibilidade de dados** | *"you are encouraged to state the availability of any data at submission"*; política de dados Opção C: depositar e citar, ou declarar por que não pode ser compartilhado | **ausente**; os fatos a conferir estão na §3 |
 | **declaração de IA** | *"Authors must declare the use of generative AI tools in the manuscript preparation process upon submission of the paper."* | texto pronto na §1.1, pendente de nomear as outras ferramentas |
 | **conflito de interesses** | *"The declarations tool should always be completed"*; quem não tem nada a declarar escolhe *"I have nothing to declare"*; enviado como `.doc`/`.docx`; assinaturas não exigidas | **ausente** |
@@ -139,48 +139,107 @@ ScienceDirect. Citado literalmente onde o guia é literal.
 | limite global do artigo | nenhum declarado para artigos completos; comunicações curtas não passam de quatro páginas impressas | não aplicável |
 | resumo gráfico | o guia não menciona | não aplicável |
 
-### 2.1 Highlights candidatos
+### 2.1 Highlights — aprovados em 2026-10-28
 
-Cinco, para o autor escolher três a cinco. A contagem é de caracteres com
-espaços, medida e não estimada:
+Os cinco, aprovados pelo autor, com as funções que ele atribuiu a cada um:
+mecanismo do desempate, magnitude observada, inércia localizada,
+aprendizagem fora do platô e recomendação metodológica. A contagem é de
+caracteres com espaços, medida e não estimada; o limite é 85.
 
 | chars | texto |
 | --- | --- |
 | 78 | Top-q overlap depends on the tie rule when the boundary cuts equal gate values |
-| 76 | Identical gates gave overlaps from 0.744 to 1.000 under different sort rules |
-| 73 | Prior-based initialisation leaves the saturated level operationally inert |
-| 78 | Gates align with a separate reference at the prior's floor, not at its plateau |
+| 79 | The same stored gates gave overlaps of 0.744 to 1.000 across sorting procedures |
+| 80 | Prior-based initialisation makes the saturated level unresponsive to the penalty |
+| 79 | Gates align with a separate statistical reference at the prior's 223-band floor |
 | 73 | Check boundary ties before reading overlap as reproducible band selection |
 
-### 2.2 Palavras-chave candidatas
+**Três foram corrigidos em 2026-10-28, por conteúdo e não por estilo.** Um
+highlight é lido sozinho, sem a frase que o define ao lado, e as três redações
+anteriores não sobreviviam a essa leitura:
+
+1. `Gates align with a separate reference at the prior's floor, not at its
+   plateau` afirmava o que a legenda da Figura 5 **recusa explicitamente**: um
+   resultado mais fraco no platô não é evidência de ausência lá, e a ausência
+   de diferença demonstrada entre os níveis não demonstra que se comportem
+   igual. A nova redação diz onde o alinhamento foi medido — as 223 bandas do
+   piso — e não afirma nada sobre o platô.
+2. `Prior-based initialisation leaves the saturated level operationally inert`
+   usava um termo que só existe no resumo, onde a cláusula do gradiente o
+   define. Isolado num bullet, `inert` convida à leitura de imobilidade
+   matemática, que o F007 refuta: `max |d|` no platô fica entre 1,2×10⁻⁶ e
+   6,7×10⁻⁶, pequeno e **não nulo**. A nova redação nomeia o que não responde
+   e a que não responde: a penalidade.
+3. `under different sort rules` fundia implementação de ordenação e regra
+   explícita de desempate, que o F008 separa — 0,9452–0,9867 e 0,7443–0,7659
+   são a mesma regra em duas construções do numpy, e 1,0000 é outra regra.
+   `across sorting procedures` cobre as duas fontes de variação sem igualá-las.
+
+### 2.2 Palavras-chave — aprovadas em 2026-10-28
 
 Seis, dentro do limite de sete: band selection; interpretability; prior-guided
 gating; near-infrared spectroscopy; Raman spectroscopy; reproducibility.
 
-### 2.3 O resumo contra o limite
+### 2.3 O resumo contra o limite — resolvido em 2026-10-28
 
-304 palavras, limite 250, excesso **54**. Comprimindo as dez frases sem
-remover conteúdo chega-se a **253** — três acima — e esse caminho já custa a
-enumeração das três condições na quarta frase, que é o dispositivo organizador
-da §4.2.
+304 palavras, limite 250, excesso **54**. O resumo está hoje em **249**.
 
-Portanto chegar a 250 exige **retirar conteúdo ou encurtar uma formulação
-aprovada palavra por palavra**, e isso é decisão do autor. O que a compressão
-preserva, nessa rota: as quatro exigências do registro C (a geometria que cria
-a possibilidade e não produz o defeito; o modelo nulo nomeado com o seu
-q = 28; o controle de deslocamento; as oito refutações declaradas), as duas
-contribuições, e as duas convenções de decil marcadas.
+**Primeiro, a correção de um número meu.** Eu relatei que a compressão sem
+remoção de conteúdo chegava a **253**, três acima. Esse número era inválido:
+a rota que o produzia removia quatro fragmentos que o conjunto de testes
+exige do resumo, todos da decisão editorial de 2026-10-25 — `is immune to
+this artefact`, `lowers it by 0.018 (Pearson) or 0.051 (Spearman)`, `at the
+largest sample size` e `what survives still responds to n`. Eu havia
+inventariado 17 fragmentos obrigatórios; são **21**, em quatro funções de
+teste, somando **145 palavras literais** das 250 do limite. O inventário
+passou a ser extraído das próprias asserções por AST, e não de uma lista
+reescrita à mão, porque uma lista reescrita foi exatamente o que falhou.
+
+**O piso real da compressão é 266 palavras**, com os 21 fragmentos intactos e
+toda a redação auxiliar comprimida: 38 palavras saíram de redação auxiliar
+(abertura encurtada, procedência dita uma vez em vez de duas, `and we separate
+them` dispensado pelos dois-pontos, quatro substituições por formas mais
+curtas). Sobravam 16 acima do limite, e a redação auxiliar restante no texto
+era de cerca de 20 palavras — das quais 14 eram a frase de contextualização.
+Logo 250 **não era alcançável** com aquela frase mantida, e a decisão deixou
+de ser qual sinônimo usar.
+
+**As últimas 17 palavras saíram por três decisões do autor, de 2026-10-28:**
+
+| palavras | decisão |
+| --- | --- |
+| 14 | a frase de contextualização sai: *"Interpretive stability in prior-guided spectral attention is usually reported as top-k overlap across runs."* O enquadramento passa a ser feito na §1, e o autor registrou que a versão sem ela é cientificamente mais importante do que ela |
+| 1 | `281 near-infrared bands` → `281 bands`: a modalidade é nomeada na frase seguinte, `The near-infrared prior meets all three` |
+| 2 | `at the revision data's own convention of q = 29` → `at the revision convention of q = 29`, preferida pelo autor a cortar o verbo `examine`, cujo corte deixaria `disentangle X from Y and their effects` sintaticamente ambíguo |
+
+**Recusado pelo autor:** escrever `0.7005±0.0068` sem espaços em torno do ±
+para o contador registrar um token em vez de três. Economizava as duas
+palavras sozinha, e seria explorar uma particularidade do contador em vez de
+melhorar o texto.
+
+**O que a compressão não tocou**, e que a verificação automatizada demonstra a
+cada execução: a enumeração das três condições; a distinção entre
+possibilidade geométrica e ocorrência efetiva (`permits an artefact but does
+not produce one`); o modelo nulo hipergeométrico nomeado com o seu q = 28; o
+controle de deslocamento com as duas quedas medidas; as oito refutações
+declaradas; a cláusula do gradiente, que é o que define `operationally inert`
+dentro do resumo; as duas convenções de decil, separadas nos seus resultados.
+
+A contagem é de tokens separados por espaço em branco, que é o que o contador
+do Word aproxima. A margem é de **uma palavra**, e é margem medida, não
+estimada.
 
 ## 3. Ainda NÃO VERIFICADO, e o que falta não é o guia
 
 O manuscrito **não tem nenhum destes itens hoje**. A coluna "estado atual" é
 inventário, não julgamento de conformidade, porque a exigência não foi lida.
 
+Três itens saíram desta tabela em 2026-10-28, por terem sido lidos no guia e
+passado para a §2: o limite do resumo, os highlights e as palavras-chave. O
+que sobra aqui não depende do guia, e sim de fatos dos autores.
+
 | item | estado atual no manuscrito | o que falta saber |
 | --- | --- | --- |
-| resumo, limite de palavras | 251 palavras por espaço em branco; 246 tokens alfanuméricos (`paper/02-resumo-C.md`) | o limite vigente, e qual contagem a revista usa |
-| highlights | ausentes | se são exigidos, quantos, e a extensão de cada um |
-| palavras-chave | ausentes | quantidade permitida |
 | declaração de disponibilidade de dados | ausente | forma exigida; o Mango DMC v3 é público e o repositório também |
 | disponibilidade de código | ausente no manuscrito, presente de fato | se a revista exige declaração própria ou cobre no item anterior |
 | declaração de IA generativa | ausente | nada: confirmada na seção 1 |
@@ -192,6 +251,10 @@ fica registrada como a origem da escolha de 250 feita na redação, não como
 regra vigente. Se o guia atual disser outro número, o resumo muda; se disser
 250, a coincidência foi sorte e não validação.
 
+**Resolvido em 2026-10-28:** o guia vigente diz 250, e a coincidência com a
+instrução de 1992 foi sorte. O parágrafo acima fica como estava, porque é o
+registro de uma suposição que foi conferida e não de uma regra que mudou.
+
 **As duas contagens do resumo não são um menu.** 251 por espaço em branco e 246
 por tokens alfanuméricos são duas medidas do mesmo texto, e escolher a menor
 porque ela cabe seria decidir a regra depois de ver o resultado — o erro que
@@ -202,9 +265,16 @@ torno de 240, preservando os resultados quantitativos essenciais: 0.9418,
 0.7005 ± 0.0068, a condição do platô e a frase do controle de deslocamento.
 251 não é uma infração demonstrada — é uma margem que não existe.
 
+**O princípio valeu, e a recomendação de 240 não foi seguida.** A ordem foi
+mantida: o limite foi identificado primeiro, no guia, e só então o texto foi
+medido por ele. Os 240 com margem folgada não eram alcançáveis — o piso da
+compressão com os 21 fragmentos obrigatórios intactos é 266 (§2.3) —, e o
+autor decidiu em 2026-10-28 ficar em 249, com uma palavra de margem, em vez
+de retirar um compromisso científico para comprar folga.
+
 ---
 
-## 3. Um arquivo de declarações não é uma declaração pronta
+## 4. Um arquivo de declarações não é uma declaração pronta
 
 Disponibilidade de dados, disponibilidade de código, financiamento, conflitos
 de interesses e contribuições CRediT dependem de **fatos** que precisam ser
@@ -222,8 +292,16 @@ que o artigo afirma a partir deles; e que o que **não** está no repositório �
 coberto por uma frase de disponibilidade. O `12_verifica_figuras.py` já lista
 quais faltam.
 
-## 4. Como fechar
+## 5. Como fechar
 
-O guia oficial recusa leitura automatizada. Com a página salva em PDF ou o texto
-copiado, a conferência é item por item, em três colunas: **conforme**, **não
-conforme** e **não verificável**. Nada entra como conforme por analogia.
+O guia recusou leitura automatizada em 2026-10-26 e respondeu em 2026-10-28;
+a §2 é a conferência item por item que ele permitiu fazer, com citação
+literal. Nada entra como conforme por analogia, e o que a §2 marca como *a
+conferir na montagem final* — referências, tabelas, idioma, conversão do
+formato do fonte — continua não conferido.
+
+Falta, e depende de fatos que só os autores têm: nomear as outras ferramentas
+de IA na declaração da §1.1; a declaração de conflito de interesses pela
+ferramenta da revista; as contribuições CRediT; e a declaração de
+disponibilidade de dados nas condições que a §4 lista. Os highlights e as
+palavras-chave estão aprovados e ainda não inseridos no manuscrito.
