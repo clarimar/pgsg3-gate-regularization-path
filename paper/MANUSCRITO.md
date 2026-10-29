@@ -5,7 +5,7 @@ The English text is copied verbatim; the Portuguese drafting apparatus is
 left behind and listed at the end of the generator's output. Do not edit this
 file -- edit the drafts and run the generator again.
 
-Source digest: **0159026d6acb5160** — SHA-256 over the 11 draft files this was
+Source digest: **3ce6db89ee6b735f** — SHA-256 over the 11 draft files this was
 built from, truncated. Two copies with the same digest were built from the same
 sources, whatever the git state. The findings in `findings/` and Table 1 below
 belong with this digest; the generator prints the git revision alongside it.
@@ -145,7 +145,8 @@ learning can be seen. Section 8 reports it.
 ### 2.1 Datasets
 
 **Near-infrared.** The mango dry-matter dataset, version 3, harvest 4
-(DOI 10.17632/46htwnp833.3), with p = 281 wavelengths. Splits are grouped by
+(DOI 10.17632/46htwnp833.3), with p = 281 wavelengths spanning 309 to 1149 nm
+in steps of 3 nm. Splits are grouped by
 fruit: the collection holds 725 fruits of which 723 were measured twice, so a
 random split over spectra would place two measurements of one fruit on opposite
 sides of the partition and inflate held-out performance. All partitions
@@ -1446,6 +1447,10 @@ cheap to ask.
 > 0.8 to 1100–1200 nm — over a floor of 0.1 elsewhere, and is then divided by
 > its maximum, which is already 1. The 281 wavelengths therefore take four
 > distinct values, and the number of bands at each is printed above its step.
+> The third region is truncated by the instrument's range, which ends at
+> 1149 nm, and holds 17 of the bands a full 100 nm window would hold; the
+> plateau at 900–999 nm is covered in full, which is where the condition of
+> Section 4 is measured.
 > The shaded block is the prior's maximum: 34 bands, larger than the
 > top-decile size q at either convention in use (28 in the published ablation,
 > 29 here). That inequality is the geometric condition examined in Section 4.

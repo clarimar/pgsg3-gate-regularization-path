@@ -3,11 +3,11 @@
 Gerado por `scripts/16_matriz_rastreabilidade.py`. Não editar: a categoria de cada
 teste é declarada no próprio teste, por marcador `pytest`.
 
-251 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
+256 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
 nível do módulo, lida da fonte por AST — não é item coletado pelo pytest nem teste executado. Casos
 parametrizados somam +15 itens na coleta.
 
-## semantico (24)
+## semantico (26)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -35,8 +35,10 @@ parametrizados somam +15 itens na coleta.
 | `test_resumo_cabe_no_limite_confirmado_do_chemolab` | The journal's limit, read at the source on 2026-10-28: "You are | `02-resumo-C.md` |
 | `test_highlights_nao_convertem_resultado_fraco_em_ausencia` | The three corrections the author approved on 2026-10-28. A highlight is | `07-declaracoes-submissao.md` |
 | `test_highlights_e_keywords_nao_divergem_entre_as_duas_fontes` | The five highlights and the six keywords now live in three places: the | `07-declaracoes-submissao.md`, `10-highlights.md`, `11-palavras-chave.md` |
+| `test_12_audita_os_pontos_que_exigem_citacao` | The reference audit of 2026-10-29. The manuscript has no citations at | `12-referencias.md`, `15_consolidar_manuscrito.py` |
+| `test_texto_declara_a_grade_e_o_truncamento` | F009's two text corrections, 2026-10-29. Both state a measured fact and | `03-rascunho-s1-s2-s3.md`, `06-legendas-figuras.md` |
 
-## estrutural (14)
+## estrutural (15)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -54,8 +56,9 @@ parametrizados somam +15 itens na coleta.
 | `test_09_garante_dtype_antes_de_comparar_bits` | view(np.int64) presupposes the array really is float64, which the | `09_controle_deslocamento.py` |
 | `test_16_nao_emite_linha_semantica_sem_fonte` | A semantic row with no source is a broken traceability link. | `16_matriz_rastreabilidade.py` |
 | `test_15_emite_a_materia_de_frente_fora_da_numeracao` | Front matter, added 2026-10-29 after the second reading of the guide. | `02-resumo-C.md`, `10-highlights.md`, `11-palavras-chave.md` |
+| `test_17_varre_os_rascunhos_que_a_ordem_declara` | The scanner takes its file list from the consolidator's ORDEM, not from | `00-estrutura.md`, `02-resumo-C.md`, `06-legendas-figuras.md` |
 
-## numerico (7)
+## numerico (9)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -66,6 +69,8 @@ parametrizados somam +15 itens na coleta.
 | `test_13_mede_a_dependencia_do_sort_sem_inferir_ambiente` | F008: every top-q selection uses a bare np.argsort, whose default is not | `13_dependencia_do_sort.py` |
 | `test_09_usa_o_espacamento_dos_valores_observados` | The plateau sits in [0.5, 1), where float32 spacing is 2**-24. An | `09_controle_deslocamento.py` |
 | `test_f007_corrige_o_espacamento_e_separa_proveniencia` | The two corrections the author required on 2026-10-26, recorded in the | `F007-o-controle-de-deslocamento-e-o-plato.md` |
+| `test_17_resolve_marcadores_e_ordem_de_aparicao` | The three arithmetic checks the guide's reference rules reduce to: | — |
+| `test_f009_mede_a_grade_e_separa_o_que_nao_afeta` | F009, measured from the stored wavelength grid on 2026-10-29: the grid | `F009-a-grade-de-ondas-e-a-terceira-regiao-do-prior.md`, `gates_n1158.npz` |
 
 ## UNCLASSIFIED (206)
 

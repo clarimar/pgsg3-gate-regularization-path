@@ -16,6 +16,10 @@ arquivos de resultado, que não vou adivinhar.
 > 0.8 to 1100–1200 nm — over a floor of 0.1 elsewhere, and is then divided by
 > its maximum, which is already 1. The 281 wavelengths therefore take four
 > distinct values, and the number of bands at each is printed above its step.
+> The third region is truncated by the instrument's range, which ends at
+> 1149 nm, and holds 17 of the bands a full 100 nm window would hold; the
+> plateau at 900–999 nm is covered in full, which is where the condition of
+> Section 4 is measured.
 > The shaded block is the prior's maximum: 34 bands, larger than the
 > top-decile size q at either convention in use (28 in the published ablation,
 > 29 here). That inequality is the geometric condition examined in Section 4.

@@ -2081,3 +2081,157 @@ def test_15_emite_a_materia_de_frente_fora_da_numeracao():
     # e a posicao das palavras-chave esta declarada como convencao, nao como
     # exigencia lida no guia
     assert "Adopted convention, not a requirement read." in src
+
+
+def _mod17():
+    import importlib.util
+    cam = RAIZ / "scripts" / "17_citacoes.py"
+    esp = importlib.util.spec_from_file_location("c17", cam)
+    m = importlib.util.module_from_spec(esp)
+    esp.loader.exec_module(m)
+    return m
+
+
+@pytest.mark.numerico
+def test_17_resolve_marcadores_e_ordem_de_aparicao():
+    """The three arithmetic checks the guide's reference rules reduce to:
+    every marker resolves, every entry is cited, and the numbering follows
+    first appearance. Exercised on synthetic text, so the test does not depend
+    on the manuscript's current citation state -- which is none.
+
+    The marker reader must also not mistake a markdown link for a citation.
+    The drafts are full of `[text](url)`, and a scanner that counted those
+    would report citations that do not exist.
+    """
+    m = _mod17()
+    assert m.marcadores("a [1] b [2,3] c [5-7] d") == [1, 2, 3, 5, 6, 7]
+    assert m.marcadores("see [the guide](http://x) and [F008]") == []
+    assert m.marcadores("ranges backwards [7-5] are not expanded") == []
+    # order of appearance
+    texto = "first [2] then [1]"
+    ordem = []
+    for n in m.marcadores(texto):
+        if n not in ordem:
+            ordem.append(n)
+    assert ordem == [2, 1] and ordem != sorted(ordem)
+    # the list reader
+    lista = "## References\n\n[1] A, Nature 1 (2020) 1-2.\n[2] B, [FALTA: year]\n"
+    assert m.entradas(lista) == [(1, "A, Nature 1 (2020) 1-2."),
+                                (2, "B, [FALTA: year]")]
+    assert m.entradas("no heading here\n[1] A\n") == []
+    assert m.estado_declarado("Status: **INCOMPLETO** — lido\n") == "INCOMPLETO"
+    assert m.estado_declarado("nothing") == "NAO DECLARADO"
+
+
+@pytest.mark.estrutural
+def test_17_varre_os_rascunhos_que_a_ordem_declara():
+    """The scanner takes its file list from the consolidator's ORDEM, not from
+    a glob of paper/. A draft wired into the manuscript and not into the
+    scanner would have its citations unchecked, and the two lists would drift
+    apart silently -- which is how the front matter of 2026-10-29 could have
+    been missed."""
+    m = _mod17()
+    fontes = m.fontes_do_texto()
+    for esperado in ("10-highlights.md", "02-resumo-C.md",
+                     "11-palavras-chave.md", "09-rascunho-s12.md",
+                     "06-legendas-figuras.md", "00-estrutura.md"):
+        assert esperado in fontes, esperado
+    for nome in fontes:
+        assert (RAIZ / "paper" / nome).is_file(), nome
+
+
+@pytest.mark.semantico
+def test_12_audita_os_pontos_que_exigem_citacao():
+    """The reference audit of 2026-10-29. The manuscript has no citations at
+    all, so the deliverable is the list of places that require one, each with
+    who can close it -- not a list of references written from memory, which
+    would be worse than the absence because the absence is visible.
+
+    Two claims in the audit are load-bearing and are guarded by name. The
+    first is the sentence about what the band-selection literature uses, which
+    asserts something about the literature with no source at all. The second
+    is the README's own instruction to cite the modalities paper for the
+    architecture, because the manuscript that would have introduced it was
+    rejected.
+    """
+    import re
+    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "12-referencias.md").read_text())
+    assert "INCOMPLETO" in t
+    assert "não tem nenhuma citação e nenhuma lista de referências" in t
+    # nenhuma entrada escrita de memória, e o que falta fica marcado
+    assert "Nenhuma entrada é escrita de memória" in t
+    assert "[FALTA:" in t
+    # os dois pontos de auditoria que não podem desaparecer
+    assert "the ratio q/(2L-q) that the band-selection literature uses" in t
+    assert "afirmação sobre a literatura sem uma única fonte" in t
+    assert "Citar o artigo de modalidades para a arquitetura" in t
+    # as duas entradas prontas têm procedência declarada
+    assert "doi:10.17632/46htwnp833.3" in t and "Mendeley Data, V3, 2024" in t
+    assert "doi:10.1038/s41586-020-2649-2" in t
+    assert "Nature 585 (2020) 357–362" in t
+    # a lista NAO entra no manuscrito enquanto estiver incompleta
+    src = (RAIZ / "scripts" / "15_consolidar_manuscrito.py").read_text()
+    assert "12-referencias.md" not in src
+
+
+@pytest.mark.numerico
+def test_f009_mede_a_grade_e_separa_o_que_nao_afeta():
+    """F009, measured from the stored wavelength grid on 2026-10-29: the grid
+    is 309-1149 nm at 3 nm, and the prior's third declared region, 1100-1200
+    nm, is truncated at 1149 -- 17 bands where the full window would hold
+    about 34. The finding must keep three things apart: the measurement, what
+    it does not affect (every result, because the plateau is the 900-1000 nm
+    level and is fully covered), and what it does affect (what the text
+    declares). It must also not propose fixing the prior's construction, which
+    encodes a literature region and not an instrument range.
+    """
+    import re
+    f = re.sub(r"\s+", " ",
+               (RAIZ / "findings" /
+                "F009-a-grade-de-ondas-e-a-terceira-regiao-do-prior.md"
+                ).read_text())
+    assert "309,0 a 1149,0 nm, 281 bandas, passo de 3,00 nm" in f
+    assert "truncada em 1149 nm" in f
+    assert "Não afeta nenhum resultado" in f
+    assert "não deve ser corrigido no código" in f
+    # e a medida tem de bater com os dados versionados, não com o texto
+    import numpy as np
+    z = np.load(RAIZ / "data" / "processed" / "gates_r2" / "gates_n1158.npz")
+    w, pr = z["wavelengths"], z["prior"]
+    assert len(w) == 281
+    assert float(w.min()) == 309.0 and float(w.max()) == 1149.0
+    assert float(np.median(np.diff(w))) == 3.0
+    niveis = {round(float(v), 1): int((pr == v).sum())
+              for v in np.unique(pr)}
+    assert niveis == {0.1: 223, 0.6: 7, 0.8: 17, 1.0: 34}
+    # a terceira região declarada não cabe na grade
+    assert int(((w >= 1100) & (w <= 1200)).sum()) == 17
+
+
+@pytest.mark.semantico
+def test_texto_declara_a_grade_e_o_truncamento():
+    """F009's two text corrections, 2026-10-29. Both state a measured fact and
+    retract nothing: Section 2.1 gives the wavelength grid, and the Figure 1
+    caption says the third region is truncated by the instrument's range.
+
+    Without the first the second has nothing to rest on; with both, a reader
+    can check the figure's printed band counts, which is what made the
+    discrepancy findable in the first place. The caption must also keep saying
+    that the plateau is covered in full, because that is the level where the
+    paper's geometric condition is measured.
+    """
+    import re
+    s2 = re.sub(r"\s+", " ",
+                (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md").read_text())
+    assert "281 wavelengths spanning 309 to 1149 nm in steps of 3 nm" in s2
+    # The captions are blockquotes, so the "> " markers are stripped BEFORE
+    # the whitespace is collapsed; otherwise a sentence that wraps across
+    # lines reads as "... ends at > 1149 nm" and no contiguous fragment of it
+    # can be matched. Found the hard way, more than once in this suite.
+    bruto = (RAIZ / "paper" / "06-legendas-figuras.md").read_text()
+    leg = re.sub(r"\s+", " ",
+                 "\n".join(re.sub(r"^\s*>\s?", "", l)
+                           for l in bruto.splitlines()))
+    assert "truncated by the instrument's range, which ends at 1149 nm" in leg
+    assert "17 of the bands a full 100 nm window would hold" in leg
+    assert "plateau at 900–999 nm is covered in full" in leg

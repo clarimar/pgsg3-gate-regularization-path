@@ -121,7 +121,8 @@ learning can be seen. Section 8 reports it.
 ### 2.1 Datasets
 
 **Near-infrared.** The mango dry-matter dataset, version 3, harvest 4
-(DOI 10.17632/46htwnp833.3), with p = 281 wavelengths. Splits are grouped by
+(DOI 10.17632/46htwnp833.3), with p = 281 wavelengths spanning 309 to 1149 nm
+in steps of 3 nm. Splits are grouped by
 fruit: the collection holds 725 fruits of which 723 were measured twice, so a
 random split over spectra would place two measurements of one fruit on opposite
 sides of the partition and inflate held-out performance. All partitions
