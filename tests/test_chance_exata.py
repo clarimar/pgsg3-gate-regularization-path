@@ -2015,3 +2015,69 @@ def test_16_nao_emite_linha_semantica_sem_fonte():
             if "semantico" in marcas and not m16.fontes_citadas(no, texto):
                 orfas.append(no.name)
     assert not orfas, f"semantic tests with no source: {orfas}"
+
+
+@pytest.mark.semantico
+def test_highlights_e_keywords_nao_divergem_entre_as_duas_fontes():
+    """The five highlights and the six keywords now live in three places: the
+    approval record in `07-declaracoes-submissao.md`, the submission sources
+    `10-highlights.md` and `11-palavras-chave.md`, and the consolidated
+    manuscript built from the latter two. A correction applied in one and not
+    in the others is the propagation failure this suite exists for, and it has
+    happened in this programme repeatedly.
+
+    The manuscript is generated, so it is not read here: `15` builds it from
+    the sources, and `test_15_consolida_sem_perder_nem_inventar` guards that
+    build. What is checked is that the two sources agree with the record.
+    """
+    import re
+    reg = re.sub(r"\s+", " ",
+                 (RAIZ / "paper" / "07-declaracoes-submissao.md").read_text())
+    hi = (RAIZ / "paper" / "10-highlights.md").read_text()
+    kw = (RAIZ / "paper" / "11-palavras-chave.md").read_text()
+
+    bullets = [l[2:].strip() for l in
+               hi.split("## Highlights", 1)[1].splitlines() if l.startswith("- ")]
+    assert 3 <= len(bullets) <= 5, f"{len(bullets)} highlights, the guide says 3 to 5"
+    for b in bullets:
+        assert len(b) <= 85, (b, len(b))     # limite do guia
+        assert b in reg, f"highlight not in the approval record: {b}"
+    # o nome do arquivo carrega a palavra que o guia exige
+    assert "highlights" in (RAIZ / "paper" / "10-highlights.md").name
+    assert "separate editable file" in hi
+
+    chaves = [k.strip() for k in
+              kw.split("## Keywords", 1)[1].replace("\n", " ").split(";")
+              if k.strip()]
+    assert 1 <= len(chaves) <= 7, f"{len(chaves)} keywords, the guide says 1 to 7"
+    for k in chaves:
+        # "avoid keywords consisting of multiple words (using 'and' or 'of')"
+        assert " and " not in f" {k.lower()} ", k
+        assert " of " not in f" {k.lower()} ", k
+        assert k.lower() in reg.lower(), f"keyword not in the approval record: {k}"
+
+
+@pytest.mark.estrutural
+def test_15_emite_a_materia_de_frente_fora_da_numeracao():
+    """Front matter, added 2026-10-29 after the second reading of the guide.
+
+    Highlights before the abstract, keywords after it, and neither inside the
+    section numbering -- the guide requires that of the abstract ("Do not
+    include the article abstract within section numbering") and the same holds
+    for what sits beside it. The twelve-section expectation must therefore be
+    unchanged by the addition, which is the point of asserting it here: a
+    front-matter block that counted as a section would make the gap check pass
+    on a manuscript with thirteen.
+    """
+    src = (RAIZ / "scripts" / "15_consolidar_manuscrito.py").read_text()
+    assert '("10-highlights.md", ["Highlights"])' in src
+    assert '("11-palavras-chave.md", ["Keywords"])' in src
+    assert "SECOES_ESPERADAS = 12" in src
+    # a ordem declarada: highlights, resumo, palavras-chave
+    i_h = src.index('("10-highlights.md"')
+    i_r = src.index('("02-resumo-C.md"')
+    i_k = src.index('("11-palavras-chave.md"')
+    assert i_h < i_r < i_k, "front matter out of order in ORDEM"
+    # e a posicao das palavras-chave esta declarada como convencao, nao como
+    # exigencia lida no guia
+    assert "Adopted convention, not a requirement read." in src

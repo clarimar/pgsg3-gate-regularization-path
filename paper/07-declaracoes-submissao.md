@@ -124,8 +124,11 @@ ScienceDirect. Citado literalmente onde o guia é literal.
 | exigência | o guia diz | estado do manuscrito |
 | --- | --- | --- |
 | **resumo** | *"You are required to provide a concise and factual abstract which does not exceed 250 words."* | **conforme desde 2026-10-28**: 249 palavras, uma de margem; era 304, e a compressão está na §2.3 |
-| **highlights** | *"Highlights should consist of 3 to 5 bullet points, each a maximum of 85 characters, including spaces."* | **aprovados em 2026-10-28**: os cinco da §2.1, três deles corrigidos no mesmo dia; ainda não inseridos no manuscrito |
-| **palavras-chave** | *"You are required to provide 1 to 7 keywords for indexing purposes."* | **aprovadas em 2026-10-28**: as seis da §2.2; ainda não inseridas no manuscrito |
+| **highlights** | *"Highlights should consist of 3 to 5 bullet points, each a maximum of 85 characters, including spaces."*; *"Submit highlights as a separate editable file in the online submission system"*, *"with the word 'highlights' included in the file name"* | **no manuscrito desde 2026-10-29**, antes do resumo e fora da numeração; a fonte do arquivo separado é `paper/10-highlights.md`, cujo nome já carrega a palavra; **falta** a conversão para o formato editável do envio |
+| **palavras-chave** | *"You are required to provide 1 to 7 keywords for indexing purposes."*; *"Keywords should be written in English."*; *"Please try to avoid keywords consisting of multiple words (using 'and' or 'of')."* | **no manuscrito desde 2026-10-29**, depois do resumo; as quatro regras conferidas uma a uma em `paper/11-palavras-chave.md`. O guia **não diz** onde elas entram: a posição é convenção adotada |
+| **página de título** | *"Provide the given name(s) and family name(s) of each author"*; afiliação por letra superscrita minúscula; *"Ensure that you provide the full name and postal address of each affiliation, including the country name"*; *"The email address of the corresponding author must be included on the title page and will be published in the article"* | **ausente** — o manuscrito não tem página de título. Depende de fatos dos autores: nomes, afiliações com endereço postal e país, e o e-mail do autor correspondente |
+| **agradecimentos** | *"Acknowledgements should be placed in a separate section which appears directly before the reference list."* | ausentes; se houver, a posição está fixada |
+| **resumo, autossuficiência** | *"Abstracts must be able to stand alone, as abstracts are often presented separately from the article."* | **um ponto aberto**, na §2.4 |
 | **disponibilidade de dados** | *"you are encouraged to state the availability of any data at submission"*; política de dados Opção C: depositar e citar, ou declarar por que não pode ser compartilhado | **ausente**; os fatos a conferir estão na §3 |
 | **declaração de IA** | *"Authors must declare the use of generative AI tools in the manuscript preparation process upon submission of the paper."* | texto pronto na §1.1, pendente de nomear as outras ferramentas |
 | **conflito de interesses** | *"The declarations tool should always be completed"*; quem não tem nada a declarar escolhe *"I have nothing to declare"*; enviado como `.doc`/`.docx`; assinaturas não exigidas | **ausente** |
@@ -228,6 +231,43 @@ dentro do resumo; as duas convenções de decil, separadas nos seus resultados.
 A contagem é de tokens separados por espaço em branco, que é o que o contador
 do Word aproxima. A margem é de **uma palavra**, e é margem medida, não
 estimada.
+
+### 2.4 Segunda leitura do guia, 2026-10-29 — e o que ela abriu
+
+A primeira leitura respondeu ao limite do resumo, aos highlights e às
+palavras-chave. A segunda foi atrás de onde cada coisa entra no manuscrito, e
+trouxe três itens que a primeira não tinha.
+
+**1. O resumo precisa ser autossuficiente, e no ponto em que a compressão
+mexeu ele deixou de ser.** O guia: *"Abstracts must be able to stand alone, as
+abstracts are often presented separately from the article."* O resumo diz
+`an overlap of 0.9418, at that codebase's convention of q = 28` — e `that
+codebase` não tem antecedente dentro do resumo desde que `from our own earlier
+work` saiu da terceira frase, em 2026-10-28. A única menção ao trabalho
+anterior vem depois, em `Our earlier displacement-based control`, e um
+demonstrativo que aponta para frente não se sustenta num texto lido isolado.
+
+A correção mais barata **não custa palavra nenhuma**: `at that codebase's
+convention of q = 28` → `at the published convention of q = 28`. Duas palavras
+por duas, 249 continuam 249, o demonstrativo desaparece, e fica em paralelo
+com `at the revision convention of q = 29`, que a compressão já deixou
+autossuficiente. **É decisão do autor**, porque é um fragmento exigido pelo
+conjunto de testes, e o texto não foi alterado aqui.
+
+**2. A instrução de posição da declaração de IA é contraditória no próprio
+guia.** Ele diz *"The statement will appear in the published work and should be
+placed in a new section before the references list"* e também que a declaração
+*"must be declared by adding a statement at the end of the manuscript when the
+paper is first submitted"*. As duas não se reconciliam, e a escolha não é
+registrada aqui como exigência lida. Na montagem, seção própria imediatamente
+antes das referências satisfaz a primeira e fica no fim do corpo do texto, o
+que é a leitura mais defensável da segunda — mas é escolha, não leitura.
+
+**3. Conflito de interesses não é seção do manuscrito.** O guia:
+*"The resulting Word document containing your declaration should be uploaded at
+the 'attach/upload files' step"*. É um arquivo do sistema de envio, gerado pela
+ferramenta de declarações, e não um parágrafo do texto. Disponibilidade de
+dados, CRediT e financiamento não têm posição declarada no guia.
 
 ## 3. Ainda NÃO VERIFICADO, e o que falta não é o guia
 

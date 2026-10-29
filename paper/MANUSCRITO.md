@@ -5,16 +5,33 @@ The English text is copied verbatim; the Portuguese drafting apparatus is
 left behind and listed at the end of the generator's output. Do not edit this
 file -- edit the drafts and run the generator again.
 
-Source digest: **dde5c5b386ae1ab5** — SHA-256 over the 9 draft files this was
+Source digest: **0159026d6acb5160** — SHA-256 over the 11 draft files this was
 built from, truncated. Two copies with the same digest were built from the same
 sources, whatever the git state. The findings in `findings/` and Table 1 below
 belong with this digest; the generator prints the git revision alongside it.
 
 ---
 
+## Highlights
+
+- Top-q overlap depends on the tie rule when the boundary cuts equal gate values
+- The same stored gates gave overlaps of 0.744 to 1.000 across sorting procedures
+- Prior-based initialisation makes the saturated level unresponsive to the penalty
+- Gates align with a separate statistical reference at the prior's 223-band floor
+- Check boundary ties before reading overlap as reproducible band selection
+
+---
+
 ## Abstract
 
 We disentangle prior-based gate initialisation from prior-based regularisation and examine their distinct effects on learned spectral selections. Initialising at a step-function prior over 281 bands leaves the prior's saturated level operationally inert, with gradients of order 10^-6 that the penalty cannot move. That geometry permits an artefact but does not produce one; three conditions together do: an oversized level set, ties surviving training, and a deterministic tie rule. The near-infrared prior meets all three, a continuous Raman prior none: overlap of 0.9418, at that codebase's convention of q = 28, falls to 0.7005 +- 0.0068 under random tie-breaking, against the exact expectation, 0.7012, for drawing 28 of 34 plateau bands twice. Outside the saturated plateau, the gates retained data-associated structure, aligning positively with a separate statistical reference across the 223 floor-level bands. Our earlier displacement-based control depends on neither the top-k selection nor the tie-breaking and is immune to this artefact; excluding the plateau bands lowers it by 0.018 (Pearson) or 0.051 (Spearman) at the largest sample size, and what survives still responds to n. For identical stored gates, at the revision convention of q = 29, overlap ranged from 0.7443-0.7659 under one sorting implementation to 0.9452-0.9867 under another, and 1.0000 with index-based tie-breaking; when ties cross the boundary, the overlap reflects the complete selection procedure rather than an identifiable property of the gates. We pre-registered twenty hypotheses, eight of which our criteria did not support; the tie-breaking analysis was a post hoc diagnostic, reported separately from those verdicts.
+
+---
+
+## Keywords
+
+Band selection; interpretability; prior-guided gating; near-infrared
+spectroscopy; Raman spectroscopy; reproducibility
 
 ---
 

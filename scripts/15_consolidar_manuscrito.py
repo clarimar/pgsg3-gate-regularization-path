@@ -50,7 +50,17 @@ SEP = "=" * 78
 # belong to the manuscript. A block is a "## " heading and everything under it
 # until the next "## ". Anything not listed is dropped and reported.
 ORDEM: list[tuple[str, list[str]]] = [
+    # Front matter, outside the section numbering. The highlights come first
+    # because that is where they are read; at submission they also go as a
+    # separate editable file, which the guide requires by name -- the source
+    # is `10-highlights.md`, and the word is in the file name on purpose.
+    ("10-highlights.md", ["Highlights"]),
     ("02-resumo-C.md", ["__PROSA__"]),
+    # The guide does not say where keywords go in the manuscript; after the
+    # abstract is the Elsevier convention, and it is the only position that
+    # does not collide with "Do not include the article abstract within
+    # section numbering". Adopted convention, not a requirement read.
+    ("11-palavras-chave.md", ["Keywords"]),
     ("03-rascunho-s1-s2-s3.md", ["1. Introduction", "2. Data and methods",
                                  "3. Results — the two roles of the prior"]),
     ("01-rascunho-resumo-e-s4.md", ["4. What the top-decile overlap measures"]),

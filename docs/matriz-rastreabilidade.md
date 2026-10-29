@@ -3,11 +3,11 @@
 Gerado por `scripts/16_matriz_rastreabilidade.py`. Não editar: a categoria de cada
 teste é declarada no próprio teste, por marcador `pytest`.
 
-249 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
+251 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
 nível do módulo, lida da fonte por AST — não é item coletado pelo pytest nem teste executado. Casos
 parametrizados somam +15 itens na coleta.
 
-## semantico (23)
+## semantico (24)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -34,8 +34,9 @@ parametrizados somam +15 itens na coleta.
 | `test_07_separa_exigencia_confirmada_de_nao_verificada` | The submission matter must keep the two categories apart: what was read | `07-declaracoes-submissao.md` |
 | `test_resumo_cabe_no_limite_confirmado_do_chemolab` | The journal's limit, read at the source on 2026-10-28: "You are | `02-resumo-C.md` |
 | `test_highlights_nao_convertem_resultado_fraco_em_ausencia` | The three corrections the author approved on 2026-10-28. A highlight is | `07-declaracoes-submissao.md` |
+| `test_highlights_e_keywords_nao_divergem_entre_as_duas_fontes` | The five highlights and the six keywords now live in three places: the | `07-declaracoes-submissao.md`, `10-highlights.md`, `11-palavras-chave.md` |
 
-## estrutural (13)
+## estrutural (14)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -52,6 +53,7 @@ parametrizados somam +15 itens na coleta.
 | `test_12_nao_chama_verificada_uma_figura_sem_entradas` | Reproducibility of a procedure is not conformity of a submitted file. | `12_verifica_figuras.py`, `pyproject.toml` |
 | `test_09_garante_dtype_antes_de_comparar_bits` | view(np.int64) presupposes the array really is float64, which the | `09_controle_deslocamento.py` |
 | `test_16_nao_emite_linha_semantica_sem_fonte` | A semantic row with no source is a broken traceability link. | `16_matriz_rastreabilidade.py` |
+| `test_15_emite_a_materia_de_frente_fora_da_numeracao` | Front matter, added 2026-10-29 after the second reading of the guide. | `02-resumo-C.md`, `10-highlights.md`, `11-palavras-chave.md` |
 
 ## numerico (7)
 
