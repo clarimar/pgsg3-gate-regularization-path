@@ -801,6 +801,26 @@ def test_rascunho_nao_afirma_ausencia_total_de_empate():
 
 @pytest.mark.numerico
 def test_rascunho_usa_a_esperanca_exata():
+    """The draft must report the EXACT hypergeometric expectation of the
+    Jaccard index, not the approximation, and must say why the two differ.
+
+    F002's correction of 2026-10-24: q/(2L-q) is J evaluated at the expected
+    overlap, not the expectation of J, and J is strictly convex in k, so
+    E[J] > J(E[k]) by Jensen. The exact values are 0.7012 at q = 28 and 0.7445
+    at q = 29, against 0.7000 and 0.7436 from the ratio -- a difference smaller
+    than the sampling spread, which is what makes it easy to get wrong without
+    consequence and worth guarding.
+
+    The fourth assertion holds the measurement that replaced a placeholder:
+    0.7442 is the randomised-tie collapse at q = 29, measured, where the draft
+    once carried the word PENDENTE. A draft that reports an exact value and a
+    pending note for the same quantity is the state this test exists to keep
+    from returning.
+
+    Decision recorded on 2026-11-02: this test was the one classified row in
+    the matrix with a source and no decision -- the mirror of the broken links
+    repaired the same day, missing the first term instead of the middle one.
+    """
     t = (RAIZ / "paper" / "01-rascunho-resumo-e-s4.md").read_text()
     assert "0.7012" in t and "0.7445" in t
     assert "strictly\nconvex" in t or "strictly convex" in t
@@ -2013,6 +2033,14 @@ def test_16_nao_emite_linha_semantica_sem_fonte():
     because I had scoped it to semantic rows only, having repaired the
     symptom in the category where I found it. It now covers every declared
     category, and the two helpers name the file they load.
+
+    AND IT CHECKED ONE TERM OF THREE. The matrix prints decision -> source ->
+    test, and the same run showed test_rascunho_usa_a_esperanca_exata with a
+    source and no decision -- the first term missing instead of the middle
+    one, which this guard was not looking at either. It now requires both of
+    the terms the matrix can see: a declared category must come with a
+    docstring and with at least one file the test names. The third term, the
+    test itself, is the row.
     """
     import ast
     import importlib.util
@@ -2021,7 +2049,7 @@ def test_16_nao_emite_linha_semantica_sem_fonte():
     m16 = importlib.util.module_from_spec(esp)
     esp.loader.exec_module(m16)
     CATEGORIAS = ("semantico", "estrutural", "numerico")
-    orfas = []
+    sem_fonte, sem_decisao = [], []
     for f in sorted((RAIZ / "tests").glob("test_*.py")):
         texto = f.read_text()
         for no in ast.walk(ast.parse(texto)):
@@ -2031,9 +2059,15 @@ def test_16_nao_emite_linha_semantica_sem_fonte():
             marcas = [d.attr for d in no.decorator_list
                       if isinstance(d, ast.Attribute)]
             cat = [c for c in CATEGORIAS if c in marcas]
-            if cat and not m16.fontes_citadas(no, texto):
-                orfas.append(f"{no.name} [{cat[0]}]")
-    assert not orfas, f"classified tests with no source: {orfas}"
+            if not cat:
+                continue
+            if not m16.fontes_citadas(no, texto):
+                sem_fonte.append(f"{no.name} [{cat[0]}]")
+            if not ast.get_docstring(no):
+                sem_decisao.append(f"{no.name} [{cat[0]}]")
+    assert not sem_fonte, f"classified tests with no source: {sem_fonte}"
+    assert not sem_decisao, (
+        f"classified tests with no decision: {sem_decisao}")
 
 
 @pytest.mark.semantico

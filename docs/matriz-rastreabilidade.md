@@ -74,7 +74,7 @@ parametrizados somam +15 itens na coleta.
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
 | `test_14_mede_a_fronteira_e_nao_conta_empates` | The criterion for rule-dependence is a tie group spanning rank q, not | `14_etapa_b_por_procedimento.py` |
-| `test_rascunho_usa_a_esperanca_exata` |  | `01-rascunho-resumo-e-s4.md` |
+| `test_rascunho_usa_a_esperanca_exata` | The draft must report the EXACT hypergeometric expectation of the | `01-rascunho-resumo-e-s4.md` |
 | `test_s9_reporta_p2_medido_e_nao_um_limite` | The bound was superseded by the measurement on 2026-10-26: P1 holds | `05-rascunho-s9-s10-s11.md` |
 | `test_05_nao_afirma_que_o_padrao_desempata_por_indice` | Mandatory correction, author 2026-10-27 (F008): the script used to print | `05_diagnostico_jaccard.py`, `13_dependencia_do_sort.py` |
 | `test_13_mede_a_dependencia_do_sort_sem_inferir_ambiente` | F008: every top-q selection uses a bare np.argsort, whose default is not | `13_dependencia_do_sort.py` |
