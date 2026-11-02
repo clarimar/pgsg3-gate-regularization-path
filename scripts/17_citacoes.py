@@ -115,9 +115,13 @@ def estado_declarado(texto: str) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
+    # A PROBLEM always fails; --strict additionally fails on a list that is
+    # merely INCOMPLETE, which is a state and not a defect. Corrected on
+    # 2026-11-02, with 18_conformidade.py, after a run there printed a defect
+    # and exited 0 for want of the flag.
     ap.add_argument("--strict", action="store_true",
-                    help="exit non-zero unless the reference list is "
-                         "complete and every check passes")
+                    help="also fail when the reference list is incomplete, "
+                         "which is a state and not a defect")
     a = ap.parse_args()
 
     refs_p = PAPER / REFS
@@ -192,9 +196,9 @@ def main() -> int:
         print("  nor that the journal abbreviations follow the LTWA: both are")
         print("  reading, and neither is measured here.")
 
-    if a.strict:
-        return 1 if (problemas or estado != "COMPLETO") else 0
-    return 0
+    if problemas:
+        return 1
+    return 1 if (a.strict and estado != "COMPLETO") else 0
 
 
 if __name__ == "__main__":

@@ -174,7 +174,18 @@ def corpo_e_legendas(texto: str) -> tuple[str, str]:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--strict", action="store_true")
+    # A DEFECT ALWAYS FAILS, with or without the flag. On 2026-11-02 the
+    # author ran this script without --strict: it printed
+    # "DEFECT: 74 Portuguese marker(s)" and exited 0, so `echo $?` reported
+    # "conformidade: 0" directly under its own verdict. An exit code that
+    # contradicts the report is the same class of defect as the standard
+    # deviation this programme once printed as 0.0000 while computing a z from
+    # it: a display hiding the quantity it reports on. --strict now adds only
+    # the stricter condition -- failing when a check could not be MADE -- and
+    # takes nothing away from the defect verdict.
+    ap.add_argument("--strict", action="store_true",
+                    help="also fail when a check could not be made at all, "
+                         "not only when it found a defect")
     a = ap.parse_args()
     if not MANUSCRITO.is_file():
         print(f"missing: {MANUSCRITO} -- run 15_consolidar_manuscrito.py first")
@@ -286,7 +297,13 @@ def main() -> int:
     print("  whether the English reads well, or whether the converted tables")
     print("  carry vertical rules -- that last is a property of the converted")
     print("  file and belongs to the conversion step.")
-    return 1 if (a.strict and defeitos) else 0
+    if defeitos:
+        return 1
+    if a.strict and not numeros:
+        print("\n  --strict: no caption was found, so the figure checks were "
+              "not made. Reporting that as a failure rather than as a pass.")
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

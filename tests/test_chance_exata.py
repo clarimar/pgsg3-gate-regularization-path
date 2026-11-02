@@ -2543,3 +2543,46 @@ def test_13_propoe_a_tabela1_em_ingles_sem_aplicar():
     src = (RAIZ / "scripts" / "15_consolidar_manuscrito.py").read_text()
     assert "13-tabela1.md" not in src
     assert 'ESTRUTURA = "00-estrutura.md"' in src
+
+
+@pytest.mark.estrutural
+def test_codigo_de_saida_nao_contradiz_o_veredito_impresso():
+    """Found in the author's run of 2026-11-02: 18_conformidade.py printed
+    "DEFECT: 74 Portuguese marker(s)" and exited 0, because the exit code was
+    gated on --strict. `echo $?` then reported "conformidade: 0" directly
+    under the defect it had just printed.
+
+    That is the same class of defect as the standard deviation this programme
+    once printed as 0.0000 while computing a z from it: a display -- here the
+    exit code, which is what automation reads -- hiding the quantity it
+    reports on. A defect now fails with or without the flag, and --strict adds
+    only the stricter condition: failing when a check could not be MADE, or
+    when the reference list is merely incomplete, which is a state and not a
+    defect.
+
+    Exercised through the real entry points, because the bug was in main() and
+    a test of the helpers would have passed throughout.
+    """
+    import subprocess
+    import sys
+    # the manuscript currently HAS a defect: Table 1 in Portuguese
+    r = subprocess.run([sys.executable, "scripts/18_conformidade.py"],
+                       cwd=RAIZ, capture_output=True, text=True)
+    assert "DEFECT" in r.stdout
+    assert r.returncode == 1, (
+        f"a printed DEFECT must not exit 0; got {r.returncode}")
+    # and the two gates are documented as different, not as the same
+    s18 = (RAIZ / "scripts" / "18_conformidade.py").read_text()
+    assert "A DEFECT ALWAYS FAILS, with or without the flag" in s18
+    assert "could not be made at all" in s18
+    # the citation script: an incomplete list is a state, so no flag means 0
+    r17 = subprocess.run([sys.executable, "scripts/17_citacoes.py"],
+                         cwd=RAIZ, capture_output=True, text=True)
+    assert "INCOMPLETO" in r17.stdout
+    assert r17.returncode == 0
+    r17s = subprocess.run([sys.executable, "scripts/17_citacoes.py", "--strict"],
+                          cwd=RAIZ, capture_output=True, text=True)
+    assert r17s.returncode == 1
+    # but a PROBLEM there fails without the flag too
+    s17 = (RAIZ / "scripts" / "17_citacoes.py").read_text()
+    assert "if problemas:\n        return 1" in s17
