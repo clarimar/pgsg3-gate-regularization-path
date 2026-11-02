@@ -65,7 +65,7 @@ parametrizados somam +15 itens na coleta.
 | `test_16_nao_emite_linha_semantica_sem_fonte` | A semantic row with no source is a broken traceability link. | `16_matriz_rastreabilidade.py` |
 | `test_15_emite_a_materia_de_frente_fora_da_numeracao` | Front matter, added 2026-10-29 after the second reading of the guide. | `02-resumo-C.md`, `10-highlights.md`, `11-palavras-chave.md` |
 | `test_17_varre_os_rascunhos_que_a_ordem_declara` | The scanner takes its file list from the consolidator's ORDEM, not from | `00-estrutura.md`, `02-resumo-C.md`, `06-legendas-figuras.md` |
-| `test_18_nao_chama_de_mistura_o_que_e_ingles_britanico` | The guide: "write in American or British English but not a combination | — |
+| `test_18_nao_chama_de_mistura_o_que_e_ingles_britanico` | The guide: "write in American or British English but not a combination | `18_conformidade.py` |
 | `test_18_separa_prosa_autoral_de_citacao_literal` | The author's decision of 2026-10-29: a verbatim quotation is reproduced | `18_conformidade.py` |
 | `test_codigo_de_saida_nao_contradiz_o_veredito_impresso` | Found in the author's run of 2026-11-02: 18_conformidade.py printed | `17_citacoes.py`, `18_conformidade.py`, `scripts/17_citacoes.py` |
 
@@ -80,7 +80,7 @@ parametrizados somam +15 itens na coleta.
 | `test_13_mede_a_dependencia_do_sort_sem_inferir_ambiente` | F008: every top-q selection uses a bare np.argsort, whose default is not | `13_dependencia_do_sort.py` |
 | `test_09_usa_o_espacamento_dos_valores_observados` | The plateau sits in [0.5, 1), where float32 spacing is 2**-24. An | `09_controle_deslocamento.py` |
 | `test_f007_corrige_o_espacamento_e_separa_proveniencia` | The two corrections the author required on 2026-10-26, recorded in the | `F007-o-controle-de-deslocamento-e-o-plato.md` |
-| `test_17_resolve_marcadores_e_ordem_de_aparicao` | The three arithmetic checks the guide's reference rules reduce to: | — |
+| `test_17_resolve_marcadores_e_ordem_de_aparicao` | The three arithmetic checks the guide's reference rules reduce to: | `17_citacoes.py` |
 | `test_f009_mede_a_grade_e_separa_o_que_nao_afeta` | F009, measured from the stored wavelength grid on 2026-10-29: the grid | `F009-a-grade-de-ondas-e-a-terceira-regiao-do-prior.md`, `gates_n1158.npz` |
 
 ## UNCLASSIFIED (206)

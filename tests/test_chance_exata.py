@@ -2003,6 +2003,16 @@ def test_16_nao_emite_linha_semantica_sem_fonte():
     a comment. This test is the barrier: the matrix's purpose is
     decision -> source -> test, and a row missing the middle term is not a
     formatting defect.
+
+    IT HAPPENED AGAIN, and this guard did not catch it. On 2026-11-02 the
+    author's matrix showed two more rows with no source --
+    test_17_resolve_marcadores_e_ordem_de_aparicao (numerico) and
+    test_18_nao_chama_de_mistura_o_que_e_ingles_britanico (estrutural) --
+    through exactly the same cause: a helper, _mod17 and _mod18, holding the
+    path literal that the test body no longer had. The guard missed them
+    because I had scoped it to semantic rows only, having repaired the
+    symptom in the category where I found it. It now covers every declared
+    category, and the two helpers name the file they load.
     """
     import ast
     import importlib.util
@@ -2010,6 +2020,7 @@ def test_16_nao_emite_linha_semantica_sem_fonte():
     esp = importlib.util.spec_from_file_location("m16", cam)
     m16 = importlib.util.module_from_spec(esp)
     esp.loader.exec_module(m16)
+    CATEGORIAS = ("semantico", "estrutural", "numerico")
     orfas = []
     for f in sorted((RAIZ / "tests").glob("test_*.py")):
         texto = f.read_text()
@@ -2019,9 +2030,10 @@ def test_16_nao_emite_linha_semantica_sem_fonte():
                 continue
             marcas = [d.attr for d in no.decorator_list
                       if isinstance(d, ast.Attribute)]
-            if "semantico" in marcas and not m16.fontes_citadas(no, texto):
-                orfas.append(no.name)
-    assert not orfas, f"semantic tests with no source: {orfas}"
+            cat = [c for c in CATEGORIAS if c in marcas]
+            if cat and not m16.fontes_citadas(no, texto):
+                orfas.append(f"{no.name} [{cat[0]}]")
+    assert not orfas, f"classified tests with no source: {orfas}"
 
 
 @pytest.mark.semantico
@@ -2090,9 +2102,9 @@ def test_15_emite_a_materia_de_frente_fora_da_numeracao():
     assert "Adopted convention, not a requirement read." in src
 
 
-def _mod17():
+def _mod17(nome: str = "17_citacoes.py"):
     import importlib.util
-    cam = RAIZ / "scripts" / "17_citacoes.py"
+    cam = RAIZ / "scripts" / nome
     esp = importlib.util.spec_from_file_location("c17", cam)
     m = importlib.util.module_from_spec(esp)
     esp.loader.exec_module(m)
@@ -2110,7 +2122,7 @@ def test_17_resolve_marcadores_e_ordem_de_aparicao():
     The drafts are full of `[text](url)`, and a scanner that counted those
     would report citations that do not exist.
     """
-    m = _mod17()
+    m = _mod17("17_citacoes.py")
     assert m.marcadores("a [1] b [2,3] c [5-7] d") == [1, 2, 3, 5, 6, 7]
     assert m.marcadores("see [the guide](http://x) and [F008]") == []
     assert m.marcadores("ranges backwards [7-5] are not expanded") == []
@@ -2244,9 +2256,9 @@ def test_texto_declara_a_grade_e_o_truncamento():
     assert "plateau at 900–999 nm is covered in full" in leg
 
 
-def _mod18():
+def _mod18(nome: str = "18_conformidade.py"):
     import importlib.util
-    cam = RAIZ / "scripts" / "18_conformidade.py"
+    cam = RAIZ / "scripts" / nome
     esp = importlib.util.spec_from_file_location("c18", cam)
     m = importlib.util.module_from_spec(esp)
     esp.loader.exec_module(m)
@@ -2269,7 +2281,7 @@ def test_18_nao_chama_de_mistura_o_que_e_ingles_britanico():
       - "precise", "noise", "wise", "promise" and their kin end in -ise
         without being British spellings.
     """
-    m = _mod18()
+    m = _mod18("18_conformidade.py")
     pbr = next(p for n, p, _ in m.PARES if n.startswith("-ise"))
     pam = next(p for n, _, p in m.PARES if n.startswith("-ise"))
     assert m.ocorrencias(pam, "an oversized level set of size 34") == []
