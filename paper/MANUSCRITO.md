@@ -12,6 +12,12 @@ belong with this digest; the generator prints the git revision alongside it.
 
 ---
 
+## Title
+
+When Spectral Attention Stability Reflects the Prior Rather Than the Data
+
+---
+
 ## Highlights
 
 - Top-q overlap depends on the tie rule when the boundary cuts equal gate values

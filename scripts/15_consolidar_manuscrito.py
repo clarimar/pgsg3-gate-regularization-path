@@ -96,6 +96,37 @@ def blocos(texto: str) -> list[tuple[str, str]]:
     return saida
 
 
+def titulo_do_artigo(texto: str) -> str:
+    """The article's title, read from 00-estrutura.md's own 'Título' block.
+
+    Added 2026-11-02, when building the LaTeX reading copy showed the
+    consolidated manuscript had no title at all: its only top-level heading was
+    this generator's own "Manuscript, consolidated". The title was settled on
+    2026-10-24 -- recorded as [v2], replacing two earlier candidates -- and it
+    lived only in the structure document, which is apparatus and does not go to
+    the journal. A manuscript whose title exists only in the apparatus is a
+    manuscript without a title.
+
+    Taken from the first bold line under that heading, so the generator cannot
+    invent one: if the block is gone or holds no bold line, this stops.
+    """
+    if "## Título" not in texto:
+        raise SystemExit("00-estrutura.md: no '## Título' block, so the "
+                         "manuscript has no title to carry. Fix the record "
+                         "rather than emitting an untitled manuscript.")
+    bloco = texto.split("## Título", 1)[1].split("\n## ", 1)[0]
+    # The heading itself carries a version marker -- "## Título **[v2]**" --
+    # and the first version of this reader took that marker for the title and
+    # printed "title, 1 words". The rest of the heading line is dropped.
+    bloco = bloco.split("\n", 1)[1] if "\n" in bloco else ""
+    for linha in bloco.splitlines():
+        m = re.match(r"^\*\*(.+?)\*\*$", linha.strip())
+        if m:
+            return m.group(1).strip()
+    raise SystemExit("00-estrutura.md: the 'Título' block has no bold title "
+                     "line; refusing to guess.")
+
+
 def prosa_do_resumo(texto: str) -> str:
     """The abstract file opens with commented decision history. Keep only the
     prose paragraphs -- lines that are not headings, comments, metadata or
@@ -149,6 +180,9 @@ def main() -> None:
 
     head("Consolidating the manuscript")
     pecas: list[str] = []
+    titulo = titulo_do_artigo((d / ESTRUTURA).read_text())
+    pecas.append("## Title\n\n" + titulo + "\n")
+    print(f"  {ESTRUTURA:<30} title, {len(titulo.split())} words")
     descartados: list[tuple[str, str, int]] = []
     secoes_vistas: list[int] = []
 

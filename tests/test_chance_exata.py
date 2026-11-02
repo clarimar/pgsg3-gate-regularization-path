@@ -2632,3 +2632,143 @@ def test_codigo_de_saida_nao_contradiz_o_veredito_impresso():
     # but a PROBLEM there fails without the flag too
     s17 = (RAIZ / "scripts" / "17_citacoes.py").read_text()
     assert "if problemas:\n        return 1" in s17
+
+
+def _mod19(nome: str = "19_tex.py"):
+    import importlib.util
+    cam = RAIZ / "scripts" / nome
+    esp = importlib.util.spec_from_file_location("c19", cam)
+    m = importlib.util.module_from_spec(esp)
+    esp.loader.exec_module(m)
+    return m
+
+
+@pytest.mark.estrutural
+def test_19_recusa_caractere_nao_mapeado_em_vez_de_emitir():
+    """The LaTeX build maps every non-ASCII character explicitly and stops on
+    one it does not know, in prose and inside a code span alike.
+
+    The alternative is what a permissive converter does: pass the byte through
+    and let pdfLaTeX fail at compile time, or worse, drop it. The manuscript
+    carries Greek letters, superscripts, subscripts and five kinds of dash,
+    and a converter that guesses at them produces a document that looks right
+    and says something else -- 10^-6 and 10^6 differ by one character.
+
+    Mapped runs of scripts become one group: "10⁻⁶" is $^{-6}$, not three.
+    """
+    m = _mod19("19_tex.py")
+    assert m.inline("10⁻⁶") == "10$^{-6}$"
+    assert m.inline("θ₀ = logit(s)") == "$\\theta$$_{0}$ = logit(s)".replace(
+        "$$", "")
+    assert m.inline("ρ and λ") == "$\\rho$ and $\\lambda$"
+    for ruim in ("a ♣ b", "`a ♣ b`"):
+        with pytest.raises(SystemExit) as e:
+            m.inline(ruim, onde="test")
+        assert "unmapped character" in str(e.value)
+    # os especiais do LaTeX sao escapados antes de qualquer macro entrar
+    assert m.inline("100% of a_b & c") == "100\\% of a\\_b \\& c"
+
+
+@pytest.mark.estrutural
+def test_19_pesa_colunas_pela_media_e_pela_palavra_mais_longa():
+    """Column widths proportional to the LONGEST cell is the obvious rule and
+    it is wrong. Table 1 has one cell of about four hundred characters: under
+    that rule it took 83% of the line and the hypothesis labels were squeezed
+    into a column one character wide, breaking "H7-shuffled" down the page.
+
+    A column needs at least the width of its longest unbreakable word, and
+    beyond that the mean cell is the honest measure of how much it carries.
+    """
+    import re
+    m = _mod19("19_tex.py")
+    linhas = ["| H7-shuffled | short | " + "x" * 400 + " |",
+              "| --- | --- | --- |",
+              "| H0 | tiny | " + "y" * 380 + " |"]
+    tex = "\n".join(m.tabela(linhas, longa=False))
+    fracoes = [float(x) for x in re.findall(r"p\{([0-9.]+)\\linewidth\}", tex)]
+    assert len(fracoes) == 3
+    assert fracoes[0] > 0.05, f"label column squeezed to {fracoes[0]}"
+    assert fracoes[2] > fracoes[0]          # a coluna longa ainda e a maior
+    assert sum(fracoes) < 0.95              # sobra para \tabcolsep
+    assert "\\toprule" in tex and "\\midrule" in tex
+    assert "|" not in tex.split("\\begin{tabular}", 1)[1].split("}", 1)[0]
+
+
+@pytest.mark.semantico
+def test_19_declara_o_que_falta_em_vez_de_disfarcar():
+    """The reading copy must say what it is not. Three things are missing from
+    a submission file and no converter can supply them: the title page, whose
+    facts are the authors'; the reference list, which does not exist; and
+    elsarticle.cls, which is not installed where this file is built, so a file
+    written against it could not be compiled before delivery.
+
+    Each is declared in the output -- the author block carries a visible
+    placeholder, the reference section says the list does not exist yet and
+    points at the audit, and the preamble says which class and why. A reader
+    who finds no references must be able to tell a manuscript without them
+    from a conversion that lost them.
+    """
+    m = _mod19("19_tex.py")
+    assert "elsarticle" in m.PREAMBULO and "NOT THE SUBMISSION FILE" in m.PREAMBULO
+    # Built here, from a manuscript consolidated here, so that the test does
+    # not depend on a generated file in the repository being up to date --
+    # which is how this very test failed in the clean clone.
+    import subprocess
+    import sys
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        md = Path(tmp) / "M.md"
+        tex = Path(tmp) / "M.tex"
+        r = subprocess.run(
+            [sys.executable, "scripts/15_consolidar_manuscrito.py",
+             "--out", str(md)], cwd=RAIZ, capture_output=True, text=True)
+        assert md.is_file(), r.stdout + r.stderr
+        r = subprocess.run(
+            [sys.executable, "scripts/19_tex.py", "--src", str(md),
+             "--out", str(tex)], cwd=RAIZ, capture_output=True, text=True)
+        assert tex.is_file(), r.stdout + r.stderr
+        t = tex.read_text()
+    assert "Title page pending" in t
+    assert "no reference list yet" in t
+    assert "paper/12-referencias.md" in t
+    assert "\\begin{document}" in t and "\\end{document}" in t
+    # e a Tabela 1 sai como esta, sem o conversor decidir a traducao
+    assert "a converter is not the place" in t
+
+
+@pytest.mark.estrutural
+def test_15_carrega_o_titulo_do_artigo():
+    """The consolidated manuscript had no title: its only top-level heading
+    was the generator's own "Manuscript, consolidated". The title was settled
+    on 2026-10-24 and lived only in 00-estrutura.md, which is apparatus and
+    does not go to the journal.
+
+    It is now read from that record's own Título block, from the first bold
+    line -- not from the heading, which carries a version marker: the first
+    reader took "[v2]" for the title and reported it as one word long.
+    """
+    import importlib.util
+    cam = RAIZ / "scripts" / "15_consolidar_manuscrito.py"
+    esp = importlib.util.spec_from_file_location("c15", cam)
+    m15 = importlib.util.module_from_spec(esp)
+    esp.loader.exec_module(m15)
+    est = (RAIZ / "paper" / "00-estrutura.md").read_text()
+    t = m15.titulo_do_artigo(est)
+    assert t == ("When Spectral Attention Stability Reflects the Prior "
+                 "Rather Than the Data")
+    assert "[v2]" not in t and len(t.split()) > 3
+    with pytest.raises(SystemExit):
+        m15.titulo_do_artigo("# sem bloco de título algum\n")
+    # and the consolidator really emits it -- checked on a manuscript built
+    # here, not on the committed artefact, which may predate any change
+    import subprocess
+    import sys
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        md = Path(tmp) / "M.md"
+        r = subprocess.run(
+            [sys.executable, "scripts/15_consolidar_manuscrito.py",
+             "--out", str(md)], cwd=RAIZ, capture_output=True, text=True)
+        assert md.is_file(), r.stdout + r.stderr
+        gerado = md.read_text()
+    assert "## Title" in gerado and t in gerado

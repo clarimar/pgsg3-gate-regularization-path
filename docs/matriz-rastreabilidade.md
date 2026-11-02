@@ -3,11 +3,11 @@
 Gerado por `scripts/16_matriz_rastreabilidade.py`. Não editar: a categoria de cada
 teste é declarada no próprio teste, por marcador `pytest`.
 
-267 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
+271 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
 nível do módulo, lida da fonte por AST — não é item coletado pelo pytest nem teste executado. Casos
 parametrizados somam +15 itens na coleta.
 
-## semantico (34)
+## semantico (35)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -45,8 +45,9 @@ parametrizados somam +15 itens na coleta.
 | `test_07_registra_as_quatro_decisoes_e_a_condicao_nao_satisfeita` | The author's four decisions of 2026-10-29. Three are applied and one is | `07-declaracoes-submissao.md` |
 | `test_18_mede_o_idioma_do_artefato_por_secao` | The manuscript is English, and anything in the drafting language that | `05-rascunho-s9-s10-s11.md`, `correcao-em-provas.md` |
 | `test_13_propoe_a_tabela1_em_ingles_sem_aplicar` | The Table 1 translation, proposed on 2026-10-29 and NOT applied. Every | `00-estrutura.md`, `13-tabela1.md`, `15_consolidar_manuscrito.py` |
+| `test_19_declara_o_que_falta_em_vez_de_disfarcar` | The reading copy must say what it is not. Three things are missing from | `19_tex.py`, `M.md`, `paper/12-referencias.md` |
 
-## estrutural (18)
+## estrutural (21)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -68,6 +69,9 @@ parametrizados somam +15 itens na coleta.
 | `test_18_nao_chama_de_mistura_o_que_e_ingles_britanico` | The guide: "write in American or British English but not a combination | `18_conformidade.py` |
 | `test_18_separa_prosa_autoral_de_citacao_literal` | The author's decision of 2026-10-29: a verbatim quotation is reproduced | `18_conformidade.py` |
 | `test_codigo_de_saida_nao_contradiz_o_veredito_impresso` | Found in the author's run of 2026-11-02: 18_conformidade.py printed | `17_citacoes.py`, `18_conformidade.py`, `scripts/17_citacoes.py` |
+| `test_19_recusa_caractere_nao_mapeado_em_vez_de_emitir` | The LaTeX build maps every non-ASCII character explicitly and stops on | `19_tex.py` |
+| `test_19_pesa_colunas_pela_media_e_pela_palavra_mais_longa` | Column widths proportional to the LONGEST cell is the obvious rule and | `19_tex.py` |
+| `test_15_carrega_o_titulo_do_artigo` | The consolidated manuscript had no title: its only top-level heading | `00-estrutura.md`, `15_consolidar_manuscrito.py`, `M.md` |
 
 ## numerico (9)
 
