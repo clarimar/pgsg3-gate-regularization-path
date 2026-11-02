@@ -3,11 +3,11 @@
 Gerado por `scripts/16_matriz_rastreabilidade.py`. Não editar: a categoria de cada
 teste é declarada no próprio teste, por marcador `pytest`.
 
-264 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
+266 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
 nível do módulo, lida da fonte por AST — não é item coletado pelo pytest nem teste executado. Casos
 parametrizados somam +15 itens na coleta.
 
-## semantico (32)
+## semantico (34)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -43,6 +43,8 @@ parametrizados somam +15 itens na coleta.
 | `test_12_fecha_o_conjunto_raman_por_concordancia_declarada` | The Raman dataset, identified on 2026-10-29. "bioprocess_substrates" | `12-referencias.md` |
 | `test_12_registra_o_dossie_e_os_tres_destinos` | The dossier the author asked for on 2026-10-29, and the complication it | `12-referencias.md` |
 | `test_07_registra_as_quatro_decisoes_e_a_condicao_nao_satisfeita` | The author's four decisions of 2026-10-29. Three are applied and one is | `07-declaracoes-submissao.md` |
+| `test_18_mede_o_idioma_do_artefato_por_secao` | The manuscript is English, and anything in the drafting language that | `05-rascunho-s9-s10-s11.md`, `correcao-em-provas.md` |
+| `test_13_propoe_a_tabela1_em_ingles_sem_aplicar` | The Table 1 translation, proposed on 2026-10-29 and NOT applied. Every | `00-estrutura.md`, `13-tabela1.md`, `15_consolidar_manuscrito.py` |
 
 ## estrutural (17)
 

@@ -35,6 +35,17 @@ counts prose. This script counts.
 
   4. TABLE CITATIONS. Same rule, for Table 1.
 
+  5. LANGUAGE OF THE ARTEFACT. The manuscript is English, and anything in the
+     drafting language that reaches it is a defect of the submitted file, not
+     a matter of style. Measured by unambiguous Portuguese markers -- accented
+     forms and function words with no English homograph -- reported BY SECTION,
+     because where it is decides what it is. Found on 2026-10-29: Table 1, the
+     paper's only table and the record of all twenty pre-registered
+     hypotheses, entirely in Portuguese; and a drafting pendency note inside
+     Section 9.3. The note was moved to paper/correcao-em-provas.md verbatim
+     the same day; the table is proposed for translation in 13-tabela1.md and
+     awaits the author.
+
 WHAT IT DOES NOT ESTABLISH
 --------------------------
 That a citation sits in the right sentence, that the English is good, or that
@@ -70,6 +81,17 @@ NAO_SAO_ISE = re.compile(
 # are the same word in both variants, and reporting them made this checker
 # call a consistent manuscript mixed on its first run.
 NAO_SAO_IZE = re.compile(r"(^|\w)siz(e|es|ed|ing)$", re.I)
+
+# Unambiguous Portuguese: accented forms, and function words that are not
+# English words. "a", "e", "no", "da" are excluded on purpose -- they occur in
+# English text and in identifiers, and a marker list that fires on them would
+# report every page as mixed.
+MARCADORES_PT = (
+    r"\b(não|também|são|está|já|até|após|pelo|pela|uma|dos|das|pré|"
+    r"veredito|critério|suportada|enunciado|platô|empate|decil|piso|faixa|"
+    r"contagem|leitura|redação|parcial|achado|reversão|idem|"
+    r"construção|partição|partições|cláusula|vizinhança|teto)\b"
+)
 
 PARES: list[tuple[str, str, str]] = [
     ("-ise / -ize",
@@ -225,6 +247,30 @@ def main() -> int:
     print(f"    Table 1 : {t1} citation(s) in the body")
     if t1 == 0:
         defeitos.append("Table 1 is never cited in the text")
+
+    head("Language of the artefact: the manuscript is English")
+    por_secao: Counter = Counter()
+    atual = "(header)"
+    for linha in texto.splitlines():
+        if linha.startswith("## "):
+            atual = linha[3:].strip()
+        achados = re.findall(MARCADORES_PT, linha, re.I)
+        if achados:
+            por_secao[atual] += len(achados)
+    if not por_secao:
+        print("  no Portuguese marker anywhere in the manuscript")
+    else:
+        print("  Portuguese markers, by section of the manuscript:")
+        for sec, n in por_secao.most_common():
+            print(f"    {n:4d}  {sec}")
+        total = sum(por_secao.values())
+        defeitos.append(
+            f"{total} Portuguese marker(s) in the English manuscript, in "
+            f"{len(por_secao)} section(s): {sorted(por_secao)}")
+        print("\n  A section of the submitted file in the drafting language is")
+        print("  a defect of the file, not a matter of style. Table 1, if it")
+        print("  is listed above, has a translation proposed in")
+        print("  paper/13-tabela1.md, not yet approved by the author.")
 
     head("Verdict")
     if defeitos:

@@ -2466,3 +2466,80 @@ def test_07_registra_as_quatro_decisoes_e_a_condicao_nao_satisfeita():
     assert "`.tex`, como formato principal" in t
     # e o motivo da mudanca no verificador fica dito
     assert "pedia que uma citação literal fosse alterada" in t
+
+
+@pytest.mark.semantico
+def test_18_mede_o_idioma_do_artefato_por_secao():
+    """The manuscript is English, and anything in the drafting language that
+    reaches it is a defect of the submitted file. Found on 2026-10-29 and
+    measured by section, because where it sits decides what it is:
+
+      Table 1 -- the paper's only table, the record of all twenty
+      pre-registered hypotheses, cited five times in the body -- is entirely
+      in Portuguese, headers and all twenty rows.
+
+      A drafting pendency note sat inside Section 9.3, in Portuguese, in the
+      English text that goes to the journal.
+
+    The note was moved verbatim to paper/correcao-em-provas.md the same day,
+    which is where the accepted paper's open details live. The table is
+    proposed for translation and awaits the author, so this check still
+    reports a defect and --strict still fails. That is the correct state: the
+    manuscript is not conformant until the table is in English.
+    """
+    m = _mod18()
+    # a lista de marcadores nao pode disparar em ingles
+    import re
+    for inocente in ("a gate", "the data", "no tie", "and the prior",
+                     "de facto", "e.g. the floor"):
+        assert not re.findall(m.MARCADORES_PT, inocente, re.I), inocente
+    for culpado in ("não suportada", "veredito pelo critério", "o platô",
+                    "partições retidas"):
+        assert re.findall(m.MARCADORES_PT, culpado, re.I), culpado
+    # a nota de pendencia saiu da secao inglesa e esta preservada
+    s9 = (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md").read_text()
+    assert "PENDÊNCIA RESIDUAL" not in s9
+    provas = (RAIZ / "paper" / "correcao-em-provas.md").read_text()
+    assert "PENDÊNCIA RESIDUAL, de exatidão e não de conclusão" in provas
+    assert "Movida para cá em 2026-10-29" in provas
+    assert "Medidas em `findings/F007`.]**" in provas
+
+
+@pytest.mark.semantico
+def test_13_propoe_a_tabela1_em_ingles_sem_aplicar():
+    """The Table 1 translation, proposed on 2026-10-29 and NOT applied. Every
+    verdict in that table is one of the author's formulations and four are
+    corrections he imposed against readings of mine, so translating is
+    restating them in another language and is his to approve.
+
+    Three things the proposal must carry: the four binding formulations, in
+    English and marked; the translation choices that change the weight of a
+    sentence rather than its words; and the one point I cannot resolve -- H11a
+    is in the first person singular where the rest of the paper says "we", and
+    the subject decides what the row claims.
+
+    While it is unapproved, the consolidator must still take Table 1 from
+    00-estrutura.md, and this test pins that down: a proposal wired into the
+    build would be an applied change wearing a proposal's label.
+    """
+    import re
+    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "13-tabela1.md").read_text())
+    assert "PROPOSTA, NÃO APROVADA" in t
+    assert "nada aqui foi aplicado ao manuscrito" in t
+    # as quatro formulacoes vinculantes, em ingles
+    assert "no tally, by construction" in t
+    assert "defines no per-partition tally" in t
+    assert "passed trivially and does not count as confirmation" in t
+    assert "a narrow reading" in t
+    assert "the criterion covered less than was assumed" in t
+    # as vinte hipoteses, nenhuma perdida
+    linhas = [l for l in (RAIZ / "paper" / "13-tabela1.md").read_text()
+              .split("## Table 1", 1)[1].splitlines()
+              if l.startswith("| H")]
+    assert len(linhas) == 20, len(linhas)
+    # o ponto que nao e meu para resolver
+    assert "primeira pessoa do singular" in t and "Decisão sua" in t
+    # e o consolidador continua lendo a tabela portuguesa
+    src = (RAIZ / "scripts" / "15_consolidar_manuscrito.py").read_text()
+    assert "13-tabela1.md" not in src
+    assert 'ESTRUTURA = "00-estrutura.md"' in src

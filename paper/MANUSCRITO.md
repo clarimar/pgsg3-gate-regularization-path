@@ -5,7 +5,7 @@ The English text is copied verbatim; the Portuguese drafting apparatus is
 left behind and listed at the end of the generator's output. Do not edit this
 file -- edit the drafts and run the generator again.
 
-Source digest: **6f76fde86494edb7** — SHA-256 over the 11 draft files this was
+Source digest: **952850516f239d84** — SHA-256 over the 11 draft files this was
 built from, truncated. Two copies with the same digest were built from the same
 sources, whatever the git state. The findings in `findings/` and Table 1 below
 belong with this digest; the generator prints the git revision alongside it.
@@ -1172,13 +1172,6 @@ at the largest sample size, and by considerably more in small samples. What
 survives that exclusion remains associated with sample size. None of this
 amounts to a demonstration that the gate recovers chemically relevant bands,
 and we do not offer it as one.
-
-**[PENDÊNCIA RESIDUAL, de exatidão e não de conclusão — registrar se o ρ(d)
-do artigo aceito é Pearson ou Spearman. A medida de 2026-10-25 mostra que a
-conclusão é a mesma nas duas definições, logo isto deixou de ser pré-requisito
-para o enunciado; continua desejável para a §2 citar a definição correta.
-Exige a seção do artigo que define o controle, ou o código que o calcula.
-Medidas em `findings/F007`.]**
 
 We raised this as a suspicion against that control and it ended as evidence
 for it, and we report it in that order deliberately. The one time in this work

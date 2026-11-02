@@ -220,13 +220,6 @@ survives that exclusion remains associated with sample size. None of this
 amounts to a demonstration that the gate recovers chemically relevant bands,
 and we do not offer it as one.
 
-**[PENDÊNCIA RESIDUAL, de exatidão e não de conclusão — registrar se o ρ(d)
-do artigo aceito é Pearson ou Spearman. A medida de 2026-10-25 mostra que a
-conclusão é a mesma nas duas definições, logo isto deixou de ser pré-requisito
-para o enunciado; continua desejável para a §2 citar a definição correta.
-Exige a seção do artigo que define o controle, ou o código que o calcula.
-Medidas em `findings/F007`.]**
-
 We raised this as a suspicion against that control and it ended as evidence
 for it, and we report it in that order deliberately. The one time in this work
 that we asserted something about the earlier paper without reading its own

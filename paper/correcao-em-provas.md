@@ -88,3 +88,27 @@ Nada mais. Especificamente:
 Provas aceitam correção factual e tipográfica; uma inserção de quatro linhas em
 resultados costuma passar, mas não é garantido. Se recusarem, aí sim a questão
 volta a ser editorial, e a decisão do `ADR-0003` se aplica como está.
+
+
+---
+
+## Pendência residual: ρ(d) é Pearson ou Spearman?
+
+Movida para cá em 2026-10-29, **verbatim**, da §9.3 do manuscrito. Ela estava
+dentro da seção inglesa que vai para a revista — apparatus de redação em
+português no texto submetido —, e o seu conteúdo é sobre o artigo aceito, que
+é o assunto deste arquivo. Nada do enunciado foi alterado:
+
+> **[PENDÊNCIA RESIDUAL, de exatidão e não de conclusão — registrar se o ρ(d)
+> do artigo aceito é Pearson ou Spearman. A medida de 2026-10-25 mostra que a
+> conclusão é a mesma nas duas definições, logo isto deixou de ser pré-requisito
+> para o enunciado; continua desejável para a §2 citar a definição correta.
+> Exige a seção do artigo que define o controle, ou o código que o calcula.
+> Medidas em `findings/F007`.]**
+
+O que ela pede continua pendente e continua sendo decisão do autor: a §2 do
+manuscrito novo cita `|coef PLS|` e a definição do controle de deslocamento do
+artigo aceito, e só a seção daquele artigo — ou o código que a calcula — diz
+qual das duas correlações ele usou. A §9.3 do manuscrito segue correta sem
+isso, porque a medida de 2026-10-25 mostrou que a conclusão não depende da
+escolha; o que falta é a exatidão da citação, não o veredito.
