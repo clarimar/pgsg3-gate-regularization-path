@@ -50,6 +50,41 @@ LIMITE_RESUMO = 250  # Chemolab, guide for authors: "does not exceed 250 words"
 
 
 
+_TEX_GERADO: dict[str, str] = {}
+
+
+def _tex_gerado(bib: bool = False) -> str:
+    """Builds the .tex from the manuscript and returns it.
+
+    Never reads paper/MANUSCRITO.tex from disk. That file is GENERATED and,
+    since 2026-11-09, not tracked, so on any tree where someone built it
+    earlier it can be stale -- and a test that reads it is asserting on an
+    artefact nobody rebuilt. That is the defect this programme has now hit six
+    times. On 2026-11-12 it hit the author's own machine: three tests failed
+    there against a .tex built before the AI declaration existed, while the
+    same three passed in the container that had just rebuilt it. A test that
+    passes or fails according to what happens to be on disk measures the disk.
+    """
+    chave = "bib" if bib else "lista"
+    if chave not in _TEX_GERADO:
+        import subprocess
+        import sys
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            saida = Path(d) / "M.tex"
+            cmd = [sys.executable, str(RAIZ / "scripts" / "19_tex.py"),
+                   "--src", str(RAIZ / "paper" / "MANUSCRITO.md"),
+                   "--out", str(saida)]
+            if bib:
+                cmd.append("--bib")
+            r = subprocess.run(cmd, capture_output=True, text=True, cwd=RAIZ)
+            assert r.returncode == 0, (
+                "19_tex.py falhou ao gerar o .tex para o teste:\n"
+                + r.stdout + r.stderr)
+            _TEX_GERADO[chave] = saida.read_text()
+    return _TEX_GERADO[chave]
+
+
 def _num_ref(trecho: str) -> str:
     """O número da referência cuja entrada contém `trecho`.
 
@@ -4460,14 +4495,12 @@ def test_bibliografia_sai_sem_justificacao_esticada():
     t = (RAIZ / "scripts" / "19_tex.py").read_text()
     assert "\\\\begingroup\\\\raggedright" in t
     assert "\\\\endgroup" in t
-    tex = (RAIZ / "paper" / "MANUSCRITO.tex")
-    if tex.exists():
-        corpo = tex.read_text()
-        assert corpo.count("\\begingroup\\raggedright") == corpo.count("\\endgroup"), \
-            "um \\begingroup sem \\endgroup: o resto do documento perde a justificação"
-        i = corpo.index("\\section*{References}")
-        trecho = corpo[i:i + 400]
-        assert "\\begingroup\\raggedright" in trecho
+    corpo = _tex_gerado()
+    assert corpo.count("\\begingroup\\raggedright") == corpo.count("\\endgroup"), \
+        "um \\begingroup sem \\endgroup: o resto do documento perde a justificação"
+    i = corpo.index("\\section*{References}")
+    trecho = corpo[i:i + 400]
+    assert "\\begingroup\\raggedright" in trecho
 
 
 @pytest.mark.semantico
@@ -4518,12 +4551,10 @@ def test_credit_vem_do_autor_e_a_taxonomia_nao_foi_reescrita():
     # e chega ao manuscrito e ao .tex, com o & escapado
     md = (RAIZ / "paper" / "MANUSCRITO.md").read_text()
     assert "## CRediT authorship contribution statement" in md
-    tex = RAIZ / "paper" / "MANUSCRITO.tex"
-    if tex.exists():
-        corpo = tex.read_text()
-        assert "\\section*{CRediT authorship contribution statement}" in corpo
-        assert "review \\& editing" in corpo
-        assert "review & editing" not in corpo, "& sem escape quebra o LaTeX"
+    corpo = _tex_gerado()
+    assert "\\section*{CRediT authorship contribution statement}" in corpo
+    assert "review \\& editing" in corpo
+    assert "review & editing" not in corpo, "& sem escape quebra o LaTeX"
 
 
 @pytest.mark.semantico
@@ -4721,11 +4752,9 @@ def test_declaracao_de_ia_segue_a_politica_lida_na_fonte():
         "sem a guarda, um título sem corpo imprimiria uma declaração que os "
         "autores não fizeram")
 
-    tex = RAIZ / "paper" / "MANUSCRITO.tex"
-    if tex.exists():
-        corpo = tex.read_text()
-        assert corpo.index("\\section*{" + titulo + "}") < \
-            corpo.index("\\section*{References}")
+    corpo = _tex_gerado()
+    assert corpo.index("\\section*{" + titulo + "}") < \
+        corpo.index("\\section*{References}")
 
     # e a secao e reproduzida: nomes de ferramenta nao sao grafia autoral
     conf = (RAIZ / "scripts" / "18_conformidade.py").read_text()

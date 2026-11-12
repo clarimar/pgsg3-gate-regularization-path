@@ -105,7 +105,7 @@ parametrizados somam +15 itens na coleta.
 | `test_parecer1110_figura3_nao_se_redesenha_em_outro_ambiente` | O painel (b) da Figura 3 é específico do ambiente POR CONSTRUÇÃO: o | `10_figuras.py` |
 | `test_decisao1110_a_condicional_da_91_e_sustentada_pelos_dados` | O autor condicionou a §9.1: *"se houver configurações com perda | `agregado.csv` |
 | `test_decisao1110_a_trava_cobre_a_figura_2_tambem` | O autor pediu a proteção para todas as figuras dependentes de | `10_figuras.py` |
-| `test_bibliografia_sai_sem_justificacao_esticada` | Inspeção do PDF definitivo, 2026-11-10. | `19_tex.py`, `MANUSCRITO.tex` |
+| `test_bibliografia_sai_sem_justificacao_esticada` | Inspeção do PDF definitivo, 2026-11-10. | `19_tex.py` |
 | `test_bib_modo_cite_nao_toca_o_preambulo_nem_publica_a_auditoria` | Pedido do autor em 2026-11-11: `\cite{}` contra o `.bib`, não `[6]` | `19_tex.py` |
 
 ## numerico (10)
