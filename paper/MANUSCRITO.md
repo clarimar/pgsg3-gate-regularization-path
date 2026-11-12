@@ -5,7 +5,7 @@ The English text is copied verbatim; the Portuguese drafting apparatus is
 left behind and listed at the end of the generator's output. Do not edit this
 file -- edit the drafts and run the generator again.
 
-Source digest: **d593754c833e15b0** — SHA-256 over the 12 draft files this was
+Source digest: **37d7a460ea4f45fc** — SHA-256 over the 13 draft files this was
 built from, truncated. Two copies with the same digest were built from the same
 sources, whatever the git state. The findings in `findings/` and Table 1 below
 belong with this digest; the generator prints the git revision alongside it.
@@ -81,14 +81,14 @@ index [5].
 
 **That overlap has to be read against chance, and the need to do so is not
 new.** The feature-selection literature has corrected set overlap for chance
-for nearly two decades: the consistency index of [6] subtracts the
+for nearly two decades: the consistency index of Kuncheva [6] subtracts the
 hypergeometric expectation of the intersection of two random subsets of equal
-size, and [7] places that correction, and others, on a stated set of
-properties. What this paper adds is narrower and specific to the way a
-quantised prior is written down. When the prior assigns one value to a block
-of bands, the gate inherits ties inside that block, and the top-k cut then
-falls inside a tied set whose members a sorting rule — not the data — orders.
-Under that condition the relevant chance level is not the expectation of the
+size, and Nogueira et al. place that correction [7], and others, on a stated
+set of properties. What this paper adds is narrower and specific to the way a
+quantised prior is written down. When the prior assigns one value to a block of
+bands, the gate inherits ties inside that block, and the top-k cut then falls
+inside a tied set whose members a sorting rule — not the data — orders. Under
+that condition the relevant chance level is not the expectation of the
 intersection but the exact expectation of the Jaccard index over the tied
 block, and the figure the overlap takes depends on the tie-breaking rule. The
 conditions are geometric, they are checkable before any model is trained, and
@@ -188,13 +188,12 @@ learning can be seen. Section 8 reports it.
 ### 2.1 Datasets
 
 **Near-infrared.** The mango dry-matter dataset, version 3, harvest 4 [8],
-whose calibration across seasons, locations and cultivars is reported in [9],
-with p = 281 wavelengths spanning 309 to 1149 nm
-in steps of 3 nm. Splits are grouped by
-fruit: the collection holds 725 fruits of which 723 were measured twice [4], so a
-random split over spectra would place two measurements of one fruit on opposite
-sides of the partition and inflate held-out performance. All partitions
-reported here are grouped.
+whose calibration across seasons, locations and cultivars is reported by
+Anderson et al. [9], with p = 281 wavelengths spanning 309 to 1149 nm in steps
+of 3 nm. Splits are grouped by fruit: the collection holds 725 fruits of which
+723 were measured twice [4], so a random split over spectra would place two
+measurements of one fruit on opposite sides of the partition and inflate
+held-out performance. All partitions reported here are grouped.
 
 **Fruit identity is inferred, not supplied, and we state what that does and
 does not guarantee.** The published file carries no fruit identifier. The
@@ -226,18 +225,18 @@ available, and this is a limitation rather than a choice (Section 10).
 
 ### 2.2 Priors
 
-The near-infrared prior is assembled by assigning one constant value to each
-of three literature-derived regions relevant to dry-matter content [13] —
-0.6 to 680–700 nm (chlorophyll), 1.0 to 900–1000 nm (second C–H overtone),
-0.8 to 1100–1200 nm (first C–H overtone), the last two being the overtone
-regions catalogued in [14] — over a floor of 0.1 elsewhere, and is then
-divided by its maximum. The three levels are ours; the three windows and their
-assignments are not. Nothing in this paper rests on the windows being the right
-ones: what follows depends only on the prior having a level set larger than the
-selected set, which Section 4 makes precise. On the
-281-wavelength axis this gives four distinct values, 0.1 on 223 bands, 0.6 on
-7, 0.8 on 17, and 1.0 on the 34 bands falling inside the 900–1000 nm window,
-which is 12.1% of the spectrum.
+The near-infrared prior is assembled by assigning one constant value to each of
+three literature-derived regions relevant to dry-matter content [13] — 0.6 to
+680–700 nm (chlorophyll), 1.0 to 900–1000 nm (second C–H overtone), 0.8 to
+1100–1200 nm (first C–H overtone), the last two being the overtone regions
+catalogued by Workman and Weyer [14] — over a floor of 0.1 elsewhere, and is
+then divided by its maximum. The three levels are ours; the three windows and
+their assignments are not. Nothing in this paper rests on the windows being the
+right ones: what follows depends only on the prior having a level set larger
+than the selected set, which Section 4 makes precise. On the 281-wavelength
+axis this gives four distinct values, 0.1 on 223 bands, 0.6 on 7, 0.8 on 17,
+and 1.0 on the 34 bands falling inside the 900–1000 nm window, which is 12.1%
+of the spectrum.
 
 It is worth being exact about where the plateau comes from, because the
 generality of what follows depends on it. **The plateau is a property of the
@@ -265,7 +264,7 @@ places, and the two are **crossed** rather than being alternatives, so that
 four configurations are trained and not two:
 
 - the **initialisation**, `θ₀ = logit(s)` against `θ₀ = 0`;
-- the **penalty**, a term `λ · KL(g ‖ s)` summed over bands, with λ on a
+- the **penalty**, a term `λ · KL(g ‖ s)` averaged over bands, with λ on a
   logarithmic grid anchored at λ = 0 — which reproduces the earlier model
   exactly — and refined between 0.1 and 1, where the transition occurs.
 
@@ -275,6 +274,35 @@ constrain the solution, and it is also what the prior-initialised arm varies in
 order to show that the penalty cannot move a gate that starts saturated. The
 two must not be confused, and the one we recommend is the penalty applied from
 `θ₀ = 0`.
+
+**Numerical form of the two roles.** `logit(1)` is not defined and the
+near-infrared prior attains 1 on 34 bands, so the implementation clips the
+prior to `[ε, 1 − ε]` with `ε = 10⁻⁶` before either role reads it. The logit is
+evaluated in double precision and the gate logits are held in single precision,
+which puts a band at the prior's maximum at `θ₀ = 13.8155` and therefore at
+`g₀ = 1 − 9.5 × 10⁻⁷`: the gate starts just inside the open interval and not at
+the boundary, and `σ′(θ₀) = 9.5 × 10⁻⁷`. That factor is the one Section 3.1
+reports, and it is a property of the clip rather than of the optimiser. The
+penalty is the per-band Bernoulli divergence
+
+`KL(g ‖ s) = (1/p) Σᵢ [ gᵢ log(gᵢ/sᵢ) + (1 − gᵢ) log((1 − gᵢ)/(1 − sᵢ)) ]`,
+
+with both arguments clipped by the same `ε`, reduced by the **mean** over the
+`p` bands so that λ is comparable across dimensionalities, and added once per
+gradient step to the mini-batch mean squared error. Early stopping is decided
+on validation mean squared error alone, with the penalty term excluded, so that
+λ does not change the meaning of the selected epoch. Optimisation is Adam at a
+learning rate of 10⁻³ with weight decay of 10⁻⁴ applied to all parameters, the
+gate logits included. The decay is coupled, in the sense that `torch.optim.Adam`
+adds the L2 term to the gradient before the adaptive moments normalise it;
+AdamW, which decouples it, is run as a control, and the form of the decay is
+therefore a design variable and not an implementation detail. At a band on the
+plateau the decay contributes a term of `λ_wd · θ₀ = 1.4 × 10⁻³` to the
+gradient on θ, and that term does not carry the `σ′` factor that attenuates the
+contribution arriving from the data. We state this of the gradient and not of
+the update: under adaptive moments the ratio of two gradient contributions does
+not carry over to the ratio of their effects on the step, so nothing here
+licenses a quantitative claim about how much of the update each one supplies.
 
 ### 2.4 Selection metric, and the two decile conventions in use
 
@@ -304,22 +332,22 @@ earlier revision are reported at q = 29 and compared against 0.7445.
 ### 2.5 The chance level, and a correction to how we had computed it
 
 Correcting set overlap for chance is established practice in the
-feature-selection literature. The consistency index of [6] takes two subsets
-of equal size q drawn from L variables, notes that the intersection of a fixed
-subset with a random one is hypergeometric with expectation q²/L, and
-subtracts that expectation so that independent draws score near zero; [7]
-puts that correction and its alternatives on a stated set of properties. The
-point of this section is not that a correction is needed — that was settled —
-but that the quantity being corrected is the Jaccard index and not the
-intersection, and that for a Jaccard index the two corrections differ.
+feature-selection literature. The consistency index of Kuncheva [6] takes two
+subsets of equal size q drawn from L variables, notes that the intersection of
+a fixed subset with a random one is hypergeometric with expectation q²/L, and
+subtracts that expectation so that independent draws score near zero; Nogueira
+et al. put that correction [7] and its alternatives on a stated set of
+properties. The point of this section is not that a correction is needed — that
+was settled — but that the quantity being corrected is the Jaccard index and
+not the intersection, and that for a Jaccard index the two corrections differ.
 
-A chance level for a Jaccard index over a tied block of L bands may be
-computed as q / (2L − q), and that is what we had done ourselves, treating it
-as the exact value, until the correction recorded here. That expression is not
-the expected Jaccard index: it is the Jaccard index evaluated at the
-hypergeometric mean of [6], which is not the same thing. If
-two sets of size q are drawn uniformly and independently from L bands, their
-overlap k is hypergeometric with mean q²/L, and
+A chance level for a Jaccard index over a tied block of L bands may be computed
+as q / (2L − q), and that is what we had done ourselves, treating it as the
+exact value, until the correction recorded here. That expression is not the
+expected Jaccard index: it is the Jaccard index evaluated at the hypergeometric
+mean of Kuncheva [6], which is not the same thing. If two sets of size q are
+drawn uniformly and independently from L bands, their overlap k is
+hypergeometric with mean q²/L, and
 
 J(q²/L) = (q²/L) / (2q − q²/L) = q / (2L − q)
 
@@ -330,13 +358,14 @@ lower bound. We therefore report the exact expectation,
 
 E[J] = Σₖ [C(q,k) · C(L−q, q−k) / C(L,q)] · k / (2q − k),
 
-which exceeds the ratio by 0.0012 at q = 28 and by 0.0009 at q = 29 for
-L = 34. In the vocabulary of [6] and [7], the correction being made here is
-the same in kind and different in its argument: the expectation is taken of
-J(k) rather than J taken of the expectation of k. The gap is smaller than the sampling spread of the estimates reported
-below and changes none of our verdicts, but it is systematic and in the
-direction that overstates any excess above chance, so it should not be carried
-into a comparison that is closer than ours.
+which exceeds the ratio by 0.0012 at q = 28 and by 0.0009 at q = 29 for L = 34.
+In the vocabulary of Kuncheva [6] and Nogueira et al. [7], the correction being
+made here is the same in kind and different in its argument: the expectation is
+taken of J(k) rather than J taken of the expectation of k. The gap is smaller
+than the sampling spread of the estimates reported below and changes none of
+our verdicts, but it is systematic and in the direction that overstates any
+excess above chance, so it should not be carried into a comparison that is
+closer than ours.
 
 ### 2.6 External reference
 
@@ -406,12 +435,25 @@ gate configurations the optimiser can reach, and the other does not.
 ### 3.1 Initialising at the prior freezes the plateau
 
 Under `θ₀ = logit(s)`, the 34 bands at the prior's maximum start at a gate
-value of 1 and stay there. The gradient of any loss with respect to θ carries a
-factor σ′(θ) = g(1 − g), which at the plateau is of order 10⁻⁶; the Fisher
+value of 1 − 9.5 × 10⁻⁷ — the clip declared in Section 2.3, not the boundary
+itself — and stay there. Gradients propagated through the sigmoid gate carry a
+factor σ′(θ) = g(1 − g), which at the plateau is of order 10⁻⁶, and
+9.5 × 10⁻⁷ exactly at initialisation; the Fisher
 information for those coordinates is 8.6 × 10⁻⁹ against 0.72 for the bands off
-the plateau, a ratio of about eight orders of magnitude. The parameters are
-free in the class and unreachable by the optimiser, which is the distinction
-drawn in Section 1.2.
+the plateau, a ratio of about eight orders of magnitude.
+
+The prior-initialised plateau begins in a numerically saturated region of the
+sigmoid, strongly attenuating gradients propagated through the gate. However,
+the optimiser also applies weight decay to the gate logits, introducing an
+additional contribution to parameter updates that is not attenuated by the
+sigmoid derivative. The observed persistence of the plateau is therefore an
+empirical property of the complete optimisation procedure, rather than a
+consequence of sigmoid saturation alone. Section 1.2's distinction between what
+is free in the class and what the optimiser reaches should be read in that
+narrower sense: what we observe to persist is the gate, and a gate that does
+not move is not by itself evidence that its parameter cannot. Separating the
+two would take the ablation named in Section 11, which we did not run — the
+optimiser control reported here was run from θ₀ = 0, where no plateau forms.
 
 The consequence is visible in how little the penalty weight then matters. With
 the prior in the initialisation, ρ(gate, prior) stays between 0.9987 and 0.9999
@@ -429,8 +471,9 @@ it no longer decides which solutions are available.
 
 This is the first of our recommendations and the cheapest: the prior's
 constraint and the prior's starting point are separable, and separating them
-costs nothing in predictive performance (Section 5) while removing the
-condition that the rest of this paper is about.
+showed no material predictive deterioration in the configurations we evaluated
+(Section 5), without establishing equivalence, while removing the condition
+that the rest of this paper is about.
 
 **Figure 1.** The near-infrared prior as a step function over the 281
 wavelengths, with its four levels, the 34-band plateau at the maximum, and the
@@ -463,9 +506,11 @@ three combinations that occur.
 
 **(C1) The plateau exceeds q.** Let L be the number of bands the prior places at
 its maximum and suppose the trained gate is larger on all of them than on any
-band outside. Then the top-q set is a subset of the plateau whenever L ≥ q, and
+band outside. Then the top-q set is a subset of the plateau whenever L > q, and
 the metric never examines a band outside the prior's top level, whatever the
-model has learned. Here L = 34 against q = 28 or 29.
+model has learned. The inequality is strict because at L = q the whole plateau
+is selected and the selection boundary falls outside it, so no tie has to be
+broken to decide which bands enter. Here L = 34 against q = 28 or 29.
 
 C1 alone makes the metric **blind**, not artificial. With the prior moved out of
 the initialisation (θ₀ = 0), the gate on the plateau is continuous, no two
@@ -880,9 +925,10 @@ order. The second and third conditions are not met either.
 
 Both of the properties documented in Sections 4 and 5 are therefore absent
 under the same architecture and the same code, with the prior's functional form
-exchanged along with the dataset and the modality. This is what the
-quantisation account predicts, and it is a check in a second modality: the
-behaviour is a property of how the prior was written down, not of the method.
+exchanged along with the dataset and the modality, and it is a check in a
+second modality. These observations are consistent with the proposed
+quantisation mechanism, but the between-modality comparison does not isolate
+the effect of the prior's functional form.
 
 ### 7.2 Anchoring buys reproducibility here, and the figure means it
 
@@ -1062,13 +1108,22 @@ the plateau level are the two the text distinguishes.
 The penalty weight λ is meant to trade fit against adherence to the prior, and
 in the usual telling λ → ∞ is high bias while λ → 0 is high variance. Neither
 end of that description survives measurement here, because the regularisation
-path is **flat in risk**: held-out R² is equivalent across the whole range of
-λ, in both modalities, and at all seven training sizes of the revision data.
-Nothing is being traded. What varies along the path is the reproducibility of
+path is **flat in risk**. Within the near-infrared experiments, the evaluated
+configurations showed no material deterioration in the reported predictive
+performance measures across the examined regularisation settings. This
+observation is descriptive and does not constitute a formal equivalence test.
+For Raman, predictive equivalence cannot be assessed from held-out R², which
+was not reported because the available data do not support the required
+batch-aware evaluation. Consequently, the Raman results are interpreted in
+terms of gate behaviour and selection stability, not demonstrated equivalence
+of predictive performance. Within the evaluated near-infrared configurations,
+changes in gate stability were not accompanied by a consistent deterioration
+in the reported predictive performance. What varies along the path is the reproducibility of
 the gate, and Sections 4 through 6 establish that the reproducibility in the
 near-infrared arm is either uninterpretable or attainable with a prior
 anticorrelated with the reference. The trade-off, stated honestly, is between
-a stability that does not affect predictive risk and nothing at all.
+a stability whose predictive cost we did not detect in these configurations
+and nothing at all.
 
 This is not an argument against spectral priors. It is an argument against
 reading a flat risk path as evidence that the prior costs nothing while the
@@ -1297,9 +1352,13 @@ Five recommendations follow, in increasing order of what they cost.
    wrong for every purpose. In the configuration we examined, θ₀ = 0 with the
    prior in the penalty preserves the constraint while leaving every parameter
    reachable, and removes the condition of Section 4 entirely (Section 3.2);
-   held-out R² is equivalent between the two across the λ grid, both
-   modalities and the seven training sizes we ran, which is the evidence for
-   the cost being nil and is as general as those runs. Section 9.3 adds a
+   in the near-infrared arm no material deterioration in held-out R² between
+   the two was observed across the λ grid we ran, which supports the absence
+   of a material predictive deterioration in the evaluated configurations,
+   without establishing equivalence, and is as general as those runs and no
+   more. No R² is
+   reported by training size, and the Raman arm reports no held-out R² at all
+   (Section 10), so the claim is confined to the λ grid in that one modality. Section 9.3 adds a
    second reason within the same scope: initialising at the prior also leaves
    a block of coordinates with near-zero displacement, which contaminates a
    displacement-based control that would otherwise be clean.
@@ -1396,6 +1455,14 @@ so the check cannot be independent of it. The observable structure is
 consistent with the recorded 725 fruits, 723 of them measured twice, which
 makes the inference plausible without making it verified. Section 2.1.
 
+**The optimiser control does not cover the saturated arm.** The comparison of
+coupled against decoupled weight decay was run from θ₀ = 0 only, where no
+plateau forms and the count of inert bands is zero throughout. It therefore
+says nothing about how the two forms of decay act on logits that start
+saturated, which is the arm in which the plateau is observed to persist. The
+qualification in Section 3.1 is written to that boundary, and the ablation that
+would settle it is named in Section 11.
+
 **The PAC-Bayes connection is a formal resemblance.** Section 9.2.
 
 **Displacement reproducibility is not interpretable in small samples under
@@ -1444,21 +1511,41 @@ composition is set by the experimenter are others. We name synthetic data
 because it is what we would run first, not because it is the only route. This is the first item because it is the one that would
 convert the interpretive claim from unfalsifiable to testable.
 
-**Empirical Rademacher complexity by fitting random labels.** Section 1.2
-argues that prior-initialisation restricts reachability and not capacity. That
+**Fitting random labels under the two initialisations.** Section 1.2 argues
+that prior-initialisation restricts reachability and not capacity. That
 argument is analytic. Fitting random labels under both initialisations would
-estimate the empirical Rademacher complexity of the two function classes
-[21] and so quantify the restriction instead of arguing it, and would
-test whether the frozen plateau has any effect on what the model can fit. We
-have not run it: nothing in this paper reports such an estimate.
+measure how far each one can memorise an uninformative target, and so test
+empirically whether the frozen plateau has any effect on what the optimiser
+can reach, instead of arguing it. We state the scope deliberately: such a
+measurement is a statement about memorisation and reachability under a given
+optimiser, not an estimate of the empirical Rademacher complexity [21] of the
+two function classes, which is the supremum of a signed average over a class
+and is not delivered by fitting one optimiser to one random draw of labels.
+Section 1.2's point that the parametric class is the same under both
+initialisations stands independently of any such run. We have not run it:
+nothing in this paper reports either quantity.
+
+**Weight decay on the gate logits, with the prior in the initialisation.** The
+qualification in Section 3.1 leaves one question open: how much of the
+plateau's persistence is the flatness of the sigmoid and how much is the decay
+term that reaches θ without passing through it. The experiment is an ablation
+on the prior-initialised arm with the decay on the gate logits present and
+absent, and under both the coupled and the decoupled form, holding the step
+budget fixed so that displacement is not confounded with the number of steps
+(Section 2.3). It is cheap, it needs no new data, and until it is run the
+persistence of the plateau should be read as a property of the whole procedure
+rather than of saturation alone.
 
 **A stochastic gate.** The change that would make a PAC-Bayes analysis
 available rather than a formal resemblance (Section 9.2).
 
-**Scale and small samples.** The prior does not improve accuracy at any of
-seven training sizes from n = 30 to 1158. That is a real result from the
-earlier revision data, it bears directly on when a prior is worth using, and it
-has no published home.
+**Scale and small samples.** Whether the prior improves accuracy at small
+training sizes is a question this paper does not answer. No held-out R² is
+reported here by training size, and the earlier revision data that bear on it
+are not citable while that work is unpublished, so we make no quantitative
+claim from them. The experiment is cheap — the seven training sizes from
+n = 30 to 1158 already exist as partitions and the models are small — and it
+bears directly on when a prior is worth using.
 
 **The number of latent components against within-plateau ordering.** Across the
 five partitions where both were measured, the rank correlation between the
@@ -1524,6 +1611,29 @@ cheap to ask.
 
 ---
 
+## CRediT authorship contribution statement
+
+**Guilherme Coelho:** Investigation, Writing – review & editing.
+**Clarimar José Coelho:** Conceptualization, Methodology, Software, Formal
+analysis, Validation, Data curation, Visualization, Supervision, Project
+administration, Writing – original draft, Writing – review & editing.
+
+---
+
+---
+
+## Declaration of Generative AI and AI-assisted technologies in the writing process
+
+During the preparation of this work the authors used Claude (Anthropic) to
+draft and revise prose in this manuscript, to assemble its reference list, and
+to prepare the figures and tables for publication. The authors reviewed and
+edited all of that output, checked every bibliographic record against the
+source cited in it, and rewrote or removed whatever did not reflect their own
+analysis. The authors take full responsibility for the content of the
+publication.
+
+---
+
 ## References
 
 [1] S. Jain, B.C. Wallace, Attention is not explanation, in: Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers), Association for Computational Linguistics, Minneapolis, 2019, pp. 3543–3556. https://doi.org/10.18653/v1/N19-1357
@@ -1542,7 +1652,7 @@ cheap to ask.
 
 [8] N. Anderson, K. Walsh, P. Subedi, J. Walsh, Mango DMC and spectra Anderson et al. 2020, Mendeley Data, version 3, 2024. https://doi.org/10.17632/46htwnp833.3
 
-[9] N.T. Anderson, K.B. Walsh, P.P. Subedi, C.H. Hayes, Achieving robustness across season, location and cultivar for a NIRS model for intact mango fruit dry matter content, Postharvest Biology and Technology 168 (2020) 111202.
+[9] N. Anderson, K. Walsh, P. Subedi, C.H. Hayes, Achieving robustness across season, location and cultivar for a NIRS model for intact mango fruit dry matter content, Postharvest Biology and Technology 168 (2020) 111202. https://doi.org/10.1016/j.postharvbio.2020.111202
 
 [10] C. Lange, M. Altmann, D. Stors, S. Seidel, K. Moynahan, L. Cai, S. Born, P. Neubauer, M.N. Cruz Bournazou, Deep learning for Raman spectroscopy: benchmarking models for upstream bioprocess monitoring, Measurement 258 (2026) 118884.
 
@@ -1550,9 +1660,9 @@ cheap to ask.
 
 [12] M. Koddenbrock, C. Lange, R. Legner, M. Jaeger, M. Kögler, M.N. Cruz Bournazou, P. Neubauer, F. Bießmann, E. Rodner, RamanBench: a large-scale benchmark for machine learning on Raman spectroscopy, arXiv:2605.02003, 2026.
 
-[13] S. Saranwong, J. Sornsrivichai, S. Kawano, Prediction of ripe-stage eating quality of mango fruit from its harvest quality measured nondestructively by near infrared spectroscopy, Postharvest Biology and Technology 31 (2004) 253–261.
+[13] S. Saranwong, J. Sornsrivichai, S. Kawano, Prediction of ripe-stage eating quality of mango fruit from its harvest quality measured nondestructively by near infrared spectroscopy, Postharvest Biology and Technology 31 (2) (2004) 137–145. https://doi.org/10.1016/j.postharvbio.2003.08.007
 
-[14] J. Workman Jr., L. Weyer, Practical Guide and Spectral Atlas for Interpretive Near-Infrared Spectroscopy, second ed., CRC Press, 2012.
+[14] J. Workman Jr., L. Weyer, Practical Guide and Spectral Atlas for Interpretive Near-Infrared Spectroscopy, second ed., CRC Press, 2012. ISBN 978-1-4398-7525-4.
 
 [15] T. Hastie, R. Tibshirani, J.H. Friedman, The Elements of Statistical Learning: Data Mining, Inference, and Prediction, second ed., Springer, 2009.
 
@@ -1560,9 +1670,9 @@ cheap to ask.
 
 [17] F. Wilcoxon, Individual comparisons by ranking methods, Biometrics Bulletin 1 (1945) 80–83. https://doi.org/10.2307/3001968
 
-[18] S. Wold, M. Sjöström, L. Eriksson, PLS-regression: a basic tool of chemometrics, Chemometrics and Intelligent Laboratory Systems 58 (2) (2001) 109–130.
+[18] S. Wold, M. Sjöström, L. Eriksson, PLS-regression: a basic tool of chemometrics, Chemometrics and Intelligent Laboratory Systems 58 (2) (2001) 109–130. https://doi.org/10.1016/S0169-7439(01)00155-1
 
-[19] S. Kullback, R.A. Leibler, On information and sufficiency, Annals of Mathematical Statistics 22 (1) (1951). https://doi.org/10.1214/aoms/1177729694
+[19] S. Kullback, R.A. Leibler, On information and sufficiency, Annals of Mathematical Statistics 22 (1) (1951) 79–86. https://doi.org/10.1214/aoms/1177729694
 
 [20] D.A. McAllester, PAC-Bayesian model averaging, in: Proceedings of the 12th Annual Conference on Computational Learning Theory, ACM, 1999, pp. 164–170. https://doi.org/10.1145/307400.307435
 

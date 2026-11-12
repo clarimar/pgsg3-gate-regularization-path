@@ -23,9 +23,10 @@ them, so they are declared in the output rather than papered over:
     submission file will use elsarticle, whose front matter is different, and
     is worth generating when the title-page facts exist.
 
-Table 1 is emitted as it stands, which today means in Portuguese. The
-translation waits in paper/13-tabela1.md for the author; the conversion is not
-the place to decide it.
+Table 1 is emitted as it stands. Since 2026-11-09 it comes from
+paper/13-tabela1.md, in English and reconciled row by row against the
+Portuguese original in 00-estrutura.md by the consolidator; the conversion is
+not the place to decide either.
 
 WHAT IT REFUSES TO DO
 ---------------------
@@ -147,8 +148,16 @@ def inline(s: str, *, onde: str = "") -> str:
     # safe here because a literal dollar was escaped to "\\$" long before.
     s = s.replace("$$", "")
 
+    # Markdown's backslash escape: "\*" means a literal asterisk, and Table 1
+    # writes the optimal lambda as "lambda\*". Escaped as a LaTeX special it
+    # printed "\textbackslash{}*" in the PDF, which the referee of
+    # 2026-11-10 read as a surviving edit mark. Lifted out BEFORE the
+    # emphasis markers run, so that it cannot open one, and restored after.
+    s = s.replace("\\textbackslash{}*", "\x02")
+
     s = re.sub(r"\*\*(.+?)\*\*", r"\\textbf{\1}", s)
     s = re.sub(r"(?<![\w*])\*([^*]+?)\*(?![\w*])", r"\\emph{\1}", s)
+    s = s.replace("\x02", "$^{*}$")
 
     for i, codigo in enumerate(guardados):
         # Inside \texttt a script cannot be set with math without looking
@@ -171,7 +180,15 @@ def inline(s: str, *, onde: str = "") -> str:
                 raise SystemExit(
                     f"19_tex: unmapped character {ch!r} (U+{ord(ch):04X}) "
                     f"inside a code span{' in ' + onde if onde else ''}.")
-        s = s.replace(f"\x00{i}\x00", "\\texttt{" + "".join(partes) + "}")
+        # A typewriter run does not hyphenate, so a long path is one
+        # unbreakable box: scripts/14_etapa_b_por_procedimento.py ran 60.9pt
+        # past the margin in the build of 2026-11-10. Break points are offered
+        # after each separator -- \allowbreak only permits a break, it never
+        # forces one, so a path that fits is still set on one line.
+        corpo = "".join(partes)
+        for sep in ("\\_", "/", "."):
+            corpo = corpo.replace(sep, sep + "\\allowbreak{}")
+        s = s.replace(f"\x00{i}\x00", "\\texttt{" + corpo + "}")
     return s
 
 
@@ -233,7 +250,7 @@ def tabela(linhas: list[str], *, longa: bool) -> list[str]:
             soma_media = sum(m_ for _, m_ in pares) or 1.0
             fracoes = [mi + folga * m_ / soma_media
                        for mi, (_, m_) in zip(minimos, pares)]
-        spec = "".join("p{%.3f\\linewidth}" % f for f in fracoes)
+        spec = "".join("P{%.3f\\linewidth}" % f for f in fracoes)
     else:
         spec = "l" * n
     env = "longtable" if longa else "tabular"
@@ -300,23 +317,30 @@ def corpo_para_tex(linhas: list[str], *, onde: str) -> list[str]:
                      for x in dentro]
             fora.append("\\end{quote}")
             i = j
-        elif re.match(r"^[-*] ", s):
+        elif re.match(r"^[-*] ", s) or re.match(r"^\d+\. ", s):
+            # A list item CONTINUES over the draft's line wrap. Until
+            # 2026-11-10 each source line was its own item, so an item that
+            # wrapped closed the environment, the continuation printed as a
+            # loose paragraph, and the next item opened a NEW enumerate --
+            # which is why the PDF showed several lists all numbered "1.".
+            # A continuation is a non-empty line that starts no marker.
+            numerada = bool(re.match(r"^\d+\. ", s))
+            marcador = r"^\d+\. " if numerada else r"^[-*] "
             j, itens = i, []
-            while j < n and re.match(r"^[-*] ", linhas[j].strip()):
-                itens.append(linhas[j].strip()[2:])
+            while j < n and re.match(marcador, linhas[j].strip()):
+                item = [re.sub(marcador, "", linhas[j].strip())]
                 j += 1
-            fora.append("\\begin{itemize}")
+                while (j < n and linhas[j].strip()
+                       and not re.match(r"^[-*] |^\d+\. |^#{1,6} |^>|^\|",
+                                        linhas[j].strip())
+                       and not linhas[j].startswith(("    ", "\t"))):
+                    item.append(linhas[j].strip())
+                    j += 1
+                itens.append(" ".join(item))
+            amb = "enumerate" if numerada else "itemize"
+            fora.append("\\begin{" + amb + "}")
             fora += ["\\item " + inline(x, onde=onde) for x in itens]
-            fora.append("\\end{itemize}")
-            i = j
-        elif re.match(r"^\d+\. ", s):
-            j, itens = i, []
-            while j < n and re.match(r"^\d+\. ", linhas[j].strip()):
-                itens.append(re.sub(r"^\d+\.\s*", "", linhas[j].strip()))
-                j += 1
-            fora.append("\\begin{enumerate}")
-            fora += ["\\item " + inline(x, onde=onde) for x in itens]
-            fora.append("\\end{enumerate}")
+            fora.append("\\end{" + amb + "}")
             i = j
         elif l.startswith("    ") or l.startswith("\t"):
             fora.append("\\begin{quote}\\ttfamily\\small")
@@ -326,8 +350,22 @@ def corpo_para_tex(linhas: list[str], *, onde: str) -> list[str]:
                 i += 1
             fora.append("\\end{quote}")
         else:
-            fora.append(inline(s, onde=onde))
-            i += 1
+            # PROSE BY PARAGRAPH, not by line. Emphasis is written across the
+            # draft's 79-column wrap -- "**That overlap has to be read\n
+            # against chance...**" -- and a line-wise conversion never
+            # matched it, so fifty "**" and eight "*" reached the PDF as
+            # literal asterisks. The referee of 2026-11-10 saw them as
+            # surviving edit marks, which is exactly what they were.
+            j, par = i, []
+            while (j < n and linhas[j].strip()
+                   and linhas[j].strip() != "---"
+                   and not re.match(r"^#{1,6} |^[-*] |^\d+\. |^>|^\|",
+                                    linhas[j].strip())
+                   and not linhas[j].startswith(("    ", "\t"))):
+                par.append(linhas[j].strip())
+                j += 1
+            fora.append(inline(" ".join(par), onde=onde))
+            i = j if j > i else i + 1
     return fora
 
 
@@ -380,10 +418,11 @@ PREAMBULO = r"""% Reading copy, generated by scripts/19_tex.py -- do not edit by
 % build still succeeds and each figure shows a framed placeholder.
 %
 % NOT THE SUBMISSION FILE. The journal takes elsarticle.cls, whose front
-% matter differs, and the title page needs the authors' names, affiliations
-% with postal address and country, and the corresponding author's email --
-% facts this converter does not have. The reference list does not exist yet;
-% see paper/12-referencias.md.
+% matter differs: the authors, affiliations and corresponding author are set
+% here in a plain \author block, from paper/16-pagina-de-titulo.md, and will
+% have to be re-expressed in that class's own commands. The reference list is
+% reproduced from paper/12-referencias.md as a typed enumerate, not from
+% BibTeX; paper/referencias.bib is the record to submit.
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -395,7 +434,13 @@ PREAMBULO = r"""% Reading copy, generated by scripts/19_tex.py -- do not edit by
 \IfFileExists{lmodern.sty}{\usepackage{lmodern}}{}
 \IfFileExists{babel.sty}{\usepackage[english]{babel}}{}
 \usepackage{amsmath,amssymb,textcomp}
-\usepackage{booktabs,longtable}
+\usepackage{array,booktabs,longtable}
+% Paragraph columns are set ragged right. Justified in a column a few words
+% wide, Table 1 hyphenated "maxi-mum", "con-tent", "distin-guishes" and
+% "Ra-man" and stretched the interword space to match, which the referee of
+% 2026-11-10 read as fragmented sentences. Ragged right removes the stretch
+% and with it most of the breaks; nothing about the content changes.
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
 \usepackage{graphicx}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{parskip}
@@ -411,7 +456,103 @@ PREAMBULO = r"""% Reading copy, generated by scripts/19_tex.py -- do not edit by
   Figure file not found: \texttt{#1}\par\medskip
   Put the five PDFs of \texttt{paper/figuras/} in a \texttt{figuras/} folder
   beside this \texttt{.tex}.}}}
+% Figures are included at the size they were DRAWN, and scaled down only if
+% they would overflow the text block. Forcing width=\linewidth on all five
+% magnified the three narrow ones by 1.43x to 1.93x, so the same 7pt tick
+% label printed at 7pt in one figure and at 13pt in another; the referee of
+% 2026-11-10 read the smallest of them as hard to read. Scale 1 everywhere is
+% what makes the font sizes declared in scripts/10_figuras.py the font sizes
+% on the page.
+\newsavebox{\caixafigura}
+\providecommand{\figuranatural}[1]{%
+  \sbox{\caixafigura}{\includegraphics{#1}}%
+  \ifdim\wd\caixafigura>\linewidth
+    \includegraphics[width=\linewidth]{#1}%
+  \else
+    \usebox{\caixafigura}%
+  \fi}
 """
+
+
+def bib_para_submissao(origem: Path, destino: Path) -> int:
+    """Writes a submission copy of the .bib with the `note` fields removed.
+
+    paper/referencias.bib is the RECORD: each entry's note says where every
+    field was read, what came from a reference list rather than the article,
+    and what is still outstanding. That is the audit, and it belongs in the
+    repository.
+
+    It does not belong in the manuscript. `unsrt` prints `note`, so citing
+    against the record directly puts "Read the PDF on the author's own site,
+    including Definition 1 and the hypergeometric expectation E[r] = k^2/n"
+    inside the paper's reference list -- which is both wrong and, because the
+    notes hold raw mathematics, a LaTeX error. Measured on the first attempt:
+    240 lines of .bbl for 21 references, and four errors.
+
+    Nothing else is touched: same keys, same fields, same values.
+    """
+    texto = origem.read_text()
+    saida, i = [], 0
+    while True:
+        m = re.search(r"\n\s*note\s*=\s*\{", texto[i:])
+        if not m:
+            saida.append(texto[i:])
+            break
+        saida.append(texto[i:i + m.start()])
+        j = i + m.end()          # primeiro caractere dentro da chave
+        nivel = 1
+        while j < len(texto) and nivel:
+            nivel += (texto[j] == "{") - (texto[j] == "}")
+            j += 1
+        # engole a virgula que separava o campo, se houver
+        while j < len(texto) and texto[j] in " \t":
+            j += 1
+        if j < len(texto) and texto[j] == ",":
+            j += 1
+        i = j
+    limpo = "".join(saida)
+    # a virgula do campo anterior pode ter ficado pendurada antes do fecho
+    limpo = re.sub(r",(\s*)\n\}", r"\1\n}", limpo)
+    chaves = lambda s: re.findall(r"^@\w+\{([^,]+),", s, re.M)
+    if chaves(limpo) != chaves(texto):
+        print("19_tex --bib: stripping the notes changed the key list. "
+              "Refusing to write a bibliography that cites other works.")
+        return 0
+    # Comments are stripped BEFORE looking, and the search runs on the
+    # stripped text. Written the other way round, the check searched the raw
+    # text inside a guard computed on the stripped one, so a surviving field
+    # would have been reported only when another one existed outside a
+    # comment. The commented stub for the submitted work must not trip this:
+    # it carries no at-sign precisely so that bibtex cannot see it.
+    sem_comentario = re.sub(r"(?m)^\s*%.*$", "", limpo)
+    sobrando = re.findall(r"note\s*=", sem_comentario)
+    if sobrando:
+        print(f"19_tex --bib: {len(sobrando)} note fields survived the "
+              "strip. Refusing to print the audit trail in the paper.")
+        return 0
+    destino.write_text(limpo)
+    return len(chaves(limpo))
+
+
+def mapa_citacoes() -> dict[str, str]:
+    """Reads the number-to-key table from paper/12-referencias.md.
+
+    The table is written once, by title matching with a bijection required,
+    and recorded there (see "Mapa de numeros para chaves BibTeX"). It is READ
+    here rather than recomputed: the file holds two Anderson entries, two
+    Lange and two Coelho, and a build-time heuristic would be deciding
+    silently which work each marker cites.
+    """
+    fonte = RAIZ / "paper" / "12-referencias.md"
+    texto = fonte.read_text()
+    m = re.search(r"^## Mapa de n.meros para chaves BibTeX[ \t]*$", texto, re.M)
+    if not m:
+        return {}
+    corpo = texto[m.end():]
+    f = re.search(r"^## ", corpo, re.M)
+    pares = re.findall(r"^\|\s*\[(\d+)\]\s*\|\s*`([^`]+)`\s*\|",
+                       corpo[:f.start() if f else None], re.M)
+    return {n_: k for n_, k in pares}
 
 
 def main() -> int:
@@ -423,6 +564,13 @@ def main() -> int:
     # they passed here and failed in the clean clone, where the committed
     # manuscript predates the title this build added.
     ap.add_argument("--src", default=str(FONTE))
+    # --bib emits \cite{} against paper/referencias.bib instead of literal
+    # [n] markers and a typed list. The journal's production chain expects
+    # that form, and it is what lets a reference be added or reordered
+    # without renumbering every marker by hand. The default stays as it was,
+    # so nothing that depends on the typed list changes.
+    ap.add_argument("--bib", action="store_true",
+                    help="emit \\cite{} and a BibTeX bibliography")
     a = ap.parse_args()
     fonte = Path(a.src).expanduser()
     if not fonte.is_file():
@@ -542,6 +690,20 @@ def main() -> int:
                                          onde=t) + "}")
         out += corpo_para_tex(c, onde=t)
 
+    # The CRediT statement, if the manuscript carries one. It follows the last
+    # numbered section, which is where Elsevier puts it -- after the
+    # conclusions. In this layout the figures and Table 1 are hoisted to the
+    # end, so it precedes them and the references rather than sitting between
+    # Table 1 and the list. Emitted only when present: a converter that
+    # printed an empty heading would be asserting a statement the manuscript
+    # does not make.
+    if ("CRediT authorship contribution statement" in por_titulo
+            and por_titulo["CRediT authorship contribution statement"]):
+        out.append("\\section*{CRediT authorship contribution statement}")
+        out += corpo_para_tex(
+            por_titulo["CRediT authorship contribution statement"],
+            onde="CRediT authorship contribution statement")
+
     # figures: the caption text is the manuscript's, the graphic is the file
     out.append("\\clearpage")
     out.append("\\section*{Figures}")
@@ -559,7 +721,7 @@ def main() -> int:
         arquivo = FIGURAS.get(k)
         out.append("\\begin{figure}[htbp]\\centering")
         seguro = arquivo.replace("_", "\\_")
-        out.append("\\IfFileExists{%s}{\\includegraphics[width=\\linewidth]{%s}}"
+        out.append("\\IfFileExists{%s}{\\figuranatural{%s}}"
                    "{\\semfigura{%s}}" % (arquivo, arquivo, seguro))
         out.append("\\caption{" + inline(texto, onde=t) + "}")
         out.append("\\end{figure}")
@@ -567,10 +729,87 @@ def main() -> int:
 
     # Table 1, as it stands
     out.append("\\section*{Table 1}")
-    out.append("% Emitted as it stands, which today means in Portuguese. The "
+    out.append("% Emitted as it stands. The "
                "translation\n% waits for the author in paper/13-tabela1.md; a "
                "converter is not the place\n% to decide it.")
     out += corpo_para_tex(por_titulo["Table 1"], onde="Table 1")
+
+    # The AI declaration, immediately above the references, which is where
+    # Elsevier's policy puts it -- read at the source on 2026-11-11. It is
+    # emitted here, after Table 1 and before either bibliography path, so the
+    # placement holds in both --bib and the typed list. Emitted only when the
+    # manuscript carries one: a heading with nothing under it would be a
+    # declaration the authors did not make.
+    decl_ia = ("Declaration of Generative AI and AI-assisted technologies "
+               "in the writing process")
+    if por_titulo.get(decl_ia):
+        out.append("\\section*{" + decl_ia + "}")
+        out += corpo_para_tex(por_titulo[decl_ia], onde=decl_ia)
+
+    if a.bib:
+        # The journal's chain wants \cite{} and a .bib. The typed list is
+        # skipped here: emitting both would print the bibliography twice and
+        # let the two drift apart.
+        out.append("\\clearpage")
+        out.append("\\bibliographystyle{unsrt}")
+        out.append("\\bibliography{referencias}")
+        out.append("\\end{document}")
+        destino = Path(a.out).expanduser()
+        corpo = "\n".join(out).rstrip() + "\n"
+
+        mapa = mapa_citacoes()
+        if len(mapa) != 21:
+            print(f"19_tex --bib: the number-to-key table has {len(mapa)} "
+                  "rows, not 21. Refusing to guess the rest.")
+            return 1
+
+        faltando: set[str] = set()
+
+        def citar(m: "re.Match[str]") -> str:
+            numeros = [x.strip() for x in m.group(1).split(",")]
+            chaves = []
+            for num in numeros:
+                if num not in mapa:
+                    faltando.add(num)
+                    return m.group(0)
+                chaves.append(mapa[num])
+            return "\\cite{" + ",".join(chaves) + "}"
+
+        # ONLY after \begin{document}. The preamble writes macro argument
+        # counts the same way -- \newcolumntype{P}[1]{...},
+        # \providecommand{\semfigura}[1]{...} -- and substituting there turns
+        # an argument count into a citation, which destroyed the definitions
+        # and produced 46 LaTeX errors on the first attempt at this.
+        marca = "\\begin{document}"
+        corte = corpo.index(marca) + len(marca)
+        cabeca, miolo = corpo[:corte], corpo[corte:]
+
+        # Grouped markers exist ([10,11]), so the pattern takes a list. Only
+        # digits and commas: a bracket holding anything else is not a
+        # citation and is left alone.
+        miolo, n_sub = re.subn(r"\[(\d+(?:\s*,\s*\d+)*)\]", citar, miolo)
+        corpo = cabeca + miolo
+        if faltando:
+            print("19_tex --bib: markers with no key in the table: "
+                  + ", ".join(f"[{x}]" for x in sorted(faltando, key=int))
+                  + ". Refusing to emit a document that cites nothing.")
+            return 1
+        restantes = re.findall(r"\[\d+(?:\s*,\s*\d+)*\]", miolo)
+        if restantes:
+            print(f"19_tex --bib: {len(restantes)} markers survived the "
+                  f"substitution: {restantes[:5]}. Refusing.")
+            return 1
+        destino.write_text(corpo)
+
+        # the submission .bib, beside the .tex, with the provenance notes out
+        origem_bib = RAIZ / "paper" / "referencias.bib"
+        n_bib = bib_para_submissao(origem_bib, destino.parent / "referencias.bib")
+        if not n_bib:
+            return 1
+        print(f"{destino}: {n_sub} markers -> \\cite{{}}; "
+              f"referencias.bib written beside it with {n_bib} entries and "
+              "the provenance notes stripped")
+        return 0
 
     out.append("\\clearpage")
     out.append("\\section*{References}")
@@ -580,6 +819,12 @@ def main() -> int:
     # was right then and would be a lie now, so the converter reads which of
     # the two is true instead of being told.
     if "References" in por_titulo and por_titulo["References"]:
+        # Ragged right, for the reason Table 1 is: a reference line holds a
+        # DOI and a journal name that cannot hyphenate, so justification
+        # stretches the interword space instead -- visibly so in the entries
+        # whose URL is long. Reference lists are conventionally set ragged
+        # right for exactly this, and nothing about the records changes.
+        out.append("\\begingroup\\raggedright")
         out.append("\\begin{enumerate}[leftmargin=2.2em, label={[\\arabic*]}]")
         for linha in por_titulo["References"]:
             linha = linha.strip()
@@ -597,6 +842,7 @@ def main() -> int:
                     f"converter: {linha[:70]!r}")
             out.append("\\item " + inline(m.group(2), onde="References"))
         out.append("\\end{enumerate}")
+        out.append("\\endgroup")
     else:
         out.append(r"""\noindent\emph{The manuscript has no reference list yet.
 This is the state of the manuscript and not an omission of the conversion:

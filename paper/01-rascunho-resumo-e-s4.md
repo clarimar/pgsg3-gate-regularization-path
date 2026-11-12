@@ -88,9 +88,11 @@ three combinations that occur.
 
 **(C1) The plateau exceeds q.** Let L be the number of bands the prior places at
 its maximum and suppose the trained gate is larger on all of them than on any
-band outside. Then the top-q set is a subset of the plateau whenever L ≥ q, and
+band outside. Then the top-q set is a subset of the plateau whenever L > q, and
 the metric never examines a band outside the prior's top level, whatever the
-model has learned. Here L = 34 against q = 28 or 29.
+model has learned. The inequality is strict because at L = q the whole plateau
+is selected and the selection boundary falls outside it, so no tie has to be
+broken to decide which bands enter. Here L = 34 against q = 28 or 29.
 
 C1 alone makes the metric **blind**, not artificial. With the prior moved out of
 the initialisation (θ₀ = 0), the gate on the plateau is continuous, no two

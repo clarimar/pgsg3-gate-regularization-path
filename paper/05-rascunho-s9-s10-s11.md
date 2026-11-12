@@ -21,13 +21,22 @@ Não escrevo valor que não medi.
 The penalty weight λ is meant to trade fit against adherence to the prior, and
 in the usual telling λ → ∞ is high bias while λ → 0 is high variance. Neither
 end of that description survives measurement here, because the regularisation
-path is **flat in risk**: held-out R² is equivalent across the whole range of
-λ, in both modalities, and at all seven training sizes of the revision data.
-Nothing is being traded. What varies along the path is the reproducibility of
+path is **flat in risk**. Within the near-infrared experiments, the evaluated
+configurations showed no material deterioration in the reported predictive
+performance measures across the examined regularisation settings. This
+observation is descriptive and does not constitute a formal equivalence test.
+For Raman, predictive equivalence cannot be assessed from held-out R², which
+was not reported because the available data do not support the required
+batch-aware evaluation. Consequently, the Raman results are interpreted in
+terms of gate behaviour and selection stability, not demonstrated equivalence
+of predictive performance. Within the evaluated near-infrared configurations,
+changes in gate stability were not accompanied by a consistent deterioration
+in the reported predictive performance. What varies along the path is the reproducibility of
 the gate, and Sections 4 through 6 establish that the reproducibility in the
 near-infrared arm is either uninterpretable or attainable with a prior
 anticorrelated with the reference. The trade-off, stated honestly, is between
-a stability that does not affect predictive risk and nothing at all.
+a stability whose predictive cost we did not detect in these configurations
+and nothing at all.
 
 This is not an argument against spectral priors. It is an argument against
 reading a flat risk path as evidence that the prior costs nothing while the
@@ -256,9 +265,13 @@ Five recommendations follow, in increasing order of what they cost.
    wrong for every purpose. In the configuration we examined, θ₀ = 0 with the
    prior in the penalty preserves the constraint while leaving every parameter
    reachable, and removes the condition of Section 4 entirely (Section 3.2);
-   held-out R² is equivalent between the two across the λ grid, both
-   modalities and the seven training sizes we ran, which is the evidence for
-   the cost being nil and is as general as those runs. Section 9.3 adds a
+   in the near-infrared arm no material deterioration in held-out R² between
+   the two was observed across the λ grid we ran, which supports the absence
+   of a material predictive deterioration in the evaluated configurations,
+   without establishing equivalence, and is as general as those runs and no
+   more. No R² is
+   reported by training size, and the Raman arm reports no held-out R² at all
+   (Section 10), so the claim is confined to the λ grid in that one modality. Section 9.3 adds a
    second reason within the same scope: initialising at the prior also leaves
    a block of coordinates with near-zero displacement, which contaminates a
    displacement-based control that would otherwise be clean.
@@ -353,6 +366,14 @@ so the check cannot be independent of it. The observable structure is
 consistent with the recorded 725 fruits, 723 of them measured twice, which
 makes the inference plausible without making it verified. Section 2.1.
 
+**The optimiser control does not cover the saturated arm.** The comparison of
+coupled against decoupled weight decay was run from θ₀ = 0 only, where no
+plateau forms and the count of inert bands is zero throughout. It therefore
+says nothing about how the two forms of decay act on logits that start
+saturated, which is the arm in which the plateau is observed to persist. The
+qualification in Section 3.1 is written to that boundary, and the ablation that
+would settle it is named in Section 11.
+
 **The PAC-Bayes connection is a formal resemblance.** Section 9.2.
 
 **Displacement reproducibility is not interpretable in small samples under
@@ -399,21 +420,41 @@ composition is set by the experimenter are others. We name synthetic data
 because it is what we would run first, not because it is the only route. This is the first item because it is the one that would
 convert the interpretive claim from unfalsifiable to testable.
 
-**Empirical Rademacher complexity by fitting random labels.** Section 1.2
-argues that prior-initialisation restricts reachability and not capacity. That
+**Fitting random labels under the two initialisations.** Section 1.2 argues
+that prior-initialisation restricts reachability and not capacity. That
 argument is analytic. Fitting random labels under both initialisations would
-estimate the empirical Rademacher complexity of the two function classes
-[21] and so quantify the restriction instead of arguing it, and would
-test whether the frozen plateau has any effect on what the model can fit. We
-have not run it: nothing in this paper reports such an estimate.
+measure how far each one can memorise an uninformative target, and so test
+empirically whether the frozen plateau has any effect on what the optimiser
+can reach, instead of arguing it. We state the scope deliberately: such a
+measurement is a statement about memorisation and reachability under a given
+optimiser, not an estimate of the empirical Rademacher complexity [21] of the
+two function classes, which is the supremum of a signed average over a class
+and is not delivered by fitting one optimiser to one random draw of labels.
+Section 1.2's point that the parametric class is the same under both
+initialisations stands independently of any such run. We have not run it:
+nothing in this paper reports either quantity.
+
+**Weight decay on the gate logits, with the prior in the initialisation.** The
+qualification in Section 3.1 leaves one question open: how much of the
+plateau's persistence is the flatness of the sigmoid and how much is the decay
+term that reaches θ without passing through it. The experiment is an ablation
+on the prior-initialised arm with the decay on the gate logits present and
+absent, and under both the coupled and the decoupled form, holding the step
+budget fixed so that displacement is not confounded with the number of steps
+(Section 2.3). It is cheap, it needs no new data, and until it is run the
+persistence of the plateau should be read as a property of the whole procedure
+rather than of saturation alone.
 
 **A stochastic gate.** The change that would make a PAC-Bayes analysis
 available rather than a formal resemblance (Section 9.2).
 
-**Scale and small samples.** The prior does not improve accuracy at any of
-seven training sizes from n = 30 to 1158. That is a real result from the
-earlier revision data, it bears directly on when a prior is worth using, and it
-has no published home.
+**Scale and small samples.** Whether the prior improves accuracy at small
+training sizes is a question this paper does not answer. No held-out R² is
+reported here by training size, and the earlier revision data that bear on it
+are not citable while that work is unpublished, so we make no quantitative
+claim from them. The experiment is cheap — the seven training sizes from
+n = 30 to 1158 already exist as partitions and the models are small — and it
+bears directly on when a prior is worth using.
 
 **The number of latent components against within-plateau ordering.** Across the
 five partitions where both were measured, the rank correlation between the

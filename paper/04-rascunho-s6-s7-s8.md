@@ -117,9 +117,10 @@ order. The second and third conditions are not met either.
 
 Both of the properties documented in Sections 4 and 5 are therefore absent
 under the same architecture and the same code, with the prior's functional form
-exchanged along with the dataset and the modality. This is what the
-quantisation account predicts, and it is a check in a second modality: the
-behaviour is a property of how the prior was written down, not of the method.
+exchanged along with the dataset and the modality, and it is a check in a
+second modality. These observations are consistent with the proposed
+quantisation mechanism, but the between-modality comparison does not isolate
+the effect of the prior's functional form.
 
 ### 7.2 Anchoring buys reproducibility here, and the figure means it
 

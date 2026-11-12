@@ -487,7 +487,7 @@ below the list.
 
 [8] N. Anderson, K. Walsh, P. Subedi, J. Walsh, Mango DMC and spectra Anderson et al. 2020, Mendeley Data, version 3, 2024. https://doi.org/10.17632/46htwnp833.3
 
-[9] N.T. Anderson, K.B. Walsh, P.P. Subedi, C.H. Hayes, Achieving robustness across season, location and cultivar for a NIRS model for intact mango fruit dry matter content, Postharvest Biology and Technology 168 (2020) 111202.
+[9] N. Anderson, K. Walsh, P. Subedi, C.H. Hayes, Achieving robustness across season, location and cultivar for a NIRS model for intact mango fruit dry matter content, Postharvest Biology and Technology 168 (2020) 111202. https://doi.org/10.1016/j.postharvbio.2020.111202
 
 [10] C. Lange, M. Altmann, D. Stors, S. Seidel, K. Moynahan, L. Cai, S. Born, P. Neubauer, M.N. Cruz Bournazou, Deep learning for Raman spectroscopy: benchmarking models for upstream bioprocess monitoring, Measurement 258 (2026) 118884.
 
@@ -495,9 +495,9 @@ below the list.
 
 [12] M. Koddenbrock, C. Lange, R. Legner, M. Jaeger, M. Kögler, M.N. Cruz Bournazou, P. Neubauer, F. Bießmann, E. Rodner, RamanBench: a large-scale benchmark for machine learning on Raman spectroscopy, arXiv:2605.02003, 2026.
 
-[13] S. Saranwong, J. Sornsrivichai, S. Kawano, Prediction of ripe-stage eating quality of mango fruit from its harvest quality measured nondestructively by near infrared spectroscopy, Postharvest Biology and Technology 31 (2004) 253–261.
+[13] S. Saranwong, J. Sornsrivichai, S. Kawano, Prediction of ripe-stage eating quality of mango fruit from its harvest quality measured nondestructively by near infrared spectroscopy, Postharvest Biology and Technology 31 (2) (2004) 137–145. https://doi.org/10.1016/j.postharvbio.2003.08.007
 
-[14] J. Workman Jr., L. Weyer, Practical Guide and Spectral Atlas for Interpretive Near-Infrared Spectroscopy, second ed., CRC Press, 2012.
+[14] J. Workman Jr., L. Weyer, Practical Guide and Spectral Atlas for Interpretive Near-Infrared Spectroscopy, second ed., CRC Press, 2012. ISBN 978-1-4398-7525-4.
 
 [15] T. Hastie, R. Tibshirani, J.H. Friedman, The Elements of Statistical Learning: Data Mining, Inference, and Prediction, second ed., Springer, 2009.
 
@@ -505,9 +505,9 @@ below the list.
 
 [17] F. Wilcoxon, Individual comparisons by ranking methods, Biometrics Bulletin 1 (1945) 80–83. https://doi.org/10.2307/3001968
 
-[18] S. Wold, M. Sjöström, L. Eriksson, PLS-regression: a basic tool of chemometrics, Chemometrics and Intelligent Laboratory Systems 58 (2) (2001) 109–130.
+[18] S. Wold, M. Sjöström, L. Eriksson, PLS-regression: a basic tool of chemometrics, Chemometrics and Intelligent Laboratory Systems 58 (2) (2001) 109–130. https://doi.org/10.1016/S0169-7439(01)00155-1
 
-[19] S. Kullback, R.A. Leibler, On information and sufficiency, Annals of Mathematical Statistics 22 (1) (1951). https://doi.org/10.1214/aoms/1177729694
+[19] S. Kullback, R.A. Leibler, On information and sufficiency, Annals of Mathematical Statistics 22 (1) (1951) 79–86. https://doi.org/10.1214/aoms/1177729694
 
 [20] D.A. McAllester, PAC-Bayesian model averaging, in: Proceedings of the 12th Annual Conference on Computational Learning Theory, ACM, 1999, pp. 164–170. https://doi.org/10.1145/307400.307435
 
@@ -525,24 +525,101 @@ below the list.
 | [6] | **lido o PDF no sítio da autora**; veículo e páginas confirmados numa segunda fonte |
 | [7] | **lido na página do JMLR** |
 | [8] | lido no depósito da Mendeley Data |
-| [9] | **segundo grau**: é a `[4]` da lista de [4] |
+| [9] | **parcialmente confirmado em 2026-11-10**: periódico, vol. 168, nº de artigo 111202 e ano conferem com dois registros independentes dos próprios autores (repositório institucional e a publicação relacionada do depósito Mendeley). **A linha de autores foi lida** no repositório, que imprime *Nicholas Anderson, Kerry Walsh, Phul Subedi, CH Hayes*: as iniciais do meio que o registro de segundo grau trazia (T., B., P.) e o prenome *Chris* não aparecem em nenhuma fonte alcançável e foram removidos. **O DOI foi resolvido em 2026-11-11** (quarta passagem) |
 | [10] | lido na fonte; conferido contra a lista de [4] |
 | [11] | lido na fonte; conferido contra a lista de [4] |
 | [12] | lido na fonte; conferido contra a lista de [4] |
-| [13] | **segundo grau**: é a `[5]` da lista de [4]. Conferir as páginas antes de submeter |
-| [14] | **segundo grau**: é a `[2]` da lista de [4] |
+| [13] | **LIDO NO EDITOR em 2026-11-10, e o registro de segundo grau ESTAVA ERRADO**: trazia 253–261 da lista de [4]; o artigo é 31(2), 137–145, DOI 10.1016/j.postharvbio.2003.08.007. **Reconferido no mesmo dia num segundo índice independente**, que traz vol. 31 e 137–145 e confirma a correção. Prenomes reduzidos às iniciais: nenhuma fonte alcançável imprime um |
+| [14] | **lido no editor em 2026-11-10**: autores, edição, selo, ano e ISBN 978-1-4398-7525-4 conferem com o registro de segundo grau vindo da lista de [4] |
 | [15] | **lido num registro bibliográfico**: autores, título e subtítulo, 2ª ed., Springer, 2009, ISBN 0387848576. A série não é impressa lá e por isso não entra |
 | [16] | citação pedida pelo próprio projeto NumPy |
 | [17] | **lido na documentação do `scipy.stats.wilcoxon`**, que é a função que o nosso código chama, e que também confirma ser o teste de postos sinalizados sobre diferenças pareadas |
-| [18] | **segundo grau**: é a `[4]` da lista de [3] |
-| [19] | **parcial**: título, autores, periódico, vol. 22 nº 1, ano e DOI vêm da URL canônica do Project Euclid. **O intervalo de páginas não foi lido** e por isso não está escrito — três fontes recusaram leitura por verificação de navegador |
-| [20] | **segundo grau**: a entrada veio da lista de referências do primer de Guedj; o DOI é o do registro da ACM |
+| [18] | **confirmado em 2026-11-10** contra três catálogos independentes: vol. 58 nº 2, 2001, 109–130, e o DOI lido ali. Prenomes **reduzidos às iniciais** no mesmo dia: nenhuma fonte alcançável imprime um, todas dão `S. Wold, M. Sjöström, L. Eriksson`, e a entrada passa a carregar as iniciais lidas em vez dos prenomes de segundo grau (lista de [3]) |
+| [19] | **completa em 2026-11-10**: título, autores, periódico, vol. 22 nº 1, ano e DOI vêm da URL canônica do Project Euclid; **o intervalo 79–86 foi lido pelo autor correspondente** no sumário do volume no JSTOR e conferido contra outros índices, e entrou por essa leitura. O Project Euclid recusara três leituras aqui por verificação de navegador, e nenhuma sessão que montou este arquivo teve navegador conectado. **Em momento algum a faixa foi escrita de memória** |
+| [20] | **confirmado em 2026-11-10 contra DOIS índices independentes** que reproduzem o registro da ACM: autor e afiliação, veículo (COLT '99), ano, páginas 164–170 e DOI `10.1145/307400.307435` conferem nos dois com a entrada, que viera da lista do primer de Guedj. A página da própria ACM não é alcançável daqui, então os campos repousam nos índices e não no registro em si — nenhum deles veio de memória |
 | [21] | **lido o PDF no JMLR**: cabeçalho com volume, páginas e ano |
 
-**Cinco entradas vêm de listas de referências e não dos artigos citados**
-— as marcadas `segundo grau` —, e uma, a de Kullback e Leibler, está
-incompleta por recusa das fontes. Nenhuma das seis sustenta um número
-deste artigo, e todas estão marcadas para conferência antes da submissão.
+### Auditoria de 2026-11-10: o que mudou
+
+As cinco entradas de segundo grau foram conferidas uma a uma. **Uma estava
+errada**: a `[13]`, de Saranwong, trazia o intervalo de páginas 253–261
+copiado da lista de referências de [4]; o artigo é **31(2), 137–145**. Não é
+detalhe de estilo — é a citação que sustenta as três janelas NIR, e teria ido
+ao periódico apontando para páginas que não existem nesse artigo. As outras
+quatro conferiram nos campos que foi possível ler, e três ganharam o DOI ou o
+ISBN que faltava.
+
+Nenhuma entrada carrega mais a marca `segundo grau` sozinha: cada uma diz
+agora o que foi lido, onde, e o que continua por ler.
+
+Desde 2026-11-11 **não há campo pendente**: a última lacuna era o DOI da `[9]`,
+fechada na quarta passagem abaixo. Nenhum campo deste arquivo foi escrito de
+memória — o que não foi lido não está no `.bib` nem na lista.
+
+### Segunda passagem, 2026-11-10
+
+A `[19]`, de Kullback e Leibler, **deixou de estar incompleta**: o autor
+correspondente leu o intervalo **79–86** no sumário do volume no JSTOR e o
+conferiu contra outros índices, e o campo entrou por essa leitura. O Project
+Euclid havia recusado três tentativas aqui por verificação de navegador.
+
+Três entradas perderam prenomes que ninguém tinha lido. A regra aplicada é a
+mesma nas três: **onde nenhuma fonte alcançável imprime um prenome, a entrada
+carrega a inicial que as fontes imprimem**, em vez do prenome herdado de uma
+lista de referências. Vale para a `[13]` (Saranwong), a `[18]` (Wold) e a
+`[9]` (Anderson), esta última com a linha de autores lida no repositório
+institucional dos próprios autores.
+
+Um prenome plausível é mais perigoso que uma inicial, porque passa por
+verificado.
+
+### Terceira passagem, 2026-11-10: as duas últimas pendências
+
+A `[20]` fechou: um **segundo** índice independente reproduz o registro da ACM
+inteiro — autor e afiliação, COLT '99, ano, 164–170 e o DOI — e confere com a
+entrada. A página da própria ACM continua inalcançável daqui, o que está
+escrito na nota: os campos repousam em dois índices que reproduzem o registro,
+não no registro em si.
+
+O **DOI da `[9]` não foi obtido**, após cinco tentativas por rotas distintas:
+a página do editor e o ScienceDirect não são alcançáveis daqui, o x-mol e o
+scilit responderam com verificação de navegador, o repositório institucional
+não imprime DOI, e o depósito Mendeley dá o PII `S0925521420301629` mas só o
+DOI do próprio conjunto de dados.
+
+**O PII não foi convertido em DOI.** O padrão da Elsevier tornaria fácil
+escrever `10.1016/j.postharvbio.2020.111202`, e é precisamente por ser fácil
+que não foi escrito: seria um campo plausível e não lido, que é o que esta
+auditoria existe para impedir. A entrada seguiu sem DOI, dizendo por quê.
+
+### Quarta passagem, 2026-11-11: o DOI da [9], resolvido
+
+O autor correspondente forneceu o DOI, e ele **foi resolvido** antes de
+entrar: `doi.org`, o resolvedor do próprio registro, redireciona
+`10.1016/j.postharvbio.2020.111202` para o PII **`S0925521420301629`** — o
+mesmo PII que o depósito Mendeley dos autores dá para este artigo, lido ali em
+2026-11-10.
+
+A distinção importa e está escrita na nota. A cadeia é resolvedor + depósito,
+não o padrão de nomes da Elsevier. O padrão teria produzido **a mesma
+cadeia de caracteres** sem evidência nenhuma, e foi recusado por isso na
+véspera; o que mudou não foi o valor do campo, foi existir prova de que ele
+designa este artigo. Um campo certo pelo motivo errado continua sendo um campo
+sem leitura.
+
+A página do editor segue inalcançável daqui, o que também está na nota.
+
+**Um defeito encontrado ao escrever o DOI.** A redução de prenomes de
+2026-11-10 alcançara o `.bib` e **não** a lista numerada, que é o que o
+manuscrito publica: a `[9]` ainda saía no PDF como `N.T. Anderson, K.B. Walsh,
+P.P. Subedi`, com as três iniciais do meio que haviam sido removidas por nunca
+terem sido lidas. O teste da véspera conferia só o `.bib` e por isso não viu.
+Corrigido nos dois, e o teste passa a conferir a **lista impressa**: corrigir
+um lado e não o outro é pior que não corrigir, porque faz este arquivo
+descrever algo que o leitor não recebe. As `[13]` e `[18]` já estavam certas
+na lista.
+
+**Com isso a auditoria fecha**: nenhuma entrada tem campo por ler.
 ## Auditoria dos pontos que exigem citação
 
 Cada linha é uma frase que hoje está no manuscrito e que afirma algo cuja
@@ -636,3 +713,44 @@ nenhuma entrada com `[FALTA:` entra numa lista declarada completa. Enquanto o
 `Status` no alto deste arquivo for `INCOMPLETO`, o script o relata em vez de
 aprovar, e a seção de referências não é emitida no manuscrito — uma lista
 parcial emitida em silêncio é exatamente o que este programa recusa.
+
+## Mapa de números para chaves BibTeX
+
+Estabelecido em 2026-11-11, por **pareamento de títulos** entre a lista
+numerada e o `paper/referencias.bib`, exigindo bijeção: 21 para 21, cada
+título casando com exatamente uma chave e cada chave com exatamente um
+número. Não foi inferido de nomes de chave — há dois Anderson, dois Lange e
+dois Coelho no arquivo, e parear por nome de chave citaria o artigo errado.
+
+O mapa existe para que o `19_tex.py --bib` emita `\cite{}` sem recalcular
+nada no momento do build. Um pareamento por heurística a cada compilação
+seria uma decisão silenciosa sobre qual obra está sendo citada.
+
+| nº | chave BibTeX |
+| --- | --- |
+| [1] | `jain2019attention` |
+| [2] | `adebayo2018sanity` |
+| [3] | `coelho2026pgsg` |
+| [4] | `coelho2027gatetopology` |
+| [5] | `jaccard1912flora` |
+| [6] | `kuncheva2007stability` |
+| [7] | `nogueira2018stability` |
+| [8] | `anderson2024mango` |
+| [9] | `anderson2020mango` |
+| [10] | `lange2026raman` |
+| [11] | `lange2025substratemix` |
+| [12] | `koddenbrock2026ramanbench` |
+| [13] | `saranwong2004mango` |
+| [14] | `workman2012nir` |
+| [15] | `hastie2009elements` |
+| [16] | `harris2020numpy` |
+| [17] | `wilcoxon1945ranking` |
+| [18] | `wold2001pls` |
+| [19] | `kullback1951information` |
+| [20] | `mcallester1999pacbayes` |
+| [21] | `bartlett2002rademacher` |
+
+A numeração continua sendo **por ordem de primeira aparição**, e o estilo
+`unsrt` numera do mesmo jeito, de modo que os números gerados pelo BibTeX
+têm de coincidir com os desta tabela. Essa coincidência é verificada, não
+suposta.

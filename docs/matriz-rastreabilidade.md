@@ -3,11 +3,11 @@
 Gerado por `scripts/16_matriz_rastreabilidade.py`. Não editar: a categoria de cada
 teste é declarada no próprio teste, por marcador `pytest`.
 
-281 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
+307 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
 nível do módulo, lida da fonte por AST — não é item coletado pelo pytest nem teste executado. Casos
 parametrizados somam +15 itens na coleta.
 
-## semantico (39)
+## semantico (58)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -50,8 +50,27 @@ parametrizados somam +15 itens na coleta.
 | `test_14_corrige_a_alegacao_causal_e_descreve_o_cruzamento` | The two scientific corrections of the 2026-11-02 referee report, | `03-rascunho-s1-s2-s3.md`, `04-rascunho-s6-s7-s8.md`, `06-legendas-figuras.md` |
 | `test_12_mede_a_exposicao_ao_fundador_nao_corrigido` | The editor did not answer the letter about the corrigendum, so the | `12-referencias.md`, `F001-caminho-de-regularizacao.md`, `F004-estabilidade-interpretativa-e-funcao-dos-dados.md` |
 | `test_12_aplica_seis_das_sete_e_reenquadra_a_novidade` | Six of the seven proposed references, approved and applied on | `03-rascunho-s1-s2-s3.md`, `12-referencias.md`, `scripts/17_citacoes.py` |
+| `test_parecer1110_declara_o_tratamento_numerico_de_logit_e_da_kl` | Itens 2.1 e 2.2, ambos de prioridade alta. | `03-rascunho-s1-s2-s3.md` |
+| `test_parecer1110_c1_usa_a_desigualdade_estrita` | Item 2.6. O título do C1 e a tabela da §4.4 já diziam "plateau > q"; só | `01-rascunho-resumo-e-s4.md`, `03-rascunho-s1-s2-s3.md`, `04-rascunho-s6-s7-s8.md` |
+| `test_parecer1110_retira_a_equivalencia_de_r2_fora_do_alcance` | Item 2.3. A §9.1 dizia que o R² é equivalente "in both modalities", | `05-rascunho-s9-s10-s11.md` |
+| `test_parecer1110_rademacher_e_fechamento_da_71` | Itens 2.4 e 2.5. Os dois trechos eram de minha redação. | `04-rascunho-s6-s7-s8.md`, `05-rascunho-s9-s10-s11.md` |
+| `test_parecer1110_o_registro_existe_e_declara_o_que_ficou_pendente` | O parecer de 2026-11-02 tem registro em `14-parecer-2026-11-02.md`; o | `17-parecer-2026-11-10.md` |
+| `test_decisao1110_qualifica_a_31_sem_atribuir_ao_sigma_sozinho` | O autor exigiu a qualificação e deu a redação. O argumento original | `03-rascunho-s1-s2-s3.md` |
+| `test_decisao1110_declara_a_forma_acoplada_sem_alegar_razao_no_passo` | A objeção do autor: com momentos adaptativos não se compara o termo de | `03-rascunho-s1-s2-s3.md`, `pgsg_v3.py` |
+| `test_decisao1110_nenhum_r2_por_tamanho_de_treino_e_nenhuma_alegacao_dele` | Medido em 2026-11-10: NENHUM csv deste repositório tem R² indexado por | `05-rascunho-s9-s10-s11.md`, `gate_metrics.csv` |
+| `test_decisao1110_a_lacuna_do_controle_de_otimizador_esta_declarada` | Medido: `ctl_adam`, `ctl_adamw` e `ctl_piloto` rodaram só com | `03-rascunho-s1-s2-s3.md`, `05-rascunho-s9-s10-s11.md`, `aggregate.csv` |
+| `test_ajustes_finais_1110_tiram_as_tres_alegacoes_excessivas` | Os três ajustes do autor sobre o patch aprovado, mais a gêmea que ele | `01-rascunho-resumo-e-s4.md`, `02-resumo-C.md`, `03-rascunho-s1-s2-s3.md` |
+| `test_auditoria_bib_1110_nenhuma_alegacao_de_custo_nulo_sobrou` | A ressalva do autor sobre *"the evidence for the cost being nil"*, e as | `03-rascunho-s1-s2-s3.md`, `05-rascunho-s9-s10-s11.md` |
+| `test_auditoria_bib_1110_saranwong_corrigida_e_sem_prenome_inventado` | A auditoria de 2026-11-10 achou um erro real: a [13] trazia 253--261, | `12-referencias.md`, `referencias.bib` |
+| `test_auditoria_bib_1110_segunda_passagem_kullback_e_as_iniciais` | Segunda passagem da auditoria, 2026-11-10. | `12-referencias.md`, `referencias.bib` |
+| `test_auditoria_bib_1110_terceira_passagem_e_o_doi_que_nao_foi_escrito` | As duas últimas pendências da auditoria. | `12-referencias.md`, `referencias.bib` |
+| `test_credit_vem_do_autor_e_a_taxonomia_nao_foi_reescrita` | CRediT, fornecido verbatim pelo autor em 2026-11-11. | `09-rascunho-s12.md`, `15_consolidar_manuscrito.py`, `18-declaracoes.md` |
+| `test_declaracao_de_ia_continua_em_aberto_e_declarada_como_tal` | A *Declaration of generative AI and AI-assisted technologies in the | `18-declaracoes.md`, `MANUSCRITO.md` |
+| `test_citacoes_narrativas_nomeiam_o_autor_onde_o_colchete_e_sujeito` | Pedido do autor em 2026-11-11: referir-se aos autores "quando for o | `03-rascunho-s1-s2-s3.md` |
+| `test_mapa_de_numeros_para_chaves_e_bijetivo_e_por_titulo` | O mapa número -> chave, gravado em 2026-11-11. | `12-referencias.md`, `referencias.bib` |
+| `test_declaracao_de_ia_segue_a_politica_lida_na_fonte` | Acrescentada em 2026-11-11, com a política da Elsevier LIDA na fonte | `18-declaracoes.md`, `18_conformidade.py`, `19_tex.py` |
 
-## estrutural (26)
+## estrutural (33)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -81,6 +100,13 @@ parametrizados somam +15 itens na coleta.
 | `test_19_numera_pela_profundidade_e_recusa_desencontro` | The numbers LaTeX prints must be the numbers the manuscript wrote. | `19_tex.py` |
 | `test_19_nao_leva_a_regua_do_markdown_para_a_legenda` | Figure 5's caption ended with a dash in the 31-page PDF. It was the | `19_tex.py` |
 | `test_artefato_versionado_nao_pode_ficar_desatualizado` | A generated file kept under version control can go stale, and a stale | `MANUSCRITO.md`, `MANUSCRITO.tex`, `scripts/15_consolidar_manuscrito.py` |
+| `test_parecer1110_a_forma_da_kl_declarada_e_a_do_codigo` | A equação escrita na §2.3 tem de ser a que o código avalia. Este teste | `pgsg_v3.py` |
+| `test_parecer1110_figuras_entram_na_escala_em_que_foram_desenhadas` | Apresentação. `width=\linewidth` em todas as cinco ampliava as três | `19_tex.py` |
+| `test_parecer1110_figura3_nao_se_redesenha_em_outro_ambiente` | O painel (b) da Figura 3 é específico do ambiente POR CONSTRUÇÃO: o | `10_figuras.py` |
+| `test_decisao1110_a_condicional_da_91_e_sustentada_pelos_dados` | O autor condicionou a §9.1: *"se houver configurações com perda | `agregado.csv` |
+| `test_decisao1110_a_trava_cobre_a_figura_2_tambem` | O autor pediu a proteção para todas as figuras dependentes de | `10_figuras.py` |
+| `test_bibliografia_sai_sem_justificacao_esticada` | Inspeção do PDF definitivo, 2026-11-10. | `19_tex.py`, `MANUSCRITO.tex` |
+| `test_bib_modo_cite_nao_toca_o_preambulo_nem_publica_a_auditoria` | Pedido do autor em 2026-11-11: `\cite{}` contra o `.bib`, não `[6]` | `19_tex.py` |
 
 ## numerico (10)
 

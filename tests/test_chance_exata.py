@@ -2912,8 +2912,12 @@ def test_19_pesa_colunas_pela_media_e_pela_palavra_mais_longa():
               "| --- | --- | --- |",
               "| H0 | tiny | " + "y" * 380 + " |"]
     tex = "\n".join(m.tabela(linhas, longa=False))
-    fracoes = [float(x) for x in re.findall(r"p\{([0-9.]+)\\linewidth\}", tex)]
+    # [pP]: desde 2026-11-10 as colunas de parágrafo saem como P{...}, o tipo
+    # com \raggedright do preâmbulo. A fração é a mesma; o que mudou é que a
+    # coluna deixou de ser justificada.
+    fracoes = [float(x) for x in re.findall(r"[pP]\{([0-9.]+)\\linewidth\}", tex)]
     assert len(fracoes) == 3
+    assert tex.count("P{") == 3, "as colunas de parágrafo devem sair sem justificação"
     assert fracoes[0] > 0.05, f"label column squeezed to {fracoes[0]}"
     assert fracoes[2] > fracoes[0]          # a coluna longa ainda e a maior
     assert sum(fracoes) < 0.95              # sobra para \tabcolsep
@@ -3210,11 +3214,66 @@ def test_bib_so_tem_entrada_verificada_e_bibtex_nao_ve_o_resto():
     for chave in ("coelho2026pgsg", "coelho2027gatetopology",
                   "saranwong2004mango", "wold2001pls"):
         assert re.search(rf"^@\w+\{{{chave},", bib, re.M), chave
-    for chave in ("saranwong2004mango", "wold2001pls", "anderson2020mango",
-                  "workman2012nir", "mcallester1999pacbayes"):
+    # As cinco que nasceram de listas de referencias. Ate 2026-11-10 bastava
+    # que dissessem SECOND-HAND PROVENANCE. A auditoria daquele dia conferiu
+    # uma a uma e achou a saranwong ERRADA -- 253--261 contra as 137--145 que
+    # o artigo tem --, de modo que o marcador generico foi substituido pelo
+    # registro do que foi lido. O invariante que sobrevive, e que importa, e
+    # mais forte: cada uma continua nomeando a lista de onde veio, e cada uma
+    # que ainda tenha campo por ler diz OUTSTANDING em vez de calar.
+    nascidas_de_lista = {
+        "saranwong2004mango": "coelho2027gatetopology",
+        "wold2001pls": "coelho2026pgsg",
+        "anderson2020mango": "coelho2027gatetopology",
+        "workman2012nir": "coelho2027gatetopology",
+        "mcallester1999pacbayes": "Guedj",
+    }
+    for chave, origem in nascidas_de_lista.items():
         i = bib.index(chave)
         j = bib.index("\n}", i)
-        assert "SECOND-HAND PROVENANCE" in bib[i:j], chave
+        # o .bib quebra as notas em varias linhas, entao o espaco e
+        # normalizado antes de procurar qualquer frase
+        corpo_entrada = re.sub(r"\s+", " ", bib[i:j])
+        assert "note" in corpo_entrada, chave
+        assert origem in corpo_entrada, f"{chave}: nao nomeia mais a origem"
+        assert ("READ AT THE PUBLISHER" in corpo_entrada
+                or "CONFIRMED" in corpo_entrada), chave
+    # a saranwong carrega o registro corrigido, nao o herdado
+    i = bib.index("saranwong2004mango")
+    j = bib.index("\n}", i)
+    assert "137--145" in bib[i:j] and "253--261" in bib[i:j], (
+        "a entrada tem de trazer as paginas certas E dizer quais eram as "
+        "erradas: um erro corrigido em silencio volta")
+    assert "10.1016/j.postharvbio.2003.08.007" in bib[i:j]
+    # e o que continua por ler diz OUTSTANDING. A saranwong saiu desta lista
+    # em 2026-11-10: o unico campo que lhe faltava era o prenome dos autores,
+    # e como NENHUMA fonte alcancavel imprime um -- todas dao J. Sornsrivichai
+    # --, os prenomes foram reduzidos as iniciais em vez de escolhidos entre
+    # duas grafias nao lidas. Nao sobra campo por ler, entao nao ha o que
+    # declarar em aberto.
+    # Na segunda passagem de 2026-11-10 a wold2001pls tambem saiu desta lista:
+    # um terceiro catalogo reconfirmou volume, fasciculo, paginas, ano e DOI, e
+    # os prenomes foram reduzidos as iniciais pela mesma razao da saranwong --
+    # nenhuma fonte alcancavel imprime um. Sobra a anderson2020mango, cujo DOI
+    # continua sem leitura e por isso continua declarado em aberto.
+    # Em 2026-11-11 a anderson2020mango tambem saiu desta lista: o DOI, sua
+    # ultima lacuna, foi RESOLVIDO -- doi.org redireciona para o PII que o
+    # deposito dos autores da para o artigo. Nenhuma entrada carrega
+    # OUTSTANDING agora, e o invariante passa a ser o mais forte dos dois:
+    # nao que o que falta seja declarado, mas que nada falte.
+    i = bib.index("anderson2020mango")
+    j = bib.index("\n}", i)
+    an = re.sub(r"\s+", " ", bib[i:j])
+    assert "OUTSTANDING" not in an
+    assert "THE DOI WAS RESOLVED" in an
+    assert "the DOI was not read and is not written here" not in an
+    for chave in ("saranwong2004mango", "wold2001pls"):
+        i = bib.index(chave)
+        j = bib.index("\n}", i)
+        assert "OUTSTANDING" not in bib[i:j], (
+            f"{chave} voltou a ter campo por ler; se for o caso, declare-o")
+        assert "GIVEN NAMES REDUCED TO INITIALS" in re.sub(
+            r"\s+", " ", bib[i:j]), chave
     # e as quatro lidas na fonte dizem onde foram lidas
     for chave, onde in (("jain2019attention", "ACL Anthology"),
                         ("adebayo2018sanity", "conference page"),
@@ -3233,7 +3292,8 @@ def test_bib_so_tem_entrada_verificada_e_bibtex_nao_ve_o_resto():
     assert "same in kind, and differs in its argument" in bib[i:j]
     # o artigo do conjunto manga e o deposito sao registros distintos
     assert "anderson2024mango" in bib and "anderson2020mango" in bib
-    assert "different record from anderson2024mango" in bib
+    # espaco normalizado: a nota quebra em varias linhas no .bib
+    assert "different record from anderson2024mango" in re.sub(r"\s+", " ", bib)
     assert "10.1016/j.chemolab.2026.105833" in bib
     assert "10.1016/j.chemolab.2026.105926" in bib
     # e o corrigendum nao e entrada, porque o editor nao respondeu
@@ -3243,9 +3303,17 @@ def test_bib_so_tem_entrada_verificada_e_bibtex_nao_ve_o_resto():
     j = bib.index("\n}", i)
     # normalizado: o campo note e reenquadrado e a frase atravessa linhas
     kl = re.sub(r"\s+", " ", bib[i:j])
-    assert "INCOMPLETE ON PURPOSE" in kl
-    assert "THE PAGE RANGE WAS NOT READ" in kl
-    assert "pages" not in kl
+    # Ate 2026-11-10 esta entrada era a unica deliberadamente incompleta: o
+    # Project Euclid recusava a leitura por verificacao de navegador e a faixa
+    # de paginas nao estava escrita, porque escreve-la de memoria e exatamente
+    # o que este programa proibe. Naquele dia o autor correspondente leu 79--86
+    # no sumario do volume no JSTOR e conferiu contra outros indices, e o campo
+    # entrou POR ESSA LEITURA. O invariante que sobrevive e mais forte que o
+    # anterior: ou o campo falta, ou a nota diz quem o leu e onde.
+    assert "pages = {79--86}" in kl   # kl vem com o espaco normalizado
+    assert "INCOMPLETE ON PURPOSE" not in kl
+    assert "THE PAGE RANGE WAS NOT READ" not in kl
+    assert "SUPPLIED BY" in kl and "JSTOR" in kl
 
     # e as cinco verificadas batem com o registro da auditoria
     ref = (RAIZ / "paper" / "12-referencias.md").read_text()
@@ -3658,12 +3726,17 @@ def test_12_aplica_seis_das_sete_e_reenquadra_a_novidade():
     assert ("Correcting set overlap for chance is established practice in the "
             "feature-selection literature.") in s1
     n_kun = _num_ref("Kuncheva")
-    assert f"The consistency index of [{n_kun}]" in s1
+    # Desde 2026-11-11 a citação é narrativa: o colchete deixou de ser o
+    # complemento de "of" e o nome da autora ocupa o lugar. A atribuição é a
+    # mesma e fica mais forte, porque o leitor vê de quem é o índice sem ter
+    # de descer à lista.
+    assert f"The consistency index of Kuncheva [{n_kun}]" in s1
+    assert f"The consistency index of [{n_kun}]" not in s1
     assert "hypergeometric with expectation q²/L" in s1
     assert ("The point of this section is not that a correction is needed — "
             "that was settled —") in s1
     assert ("it is the Jaccard index evaluated at the hypergeometric mean "
-            f"of [{n_kun}]") in s1
+            f"of Kuncheva [{n_kun}]") in s1
 
     # a moldura da 1: a novidade e empate e quantizacao, nao a correcao
     assert ("the need to do so is not new" in s1
@@ -3692,11 +3765,974 @@ def test_12_aplica_seis_das_sete_e_reenquadra_a_novidade():
     assert r.returncode == 0, r.stdout[-400:]
     assert "numbering in order of appearance, no missing field" in r.stdout
 
-    # e a procedencia de segundo grau esta declarada, entrada por entrada
-    assert "vêm de listas de referências e não dos artigos citados" in t
+    # e a procedencia esta declarada entrada por entrada. Ate 2026-11-10 o
+    # resumo dizia que cinco entradas vinham de listas de referencias; a
+    # auditoria daquele dia conferiu as cinco uma a uma, corrigiu a saranwong
+    # e passou a declarar, por entrada, o que foi lido e o que falta. O
+    # invariante e que a secao exista e nomeie o que continua por ler.
+    assert "Auditoria de 2026-11-10: o que mudou" in t
+    # Ate 2026-11-11 esta secao listava o que faltava ler. A auditoria fechou
+    # naquele dia e a lista desapareceu por estar vazia; o invariante que a
+    # substitui e mais forte: o arquivo declara, explicitamente, que nao ha
+    # campo pendente. Se algum voltar a faltar, isto falha.
+    assert "não há campo pendente" in t
     # "Achieving robustness" e o ARTIGO do conjunto manga; o deposito de
     # dados e outra entrada e nao e de segundo grau.
+    # Ate 2026-11-10 as cinco traziam o marcador generico **segundo grau**. A
+    # auditoria daquele dia conferiu uma a uma e o marcador deu lugar ao
+    # registro do que foi lido, onde, e do que falta -- o que e mais forte,
+    # nao menos. O invariante que sobrevive: cada uma continua nomeando a
+    # lista de onde nasceu, e nenhuma volta ao marcador generico sozinho.
+    import re as _re2
+    # t vem com o espaco normalizado, entao as ancoras de linha nao valem
+    # nele: a tabela e lida do arquivo cru.
+    # O arquivo tem DUAS tabelas com [n] na primeira coluna desde a auditoria
+    # de 2026-11-10 -- a de procedencia e a do que continua por ler --, entao
+    # guardam-se TODAS as linhas de cada numero e exige-se que ALGUMA declare
+    # a leitura. Guardar so a ultima faria o teste ler a tabela errada.
+    _cru = (RAIZ / "paper" / "12-referencias.md").read_text()
+    linhas = {}
+    for m in _re2.finditer(r"^\| \[(\d+)\] \| .*$", _cru, _re2.M):
+        linhas.setdefault(m.group(1), []).append(m.group(0))
     for trecho in ("Achieving robustness", "Saranwong", "Workman",
                    "PLS-regression", "PAC-Bayesian model averaging"):
         n_ref = _num_ref(trecho)
-        assert f"| [{n_ref}] | **segundo grau**" in t, trecho
+        candidatas = linhas[n_ref]
+        for linha in candidatas:
+            assert linha.strip() != f"| [{n_ref}] | **segundo grau**", trecho
+        assert any("lista de" in l or "lido" in l.lower()
+                   or "confirmado" in l.lower() for l in candidatas), \
+            f"{trecho}: nenhuma linha declara a leitura -> {candidatas}"
+
+
+# ============================================================================
+# Parecer de 2026-11-10. Seis itens científicos e a apresentação. Cada
+# correção abaixo foi MEDIDA no código antes de ser escrita no texto: o
+# tratamento de logit(1), a forma da penalidade e as duas forças sobre θ saem
+# de `src/pgsg_3/m_model/pgsg_v3.py`, não de leitura do manuscrito.
+# ============================================================================
+
+
+@pytest.mark.semantico
+def test_parecer1110_declara_o_tratamento_numerico_de_logit_e_da_kl():
+    """Itens 2.1 e 2.2, ambos de prioridade alta.
+
+    logit(1) não existe e o prior do NIR vale 1 em 34 bandas. O código resolve
+    com `np.clip(s, 1e-6, 1 - 1e-6)`, em float64, e guarda θ em float32: isso
+    põe a banda do platô em θ₀ = 13,8155 e em g₀ = 1 − 9,5e-7, de onde sai o
+    σ′ ≈ 10⁻⁶ que a §3.1 relata. A §2.3 não declarava nada disso.
+
+    A penalidade: a §2.3 dizia "summed over bands" e o código toma a MÉDIA
+    (`termo.mean()`), com os dois argumentos sob o mesmo clip. A descrição
+    estava errada, não apenas incompleta.
+    """
+    import re
+    s2 = re.sub(r"\s+", " ", (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md"
+                              ).read_text())
+    # o que o codigo faz, declarado no metodo
+    assert "ε = 10⁻⁶" in s2
+    assert "13.8155" in s2 and "1 − 9.5 × 10⁻⁷" in s2
+    assert "double precision" in s2 and "single precision" in s2
+    # a penalidade, com a reducao correta e explicita
+    assert "averaged over bands" in s2
+    assert "summed over bands" not in s2
+    assert "reduced by the **mean** over the" in s2
+    # o early stopping nao ve o termo KL
+    assert "without the penalty term" in s2 or "with the penalty term excluded" in s2
+    # a segunda forca sobre theta, que nao passa por sigma'
+    assert "weight decay of 10⁻⁴" in s2
+    assert "does not carry the `σ′` factor" in s2
+    # e a §3.1 deixou de dizer que o gate comeca exatamente em 1
+    assert "start at a gate value of 1 and stay there" not in s2
+    assert "1 − 9.5 × 10⁻⁷ — the clip declared in Section 2.3" in s2
+
+
+@pytest.mark.estrutural
+def test_parecer1110_a_forma_da_kl_declarada_e_a_do_codigo():
+    """A equação escrita na §2.3 tem de ser a que o código avalia. Este teste
+    não lê o texto: avalia `kl_bernoulli_np` e a fórmula do manuscrito nos
+    mesmos vetores e exige igualdade. Se alguém trocar soma por média em um
+    dos dois lados, isto falha.
+    """
+    np = pytest.importorskip("numpy")
+    import importlib.util
+    caminho = RAIZ / "src" / "pgsg_3" / "m_model" / "pgsg_v3.py"
+    fonte = caminho.read_text()
+    # a funcao nao depende de torch nem de pgsg_1: e extraida e avaliada so.
+    import re as _re
+    m = _re.search(r"_EPS = ([0-9eE.\-]+)", fonte)
+    eps = float(m.group(1))
+    assert eps == 1e-6, "a §2.3 declara ε = 10⁻⁶"
+    corpo = _re.search(r"def kl_bernoulli_np.*?\n\n", fonte, _re.S).group(0)
+    ns = {"np": np, "_EPS": eps}
+    exec("import numpy as np\n" + corpo, ns)
+    rng = np.random.default_rng(7)
+    for _ in range(5):
+        p = 281
+        g = rng.random(p)
+        s = rng.random(p)
+        s[:34] = 1.0                      # o platô, que é o caso que importa
+        gc = np.clip(g, eps, 1 - eps)
+        sc = np.clip(s, eps, 1 - eps)
+        manuscrito = float(np.mean(gc * np.log(gc / sc)
+                                   + (1 - gc) * np.log((1 - gc) / (1 - sc))))
+        assert abs(ns["kl_bernoulli_np"](g, s) - manuscrito) < 1e-12
+
+
+@pytest.mark.semantico
+def test_parecer1110_c1_usa_a_desigualdade_estrita():
+    """Item 2.6. O título do C1 e a tabela da §4.4 já diziam "plateau > q"; só
+    o corpo dizia "whenever L ≥ q". Com L = q o platô inteiro é selecionado e
+    a fronteira cai fora dele, de modo que nenhum empate precisa ser desfeito
+    — que é justamente a condição que o C1 existe para enunciar.
+    """
+    import re
+    for nome in ("01-rascunho-resumo-e-s4.md", "03-rascunho-s1-s2-s3.md",
+                 "04-rascunho-s6-s7-s8.md", "05-rascunho-s9-s10-s11.md"):
+        t = (RAIZ / "paper" / nome).read_text()
+        assert "L ≥ q" not in t, nome
+        assert "L >= q" not in t, nome
+    s4 = re.sub(r"\s+", " ", (RAIZ / "paper" / "01-rascunho-resumo-e-s4.md"
+                              ).read_text())
+    assert "subset of the plateau whenever L > q" in s4
+    assert "The inequality is strict because at L = q" in s4
+
+
+@pytest.mark.semantico
+def test_parecer1110_retira_a_equivalencia_de_r2_fora_do_alcance():
+    """Item 2.3. A §9.1 dizia que o R² é equivalente "in both modalities",
+    enquanto a §10 — e o próprio `scripts/07_raman_lambda1.py`, que imprime
+    "R2 is not reported for that reason" — dizem que o Raman não tem R² de
+    teste. Não era exagero de linguagem: era uma afirmação sobre uma grandeza
+    que o artigo não possui. E não há teste de equivalência com margem.
+    """
+    import re
+    s9 = re.sub(r"\s+", " ", (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md"
+                              ).read_text())
+    assert "held-out R² is equivalent across the whole range of λ, in both modalities" not in s9
+    # SUPERSEDIDO no mesmo dia: a redação que eu havia escrito deu lugar à do
+    # autor, verbatim, que evita também a alegação por tamanho de treino. O
+    # conteúdo é asseverado em test_decisao1110_nenhum_r2_por_tamanho_de_treino.
+    assert "does not constitute a formal equivalence test" in s9
+    assert "predictive equivalence cannot be assessed from held-out R²" in s9
+    # a §9.4 carregava a mesma alegacao e foi corrigida junto
+    assert "equivalent between the two across the λ grid, both modalities" not in s9
+    assert "the Raman arm reports no held-out R² at all" in s9
+    # e a §10, que e a fonte da contradicao, continua dizendo o que dizia
+    assert "Held-out R² is therefore not reported for that modality" in s9
+
+
+@pytest.mark.semantico
+def test_parecer1110_rademacher_e_fechamento_da_71():
+    """Itens 2.4 e 2.5. Os dois trechos eram de minha redação.
+
+    §11: ajustar rótulos aleatórios com um otimizador mede memorização e
+    alcançabilidade; não estima a complexidade de Rademacher empírica, que é
+    um supremo sobre uma classe. §7.1: o fechamento afirmava propriedade do
+    prior contra propriedade do método, o que a comparação entre modalidades
+    não isola — os braços também diferem em dados, dimensão e alvo.
+
+    A frase "a check in a second modality" é a correção que o autor aprovou em
+    2026-11-09 e permanece nos dois lugares: o parecer de 2026-11-10 pediu a
+    retirada da cláusula causal, não dela.
+    """
+    import re
+    s11 = re.sub(r"\s+", " ", (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md"
+                               ).read_text())
+    assert "estimate the empirical Rademacher complexity of the two function classes" not in s11
+    assert "not an estimate of the empirical Rademacher complexity" in s11
+    assert "is the supremum of a signed average over a class" in s11
+    assert "memorise an uninformative target" in s11
+
+    s7 = re.sub(r"\s+", " ", (RAIZ / "paper" / "04-rascunho-s6-s7-s8.md"
+                              ).read_text())
+    assert "the behaviour is a property of how the prior was written down" not in s7
+    assert ("the between-modality comparison does not isolate the effect of "
+            "the prior's functional form") in s7
+    assert s7.count("a check in a second modality") == 2
+
+
+@pytest.mark.estrutural
+def test_parecer1110_figuras_entram_na_escala_em_que_foram_desenhadas():
+    """Apresentação. `width=\\linewidth` em todas as cinco ampliava as três
+    estreitas em 1,43x a 1,93x: o mesmo rótulo de 7pt saía a 7pt numa figura e
+    a 13pt noutra, e a menor delas foi a que o parecerista leu como ilegível.
+    Agora cada figura entra no tamanho em que foi desenhada, e só é reduzida
+    se transbordar.
+    """
+    t = (RAIZ / "scripts" / "19_tex.py").read_text()
+    assert "\\\\figuranatural" in t or "figuranatural" in t
+    assert "includegraphics[width=\\\\linewidth]{%s}" not in t
+    assert "\\newsavebox{\\caixafigura}" in t
+    # a reducao continua existindo para o caso de transbordo
+    assert "\\ifdim\\wd\\caixafigura>\\linewidth" in t
+    # e as colunas de paragrafo deixaram de ser justificadas
+    assert "\\newcolumntype{P}[1]{>{\\raggedright\\arraybackslash}p{#1}}" in t
+    assert "\\usepackage{array,booktabs,longtable}" in t
+
+
+@pytest.mark.estrutural
+def test_parecer1110_figura3_nao_se_redesenha_em_outro_ambiente():
+    """O painel (b) da Figura 3 é específico do ambiente POR CONSTRUÇÃO: o
+    decil cai dentro do platô empatado e quem decide o conjunto é a ordem de
+    desempate do `numpy.argsort`. Em 2026-11-10 um redesenho num contêiner
+    produziu 0,7443-0,7659 no lugar dos 0,9452-0,9867 publicados e teria
+    sobrescrito a figura em silêncio — que é a classe de defeito deste
+    programa: tratar artefato gerado como se fosse reprodução.
+
+    A trava recusa a sobrescrita; a figura entregue continua sendo a medida.
+    """
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "figs1110", RAIZ / "scripts" / "10_figuras.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    assert m.FIG3B_PUBLICADO == (0.9452, 0.9867)
+    fonte = (RAIZ / "scripts" / "10_figuras.py").read_text()
+    assert "permitir_redesenho" in fonte
+    # desde a decisão do autor de 2026-11-10 a trava é um auxiliar partilhado
+    # com a Figura 2; a mensagem e a condição vivem nele.
+    assert "redrawing would replace the " in fonte
+    assert "measurement rather than reproduce it" in fonte
+    assert "fora and alvo.exists() and not permitir_redesenho" in fonte
+
+
+@pytest.mark.semantico
+def test_parecer1110_o_registro_existe_e_declara_o_que_ficou_pendente():
+    """O parecer de 2026-11-02 tem registro em `14-parecer-2026-11-02.md`; o
+    de 2026-11-10 tem o seu. O registro existe para que o que mudou seja
+    legível sem o histórico do git, e para que o que NÃO foi aplicado não se
+    perca: três pontos aguardam o autor.
+
+    O quase-acidente da Figura 3 fica registrado com os dois números, porque
+    um erro evitado que não é escrito volta a acontecer.
+    """
+    import re
+    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "17-parecer-2026-11-10.md"
+                             ).read_text())
+    assert "APROVADO PELO AUTOR EM 2026-11-10, COM TRÊS AJUSTES FINAIS" in t
+    # a quarta rodada do mesmo dia: a ressalva do "cost being nil" e a
+    # auditoria bibliografica, com o erro que ela achou
+    assert "Quarta rodada, 2026-11-10" in t
+    assert "253–261" in t and "31(2), 137–145" in t
+    assert "A numeração das referências **não mudou**" in t
+    # a quinta rodada: Kullback completa e os prenomes nao lidos removidos
+    assert "Quinta rodada" in t
+    assert "Sexta rodada" in t and "10.1145/307400.307435" in t
+    assert "é precisamente por ser fácil que não foi escrito" in t
+    assert "a auditoria bibliográfica fecha" in t
+    assert "Um campo certo pelo motivo errado" in t
+    assert "79–86" in t
+    assert "Um prenome plausível é mais perigoso que uma inicial" in t
+    import re as _re3
+    assert "21 entradas, 21 citadas, em ordem de primeira aparição" in _re3.sub(r"\s+", " ", t)
+    # os numeros medidos, nao recontados de memoria
+    assert "13,815509796142578" in t and "9,536734 × 10⁻⁷" in t
+    assert "weight_decay = 1e-4" in t and "1,4 × 10⁻³" in t
+    # o quase-acidente, com as duas faixas
+    assert "0,7443–0,7659" in t and "0,9452–0,9867" in t
+    # e a base declarada da rodada
+    assert "e98726474af6c59a864f8e9be0ff3d1f76993116" in t
+    assert "## Pendente" in t and "Ajustes finais do autor, 2026-11-10" in t
+
+
+# ============================================================================
+# Decisões do autor de 2026-11-10, sobre o parecer do mesmo dia.
+# ============================================================================
+
+
+@pytest.mark.semantico
+def test_decisao1110_qualifica_a_31_sem_atribuir_ao_sigma_sozinho():
+    """O autor exigiu a qualificação e deu a redação. O argumento original
+    atribuía a imobilidade do platô à saturação da sigmoide; o decaimento
+    chega a θ sem o fator σ′, de modo que a persistência é propriedade do
+    procedimento inteiro.
+
+    A redação do autor entra verbatim. O que foi acrescentado é o limite da
+    leitura: o que se observa persistir é o GATE, e gate imóvel não é prova de
+    parâmetro imóvel — distinção que o próprio autor levantou.
+    """
+    import re
+    s3 = re.sub(r"\s+", " ", (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md"
+                              ).read_text())
+    # a redacao do autor, literal
+    assert ("The prior-initialised plateau begins in a numerically saturated "
+            "region of the sigmoid") in s3
+    assert ("introducing an additional contribution to parameter updates that "
+            "is not attenuated by the sigmoid derivative") in s3
+    assert ("an empirical property of the complete optimisation procedure, "
+            "rather than a consequence of sigmoid saturation alone") in s3
+    # a alegacao anterior saiu
+    assert "The parameters are free in the class and unreachable by the optimiser" not in s3
+    # e a distincao gate/parametro ficou escrita
+    assert "what we observe to persist is the gate" in s3
+    assert "is not by itself evidence that its parameter cannot" in s3
+
+
+@pytest.mark.semantico
+def test_decisao1110_declara_a_forma_acoplada_sem_alegar_razao_no_passo():
+    """A objeção do autor: com momentos adaptativos não se compara o termo de
+    decaimento ao gradiente dos dados para concluir influência na atualização.
+    Procedente — o "1450x" saiu, e a §2.3 passa a dizer de que fala.
+
+    O teste também fixa a implementação exata, que foi a verificação
+    obrigatória do item 5: `torch.optim.Adam`, L2 ACOPLADO.
+    """
+    import re
+    s2 = re.sub(r"\s+", " ", (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md"
+                              ).read_text())
+    assert "The decay is coupled, in the sense that `torch.optim.Adam` adds the L2 term to the gradient before the adaptive moments normalise it" in s2
+    assert "design variable and not an implementation detail" in s2
+    assert "We state this of the gradient and not of the update" in s2
+    assert "does not carry over to the ratio of their effects on the step" in s2
+    # e o codigo tem de continuar sendo o que o texto declara
+    fonte = (RAIZ / "src" / "pgsg_3" / "m_model" / "pgsg_v3.py").read_text()
+    assert 'cls = torch.optim.Adam if self.optimizer == "adam" else torch.optim.AdamW' in fonte
+    assert 'optimizer: str = "adam"' in fonte
+
+
+@pytest.mark.estrutural
+def test_decisao1110_a_condicional_da_91_e_sustentada_pelos_dados():
+    """O autor condicionou a §9.1: *"se houver configurações com perda
+    relevante, essa primeira frase deverá ser restringida"*. Este teste não lê
+    o texto — abre os agregados do NIR e exige que a condição valha.
+
+    Critério: a amplitude de R² ao longo de λ não excede o espalhamento
+    típico entre sementes, e o máximo NÃO está em λ = 0 (não há deterioração
+    monotônica ao ligar a penalização).
+    """
+    import csv
+    for nome in ("sweep_nir", "sweep_nir_init0"):
+        caminho = RAIZ / "results" / nome / "agregado.csv"
+        if not caminho.exists():
+            pytest.skip(f"{nome} ausente neste ambiente")
+        rs = list(csv.DictReader(caminho.open()))
+        r2 = [float(r["r2_media"]) for r in rs]
+        sd = [float(r["r2_sd"]) for r in rs]
+        amplitude = max(r2) - min(r2)
+        tipico = sum(sd) / len(sd)
+        assert amplitude <= 2 * tipico, (
+            f"{nome}: amplitude {amplitude:.4f} contra sd típico "
+            f"{tipico:.4f} — a §9.1 teria de ser restringida")
+        lam = [float(r["lam"]) for r in rs]
+        assert lam[r2.index(max(r2))] != 0.0, (
+            f"{nome}: o máximo de R² está em λ = 0, o que seria deterioração "
+            "monotônica ao ligar a penalização")
+
+
+@pytest.mark.semantico
+def test_decisao1110_nenhum_r2_por_tamanho_de_treino_e_nenhuma_alegacao_dele():
+    """Medido em 2026-11-10: NENHUM csv deste repositório tem R² indexado por
+    tamanho de treino. Todo arquivo com `r2` é indexado por λ; as sete frações
+    estão em `gate_metrics.csv`, que não tem coluna de R².
+
+    Logo a alegação "equivalente nas sete frações" nunca teve dado por trás, e
+    o texto não pode voltar a fazê-la. Este teste guarda as duas pontas: o
+    dado e a afirmação.
+    """
+    import csv
+    gm = RAIZ / "data" / "processed" / "gates_r2" / "gate_metrics.csv"
+    if gm.exists():
+        colunas = next(csv.reader(gm.open()))
+        assert not [c for c in colunas if "r2" in c.lower()], \
+            "gate_metrics.csv passou a ter R²; a §9.1 pode ser reexaminada"
+    import re
+    s9 = re.sub(r"\s+", " ", (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md"
+                              ).read_text())
+    # a redacao do autor, verbatim
+    assert ("Within the near-infrared experiments, the evaluated configurations "
+            "showed no material deterioration in the reported predictive "
+            "performance measures across the examined regularisation "
+            "settings") in s9
+    assert "This observation is descriptive and does not constitute a formal equivalence test" in s9
+    assert "the available data do not support the required batch-aware evaluation" in s9
+    # e nenhuma alegacao de R2 por tamanho de treino sobrou
+    assert "No R² is reported by training size" in s9
+    assert "across the λ grid and the seven training sizes" not in s9
+
+
+@pytest.mark.semantico
+def test_decisao1110_a_lacuna_do_controle_de_otimizador_esta_declarada():
+    """Medido: `ctl_adam`, `ctl_adamw` e `ctl_piloto` rodaram só com
+    `init=zero`, onde não se forma platô. Não há neste repositório nenhum dado
+    sobre decaimento acoplado contra desacoplado SOB SATURAÇÃO — que é o braço
+    em que o platô persiste.
+
+    Isso torna a ablação a única fonte possível para explicação causal, e tem
+    de estar declarado onde o leitor procura: limitação na §10, experimento na
+    §11, e remissão na §3.1.
+    """
+    import csv
+    for nome in ("ctl_adam", "ctl_adamw"):
+        caminho = RAIZ / "results" / nome / "aggregate.csv"
+        if not caminho.exists():
+            continue
+        inits = {r["init"] for r in csv.DictReader(caminho.open())}
+        assert inits == {"zero"}, (
+            f"{nome} passou a ter init={inits - {'zero'}}; a §10 e a §11 "
+            "precisam ser reexaminadas")
+    import re
+    s = re.sub(r"\s+", " ", (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md"
+                             ).read_text())
+    assert "The optimiser control does not cover the saturated arm" in s
+    assert "was run from θ₀ = 0 only, where no plateau forms" in s
+    assert "Weight decay on the gate logits, with the prior in the initialisation" in s
+    s3 = re.sub(r"\s+", " ", (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md"
+                              ).read_text())
+    assert "the ablation named in Section 11, which we did not run" in s3
+
+
+@pytest.mark.estrutural
+def test_decisao1110_a_trava_cobre_a_figura_2_tambem():
+    """O autor pediu a proteção para todas as figuras dependentes de
+    ordenação. Medido: a Figura 2 plota a mesma `jaccard_sort` do painel (b) da
+    Figura 3 e calcula os mesmos 0,7443-0,7659 neste ambiente — corria risco
+    idêntico e estava sem trava.
+
+    As Figuras 1, 4 e 5 ficam fora por medição: a 5 lê células e reporta
+    correlação de postos sobre valores de gate, sem seleção top-q.
+    """
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "figs1110b", RAIZ / "scripts" / "10_figuras.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    assert m.JACCARD_SORT_PUBLICADO == (0.9452, 0.9867)
+    assert m.FIG3B_PUBLICADO == m.JACCARD_SORT_PUBLICADO   # nome anterior vivo
+    assert callable(m.exigir_faixa_publicada)
+
+    # a trava recusa quando a faixa divirja E a figura exista
+    import inspect
+    from pathlib import Path as _P
+    assinatura = inspect.signature(m.figura2).parameters
+    assert "permitir_redesenho" in assinatura, \
+        "figura2 sem a trava: plota jaccard_sort e corre o mesmo risco"
+    fonte = (RAIZ / "scripts" / "10_figuras.py").read_text()
+    assert fonte.count("exigir_faixa_publicada(") == 3   # def + figura2 + figura3
+    assert "figura2(dados, out, q, a.permitir_redesenho_fig3)" in fonte
+
+
+@pytest.mark.semantico
+def test_ajustes_finais_1110_tiram_as_tres_alegacoes_excessivas():
+    """Os três ajustes do autor sobre o patch aprovado, mais a gêmea que ele
+    não nomeou.
+
+    §3.1 se contradizia com a §2.3: dizia que o gradiente de QUALQUER perda
+    carrega σ′, depois de o artigo passar a demonstrar que o termo L2 não
+    carrega. §9.1 afirmava que nada está sendo trocado, o que a ausência de
+    deterioração observada não demonstra — e repetia a alegação duas sentenças
+    adiante, em forma mais forte. §11 sustentava acurácia nas sete frações num
+    dado que este repositório não tem.
+    """
+    import re
+    s3 = re.sub(r"\s+", " ", (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md"
+                              ).read_text())
+    assert "The gradient of any loss with respect to θ carries a factor" not in s3
+    assert "Gradients propagated through the sigmoid gate carry a factor σ′(θ) = g(1 − g)" in s3
+
+    s9 = re.sub(r"\s+", " ", (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md"
+                              ).read_text())
+    assert "Within that scope, nothing is being traded" not in s9
+    assert ("Within the evaluated near-infrared configurations, changes in gate "
+            "stability were not accompanied by a consistent deterioration in "
+            "the reported predictive performance") in s9
+    # a gemea, que repetia a alegacao em forma mais forte
+    assert "a stability that does not affect predictive risk" not in s9
+    assert "a stability whose predictive cost we did not detect in these configurations" in s9
+
+    # §11: nenhuma alegacao de acuracia por fracao, aqui ou em qualquer rascunho
+    assert "The prior does not improve accuracy at any of seven training sizes" not in s9
+    assert "Whether the prior improves accuracy at small training sizes is a question this paper does not answer" in s9
+    for nome in ("01-rascunho-resumo-e-s4.md", "03-rascunho-s1-s2-s3.md",
+                 "04-rascunho-s6-s7-s8.md", "05-rascunho-s9-s10-s11.md",
+                 "02-resumo-C.md", "08-rascunho-s5.md"):
+        t = (RAIZ / "paper" / nome).read_text()
+        assert "improve accuracy at" not in t, nome
+        assert "improves accuracy at any" not in t, nome
+
+
+@pytest.mark.semantico
+def test_auditoria_bib_1110_nenhuma_alegacao_de_custo_nulo_sobrou():
+    """A ressalva do autor sobre *"the evidence for the cost being nil"*, e as
+    duas gêmeas que o mesmo excesso tinha em outros lugares.
+
+    "Custo nulo" afirma ausência de custo, que os resultados não demonstram.
+    O manuscrito inteiro passa a dizer o que foi observado — ausência de
+    deterioração material nas configurações avaliadas — sem estabelecer
+    equivalência. Este teste varre TODOS os rascunhos, porque a mesma frase
+    reapareceu em três lugares diferentes ao longo da revisão.
+    """
+    import re
+    import glob
+    for caminho in sorted(glob.glob(str(RAIZ / "paper" / "0*.md"))):
+        t = re.sub(r"\s+", " ", open(caminho).read())
+        nome = caminho.rsplit("/", 1)[-1]
+        for excesso in ("the cost being nil",
+                        "costs nothing in predictive performance",
+                        "Within that scope, nothing is being traded",
+                        "a stability that does not affect predictive risk"):
+            assert excesso not in t, f"{nome}: {excesso!r}"
+    s9 = re.sub(r"\s+", " ", (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md"
+                              ).read_text())
+    assert ("which supports the absence of a material predictive deterioration "
+            "in the evaluated configurations, without establishing "
+            "equivalence") in s9
+    s3 = re.sub(r"\s+", " ", (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md"
+                              ).read_text())
+    assert ("showed no material predictive deterioration in the configurations "
+            "we evaluated") in s3
+    assert "without establishing equivalence" in s3
+
+
+@pytest.mark.semantico
+def test_auditoria_bib_1110_saranwong_corrigida_e_sem_prenome_inventado():
+    """A auditoria de 2026-11-10 achou um erro real: a [13] trazia 253--261,
+    copiado da lista de referências de [4]. O artigo é 31(2), 137--145. Não é
+    detalhe de estilo — é a citação que sustenta as três janelas NIR, e teria
+    ido ao periódico apontando páginas que não existem nesse artigo.
+
+    A faixa corrigida foi reconferida num segundo índice independente. Os
+    prenomes foram reduzidos às iniciais porque nenhuma fonte alcançável
+    imprime um: a escolha entre *Jingtair* e *Jinda* seria um campo escrito
+    sem leitura, que é exatamente o que este programa proíbe.
+    """
+    bib = (RAIZ / "paper" / "referencias.bib").read_text()
+    inicio = bib.index("@article{saranwong2004mango")
+    entrada = bib[inicio:bib.index("\n}", inicio)]
+    assert "pages   = {137--145}" in entrada
+    assert "253--261" not in entrada.split("note")[0], \
+        "a faixa errada voltou ao registro"
+    assert "number  = {2}" in entrada
+    assert "doi     = {10.1016/j.postharvbio.2003.08.007}" in entrada
+    # nenhum prenome: so iniciais, que e o que as fontes imprimem
+    assert "Sornsrivichai, J." in entrada
+    for inventado in ("Jingtair,", "Jinda,", "Sirinnapa", "Sumio"):
+        assert inventado not in entrada.split("note")[0], \
+            f"{inventado}: prenome não lido voltou ao campo author"
+    # e a lista numerada carrega a mesma faixa
+    lista = (RAIZ / "paper" / "12-referencias.md").read_text()
+    assert "31 (2) (2004) 137–145" in lista
+    assert "(2004) 253–261" not in lista
+
+
+@pytest.mark.semantico
+def test_auditoria_bib_1110_segunda_passagem_kullback_e_as_iniciais():
+    """Segunda passagem da auditoria, 2026-11-10.
+
+    A [19] deixou de estar incompleta: o autor correspondente leu 79--86 no
+    sumário do volume no JSTOR, depois de o Project Euclid recusar três
+    tentativas aqui por verificação de navegador. O campo entra por essa
+    leitura e a nota diz de quem foi.
+
+    E três entradas perderam prenomes que ninguém lera. A regra é a mesma nas
+    três: onde nenhuma fonte alcançável imprime prenome, fica a inicial que as
+    fontes imprimem. Um prenome plausível é mais perigoso que uma inicial,
+    porque passa por verificado.
+    """
+    bib = (RAIZ / "paper" / "referencias.bib").read_text()
+
+    i = bib.index("@article{kullback1951information")
+    kl = bib[i:bib.index("\n}", i)]
+    assert "pages   = {79--86}" in kl
+    assert "SUPPLIED BY" in kl and "CORRESPONDING AUTHOR" in kl
+    assert "JSTOR" in kl
+    assert "INCOMPLETE ON PURPOSE" not in kl
+    assert "written\n             on that reading and on no inference" in kl
+
+    # as tres entradas sem prenome inventado
+    import re
+    for chave, proibidos in (
+            ("saranwong2004mango", ("Jingtair", "Jinda", "Sirinnapa", "Sumio")),
+            ("wold2001pls", ("Svante", "Michael", "Lennart")),
+            ("anderson2020mango", ("Chris", "Nicholas T.", "Kerry B.",
+                                   "Phul P."))):
+        i = bib.index(chave)
+        corpo = bib[i:bib.index("\n}", i)]
+        autores = corpo[corpo.index("author"):corpo.index("title")]
+        for nome in proibidos:
+            assert nome not in autores, f"{chave}: {nome!r} voltou ao author"
+    # o que FOI lido continua escrito
+    i = bib.index("anderson2020mango")
+    an = bib[i:bib.index("\n}", i)]
+    assert "Anderson, Nicholas" in an and "Hayes, C. H." in an
+    assert "AUTHOR LINE WAS READ" in an
+
+    # A LISTA IMPRESSA, nao so o .bib. Em 2026-11-11 descobriu-se que a
+    # reducao de prenomes da vespera tinha alcancado o .bib e NAO a lista
+    # numerada, que e o que o manuscrito publica: a [9] ainda saía como
+    # "N.T. Anderson, K.B. Walsh, P.P. Subedi" no PDF. Corrigir um e nao o
+    # outro e pior que nao corrigir, porque o arquivo de auditoria passa a
+    # descrever algo que o leitor nao recebe.
+    lista = (RAIZ / "paper" / "12-referencias.md").read_text()
+    import re as _re5
+    m = _re5.search(r"^## References[ \t]*$", lista, _re5.M)
+    corpo = lista[m.end():]
+    f = _re5.search(r"^## ", corpo, _re5.M)
+    entradas = {n_: e for n_, e in _re5.findall(r"^\[(\d+)\]\s+(.+)$",
+                                                corpo[:f.start() if f else None],
+                                                _re5.M)}
+    autores9 = entradas[_num_ref("Achieving robustness")].split(", Achieving")[0]
+    for proibido in ("N.T.", "K.B.", "P.P."):
+        assert proibido not in autores9, (
+            f"a lista impressa ainda traz {proibido}, que o .bib removeu por "
+            "nunca ter sido lido")
+    assert autores9 == "N. Anderson, K. Walsh, P. Subedi, C.H. Hayes"
+    assert "10.1016/j.postharvbio.2020.111202" in entradas[
+        _num_ref("Achieving robustness")]
+    for trecho, esperado in (
+            ("Saranwong", "S. Saranwong, J. Sornsrivichai, S. Kawano"),
+            ("PLS-regression", "S. Wold, M. Sjöström, L. Eriksson")):
+        assert entradas[_num_ref(trecho)].startswith(esperado), trecho
+
+    assert "22 (1) (1951) 79–86" in lista
+    assert "Segunda passagem, 2026-11-10" in lista
+    assert "Um prenome plausível é mais perigoso que uma inicial" in lista
+
+
+@pytest.mark.semantico
+def test_auditoria_bib_1110_terceira_passagem_e_o_doi_que_nao_foi_escrito():
+    """As duas últimas pendências da auditoria.
+
+    A [20] fechou contra um SEGUNDO índice independente. O DOI da [9] não foi
+    obtido em cinco rotas, e — isto é o ponto — NÃO foi construído a partir do
+    PII, embora o padrão da Elsevier tornasse trivial escrever
+    `10.1016/j.postharvbio.2020.111202`. Um campo plausível e não lido é
+    exatamente o que esta auditoria existe para impedir, e a facilidade de
+    produzi-lo é razão para desconfiar dele, não para escrevê-lo.
+
+    Este teste guarda a ausência: se esse DOI aparecer algum dia, terá de vir
+    com uma nota dizendo onde foi lido.
+    """
+    bib = (RAIZ / "paper" / "referencias.bib").read_text()
+    i = bib.index("anderson2020mango")
+    entrada = bib[i:bib.index("\n}", i)]
+    import re as _re4
+    nota = _re4.sub(r"\s+", " ", entrada[entrada.index("note"):])
+    # O DOI entrou em 2026-11-11, e este teste cobra dele o que cobrava da
+    # ausencia: a cadeia so vale acompanhada da prova de que designa ESTE
+    # artigo. A prova e o resolvedor do registro redirecionando para o PII
+    # que o deposito dos autores da para o artigo -- nao o padrao de nomes da
+    # Elsevier, que produziria a mesma cadeia sem evidencia nenhuma e foi
+    # recusado por isso na vespera. Um campo certo pelo motivo errado continua
+    # sendo um campo sem leitura.
+    if "10.1016/j.postharvbio.2020.111202" in entrada.split("note")[0]:
+        assert "THE DOI WAS RESOLVED" in nota
+        assert "doi.org" in nota and "S0925521420301629" in nota
+        assert "not by the Elsevier naming pattern" in nota
+    else:
+        assert "10.1016/j.postharvbio.2020.111202" not in bib, (
+            "a cadeia aparece em algum lugar sem estar no campo doi")
+
+    i = bib.index("mcallester1999pacbayes")
+    mc = __import__("re").sub(r"\s+", " ", bib[i:bib.index("\n}", i)])
+    assert "CONFIRMED AGAIN" in mc and "SECOND, independent" in mc
+    assert "10.1145/307400.307435" in mc
+    assert "no field was taken from memory" in mc
+
+    ref = (RAIZ / "paper" / "12-referencias.md").read_text()
+    assert "Terceira passagem, 2026-11-10" in ref
+    assert "O PII não foi convertido em DOI" in ref
+    assert "S0925521420301629" in ref
+    # a tabela de pendencias deixou de existir em 2026-11-11, quando o DOI da
+    # [9] -- a ultima lacuna -- foi resolvido. O invariante que substitui a
+    # contagem de linhas: o arquivo declara que nao ha campo por ler, e diz
+    # pela quarta passagem como o ultimo foi fechado.
+    assert "não há campo pendente" in ref
+    assert "Quarta passagem, 2026-11-11" in ref
+    assert "Um campo certo pelo motivo errado continua sendo um campo" in ref
+    assert "nenhuma entrada tem campo por ler" in ref
+    assert "alcançara o `.bib` e **não** a lista numerada" in ref
+
+
+@pytest.mark.estrutural
+def test_bibliografia_sai_sem_justificacao_esticada():
+    """Inspeção do PDF definitivo, 2026-11-10.
+
+    A lista de referências tinha o mesmo defeito que a Tabela 1 tivera: um DOI
+    e um nome de periódico não hifenizam, de modo que a justificação estica o
+    espaço entre palavras no lugar deles -- visivelmente nas entradas [18] e
+    [20], cujas URLs são longas. Listas de referências são convencionalmente
+    compostas sem justificação por essa razão exata.
+
+    O grupo tem de FECHAR: um \\begingroup sem \\endgroup deixaria o resto do
+    documento sem justificação, que é um defeito maior que o corrigido.
+    """
+    t = (RAIZ / "scripts" / "19_tex.py").read_text()
+    assert "\\\\begingroup\\\\raggedright" in t
+    assert "\\\\endgroup" in t
+    tex = (RAIZ / "paper" / "MANUSCRITO.tex")
+    if tex.exists():
+        corpo = tex.read_text()
+        assert corpo.count("\\begingroup\\raggedright") == corpo.count("\\endgroup"), \
+            "um \\begingroup sem \\endgroup: o resto do documento perde a justificação"
+        i = corpo.index("\\section*{References}")
+        trecho = corpo[i:i + 400]
+        assert "\\begingroup\\raggedright" in trecho
+
+
+@pytest.mark.semantico
+def test_credit_vem_do_autor_e_a_taxonomia_nao_foi_reescrita():
+    """CRediT, fornecido verbatim pelo autor em 2026-11-11.
+
+    Quem fez o quê não é inferível do repositório, então os papéis são dele e
+    não foram compostos aqui. A única alteração ao texto recebido foi desfazer
+    a hifenação de quebra de linha do copiar-colar (`edit-ing`,
+    `Visual-ization`, `administra-tion`).
+
+    O ponto delicado: `Conceptualization` e `Visualization` são nomes FIXOS da
+    taxonomia CRediT. O verificador de conformidade os acusou como formas
+    `-ize` contra a norma britânica do manuscrito, e respeitá-lo teria
+    corrompido a taxonomia para satisfazer uma regra sobre prosa autoral. A
+    seção foi declarada reproduzida, como References e Authors.
+    """
+    import re
+    fonte = (RAIZ / "paper" / "18-declaracoes.md").read_text()
+    assert "FORNECIDA PELO AUTOR em 2026-11-11" in fonte
+    assert "não foram compostos por mim" in fonte
+
+    decl = re.sub(r"\s+", " ", fonte[fonte.index("## CRediT"):])
+    # os papeis, exatamente como vieram, com a hifenacao desfeita
+    assert ("**Guilherme Coelho:** Investigation, Writing – review & editing."
+            in decl)
+    assert ("**Clarimar José Coelho:** Conceptualization, Methodology, "
+            "Software, Formal analysis, Validation, Data curation, "
+            "Visualization, Supervision, Project administration, Writing – "
+            "original draft, Writing – review & editing.") in decl
+    for partido in ("edit-ing", "Visual-ization", "administra-tion"):
+        assert partido not in decl, partido
+
+    # a taxonomia nao foi reescrita para -isation
+    for britanico in ("Conceptualisation", "Visualisation"):
+        assert britanico not in fonte, britanico
+    conf = (RAIZ / "scripts" / "18_conformidade.py").read_text()
+    assert "CRediT authorship contribution statement" in conf
+    assert "would\n# corrupt the taxonomy" in conf
+
+    # entra depois da §12 e fora da numeracao: nao e a secao 13
+    cons = (RAIZ / "scripts" / "15_consolidar_manuscrito.py").read_text()
+    i = cons.index('("09-rascunho-s12.md"')
+    j = cons.index('("18-declaracoes.md"')
+    assert j > i, "a declaração tem de vir depois da última seção numerada"
+    assert "SECOES_ESPERADAS = 12" in cons
+
+    # e chega ao manuscrito e ao .tex, com o & escapado
+    md = (RAIZ / "paper" / "MANUSCRITO.md").read_text()
+    assert "## CRediT authorship contribution statement" in md
+    tex = RAIZ / "paper" / "MANUSCRITO.tex"
+    if tex.exists():
+        corpo = tex.read_text()
+        assert "\\section*{CRediT authorship contribution statement}" in corpo
+        assert "review \\& editing" in corpo
+        assert "review & editing" not in corpo, "& sem escape quebra o LaTeX"
+
+
+@pytest.mark.semantico
+def test_declaracao_de_ia_continua_em_aberto_e_declarada_como_tal():
+    """A *Declaration of generative AI and AI-assisted technologies in the
+    writing process* ainda não existe, e o arquivo de declarações diz isso em
+    vez de ficar calado.
+
+    Parte da prosa deste manuscrito foi redigida por mim, de modo que a
+    declaração se aplica; o texto dela é do autor e não será escrito aqui. Se
+    alguém a acrescentar, este teste cobra que o aviso de pendência saia
+    junto — um manuscrito que declara e um arquivo que diz estar pendente é
+    pior que qualquer um dos dois sozinho.
+    """
+    fonte = (RAIZ / "paper" / "18-declaracoes.md").read_text()
+    md = (RAIZ / "paper" / "MANUSCRITO.md").read_text()
+    assert "AI-assisted" in md, "a declaração saiu do manuscrito"
+    # entrou em 2026-11-11, logo o aviso de pendencia tem de ter saido
+    assert "Ainda não decidido" not in fonte, (
+        "a declaração de IA entrou no manuscrito mas o arquivo de "
+        "declarações ainda a chama de pendente")
+
+
+@pytest.mark.semantico
+def test_citacoes_narrativas_nomeiam_o_autor_onde_o_colchete_e_sujeito():
+    """Pedido do autor em 2026-11-11: referir-se aos autores "quando for o
+    caso". O caso não é todo marcador.
+
+    A distinção aplicada: onde o colchete é SUJEITO da oração, ou complemento
+    de "of"/"in" representando a obra, ele não é uma referência mas um nome
+    disfarçado, e o leitor tem de descer à lista para saber de quem se fala.
+    Onde é apoio parentético — `the one-standard-error rule [15]`, `a Jaccard
+    index [5]` — o nome só atrapalharia.
+
+    Os sobrenomes foram LIDOS da lista numerada, não recordados, e a forma
+    segue o número de autores: Kuncheva (uma), Nogueira et al. (três),
+    Anderson et al. (quatro), Workman and Weyer (dois).
+    """
+    import re
+    s1 = re.sub(r"\s+", " ", (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md"
+                              ).read_text())
+    kun, nog = _num_ref("A stability index"), _num_ref("On the stability of")
+    and_, wor = _num_ref("Achieving robustness"), _num_ref("Practical Guide")
+
+    # o colchete deixou de ser o complemento de "of"/"in"
+    for antes in (f"index of [{kun}]", f"mean of [{kun}]",
+                  f"reported in [{and_}]", f"catalogued in [{wor}]"):
+        assert antes not in s1, antes
+    for depois in (f"index of Kuncheva [{kun}]",
+                   f"mean of Kuncheva [{kun}]",
+                   f"reported by Anderson et al. [{and_}]",
+                   f"catalogued by Workman and Weyer [{wor}]",
+                   f"In the vocabulary of Kuncheva [{kun}] and Nogueira "
+                   f"et al. [{nog}]"):
+        assert depois in s1, depois
+
+    # como SUJEITO, o verbo concorda com os autores e nao com o colchete
+    assert f"Nogueira et al. place that correction [{nog}]" in s1
+    assert f"Nogueira et al. put that correction [{nog}]" in s1
+    for errado in (f"[{nog}] places", f"[{nog}] puts"):
+        assert errado not in s1, f"{errado}: sujeito voltou a ser o colchete"
+
+    # e o apoio parentetico NAO ganhou nome: nomear tudo seria tao errado
+    # quanto nomear nada
+    assert "one-standard-error rule [" in s1
+    assert re.search(r"Jaccard index\s*\[\d+\]", s1)
+
+    # nenhum marcador foi criado nem destruido: a numeracao e por ordem de
+    # primeira aparicao, e acrescentar um deslocaria todos os seguintes
+    # A sequencia abaixo e a do commit-base e994... verificada em 2026-11-11:
+    # a citacao narrativa nao acrescentou, removeu nem reordenou nenhum
+    # marcador. Isso importa porque a numeracao e por ordem de PRIMEIRA
+    # aparicao, de modo que inserir um marcador cedo deslocaria todos os
+    # seguintes e invalidaria a lista inteira.
+    assert re.findall(r"\[(\d+)\]", s1) == [
+        "1", "2", "3", "4", "4", "5", "6", "7", "4", "8", "9", "4", "12",
+        "13", "14", "4", "4", "6", "7", "6", "6", "7", "15"]
+
+
+@pytest.mark.estrutural
+def test_bib_modo_cite_nao_toca_o_preambulo_nem_publica_a_auditoria():
+    """Pedido do autor em 2026-11-11: `\\cite{}` contra o `.bib`, não `[6]`
+    literal. O modo `--bib` do conversor, e os dois defeitos que ele revelou.
+
+    PRIMEIRO: substituir `[n]` no documento inteiro destrói o preâmbulo. Ali
+    `[1]` é contagem de argumentos de macro -- `\\newcolumntype{P}[1]{...}`,
+    `\\providecommand{\\semfigura}[1]{...}` -- e virou `\\cite{...}` na primeira
+    tentativa, com 46 erros de LaTeX. A substituição vale só depois do
+    `\\begin{document}`.
+
+    SEGUNDO: `unsrt` imprime o campo `note`, e as nossas notas são registros
+    de proveniência. Citar contra o `.bib` de registro punha "Read the PDF on
+    the author's own site, including Definition 1 and the hypergeometric
+    expectation E[r] = k^2/n" DENTRO da lista de referências do artigo -- 240
+    linhas de `.bbl` para 21 referências, e quatro erros, porque as notas
+    carregam matemática crua. O `.bib` de submissão sai sem elas.
+    """
+    import re
+    t = (RAIZ / "scripts" / "19_tex.py").read_text()
+    assert "def bib_para_submissao" in t
+    assert "def mapa_citacoes" in t
+    assert '"--bib"' in t
+    # a substituicao delimitada
+    assert 'marca = "\\\\begin{document}"' in t
+    assert "corte = corpo.index(marca) + len(marca)" in t
+    assert "miolo, n_sub = re.subn" in t
+    # as recusas: marcador sem chave, marcador sobrevivente, nota sobrevivente
+    assert "Refusing to emit a document that cites nothing" in t
+    assert "markers survived the" in t
+    assert "Refusing to print the audit trail in the paper" in t
+    # e o mapa e LIDO, nao recalculado
+    assert "rather than recomputed" in t
+
+
+@pytest.mark.semantico
+def test_mapa_de_numeros_para_chaves_e_bijetivo_e_por_titulo():
+    """O mapa número -> chave, gravado em 2026-11-11.
+
+    Pareado por TÍTULO com bijeção exigida, não por nome de chave: o arquivo
+    tem dois Anderson, dois Lange e dois Coelho, e parear por nome citaria o
+    artigo errado. Este teste refaz o pareamento e exige o mesmo resultado,
+    de modo que uma entrada nova ou renomeada não passa calada.
+    """
+    import re, unicodedata
+
+    def norm(s: str) -> str:
+        s = unicodedata.normalize("NFKD", s)
+        s = "".join(c for c in s if not unicodedata.combining(c))
+        return re.sub(r"\{|\}|\\[a-zA-Z]+|[^a-z0-9]", "", s.lower())
+
+    bib = (RAIZ / "paper" / "referencias.bib").read_text()
+    titulos = {}
+    for m in re.finditer(r"^@\w+\{([^,]+),(.*?)\n\}", bib, re.M | re.S):
+        tm = re.search(r"title\s*=\s*\{(.+?)\}\s*,\s*\n", m.group(2), re.S)
+        if tm:
+            titulos[m.group(1)] = norm(tm.group(1))
+
+    ref = (RAIZ / "paper" / "12-referencias.md").read_text()
+    m = re.search(r"^## Mapa de n.meros para chaves BibTeX[ \t]*$", ref, re.M)
+    assert m, "o mapa desapareceu do arquivo de referências"
+    corpo = ref[m.end():]
+    f = re.search(r"^## ", corpo, re.M)
+    mapa = dict(re.findall(r"^\|\s*\[(\d+)\]\s*\|\s*`([^`]+)`",
+                           corpo[:f.start() if f else None], re.M))
+    assert len(mapa) == 21
+    assert len(set(mapa.values())) == 21, "duas linhas apontam a mesma chave"
+    assert set(mapa.values()) == set(titulos), "o mapa e o .bib divergem"
+
+    # cada numero casa, POR TITULO, com a chave que o mapa lhe da
+    mt = re.search(r"^## References[ \t]*$", ref, re.M)
+    lista = ref[mt.end():]
+    fl = re.search(r"^## ", lista, re.M)
+    entradas = dict(re.findall(r"^\[(\d+)\]\s+(.+)$",
+                               lista[:fl.start() if fl else None], re.M))
+    for num, chave in mapa.items():
+        assert titulos[chave] in norm(entradas[num]), (
+            f"[{num}] -> {chave}: o título do .bib não está na entrada da lista")
+
+
+@pytest.mark.semantico
+def test_declaracao_de_ia_segue_a_politica_lida_na_fonte():
+    """Acrescentada em 2026-11-11, com a política da Elsevier LIDA na fonte
+    naquela data e não de memória. Ela exige três coisas, e as três são
+    asseveradas aqui.
+
+    TÍTULO exato. COLOCAÇÃO imediatamente acima das referências, o que no
+    conversor significa depois da Tabela 1 e antes de qualquer um dos dois
+    caminhos de bibliografia -- vale no `--bib` e na lista digitada.
+    CONTEÚDO nomeando a ferramenta, a finalidade e a extensão da supervisão.
+
+    O texto é um rascunho meu submetido ao autor: uma declaração afirma
+    conduta dele, não minha, e o arquivo-fonte diz quais orações são
+    afirmações sobre os autores que só eles podem confirmar.
+    """
+    import re
+    titulo = ("Declaration of Generative AI and AI-assisted technologies "
+              "in the writing process")
+    md = re.sub(r"\s+", " ", (RAIZ / "paper" / "MANUSCRITO.md").read_text())
+    assert f"## {titulo}" in re.sub(r"\s+", " ",
+                                    (RAIZ / "paper" / "MANUSCRITO.md"
+                                     ).read_text())
+    # os tres elementos de conteudo que a politica pede
+    assert "used Claude (Anthropic)" in md                  # a ferramenta
+    assert "to draft and revise prose in this manuscript" in md   # a finalidade
+    assert "The authors reviewed and edited all of that output" in md  # supervisão
+    assert "take full responsibility for the content of the publication" in md
+
+    # colocacao: emitida DEPOIS da Tabela 1 e ANTES das referencias, nos dois modos
+    conv = (RAIZ / "scripts" / "19_tex.py").read_text()
+    i_tab = conv.index('corpo_para_tex(por_titulo["Table 1"]')
+    i_dec = conv.index("decl_ia = (")
+    i_bib = conv.index("    if a.bib:")
+    assert i_tab < i_dec < i_bib, "a declaração saiu do lugar que a política exige"
+    assert 'if por_titulo.get(decl_ia):' in conv, (
+        "sem a guarda, um título sem corpo imprimiria uma declaração que os "
+        "autores não fizeram")
+
+    tex = RAIZ / "paper" / "MANUSCRITO.tex"
+    if tex.exists():
+        corpo = tex.read_text()
+        assert corpo.index("\\section*{" + titulo + "}") < \
+            corpo.index("\\section*{References}")
+
+    # e a secao e reproduzida: nomes de ferramenta nao sao grafia autoral
+    conf = (RAIZ / "scripts" / "18_conformidade.py").read_text()
+    assert titulo in conf
+
+    # o arquivo-fonte declara o que e rascunho e o que ficou em aberto
+    fonte = (RAIZ / "paper" / "18-declaracoes.md").read_text()
+    assert "rascunho meu e precisa da sua decisão" in fonte
+    assert "Isso deixa uma pergunta em aberto, e ela é sua" in fonte
+    assert "imediatamente acima das referências" in fonte

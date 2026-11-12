@@ -199,8 +199,13 @@ def figura1(dados: dict, out: Path) -> None:
           f"plateau {plato.sum()}, axis {wl.min():.0f}-{wl.max():.0f} nm")
 
 
-def figura2(dados: dict, out: Path, q_dados: int) -> None:
-    """Overlap by the sort, overlap with ties randomised, and exact chance."""
+def figura2(dados: dict, out: Path, q_dados: int,
+            permitir_redesenho: bool = False) -> None:
+    """Overlap by the sort, overlap with ties randomised, and exact chance.
+
+    Plots the same `jaccard_sort` as panel (b) of Figure 3, so it carries the
+    same dependence on the build's tie order and the same guard.
+    """
     plt = estilo()
     ns = list(dados)
     L = None
@@ -216,6 +221,9 @@ def figura2(dados: dict, out: Path, q_dados: int) -> None:
         rand_v.append(m)
         rand_sd.append(s)
     acaso = esperanca_exata(q_dados, L)
+
+    exigir_faixa_publicada("figura 2", out / "fig2_colapso_por_desempate.pdf",
+                           sort_v, permitir_redesenho)
 
     fig, ax = plt.subplots(figsize=(3.4, 2.3))
     x = np.arange(len(ns) + 1)
@@ -254,13 +262,61 @@ def figura2(dados: dict, out: Path, q_dados: int) -> None:
           f"random {min(rand_v):.4f}-{max(rand_v):.4f}, E[J] {acaso:.4f}")
 
 
-def figura3(dados: dict, out: Path, q_dados: int) -> None:
+# Figures 2 and 3(b) are environment-specific BY CONSTRUCTION: both plot
+# `jaccard_sort`, and the decile falls inside the prior's tied plateau, so the
+# selected set is decided by numpy.argsort's own tie order. The published
+# panels were drawn under numpy 2.4.6 / Python 3.14.6 and the captions state
+# they are not reproducible elsewhere. Redrawing under another build therefore
+# does not refresh a figure, it replaces a documented measurement with a
+# different one. On 2026-11-10 a redraw in a container produced 0.7443-0.7659
+# in place of the published 0.9452-0.9867 -- in BOTH figures, since it is the
+# same quantity -- and would have overwritten them silently.
+#
+# Figure 5 is not in this set: it reads the cells computed by
+# 06_analise_plato.py and reports a within-level rank correlation over gate
+# VALUES, with no top-q selection and so no tie to break. Figures 1 and 4 plot
+# the prior and the Raman arm and neither sorts gates.
+JACCARD_SORT_PUBLICADO = (0.9452, 0.9867)
+JACCARD_SORT_TOL = 0.01
+
+# nome anterior, mantido porque o teste de 2026-11-10 o referencia
+FIG3B_PUBLICADO = JACCARD_SORT_PUBLICADO
+FIG3B_TOL = JACCARD_SORT_TOL
+
+
+def exigir_faixa_publicada(figura: str, alvo: "Path", valores,
+                           permitir_redesenho: bool) -> None:
+    """Refuses to overwrite a sort-dependent figure under a build whose tie
+    order is not the one the figure documents.
+
+    Does nothing when the figure does not yet exist: there is no measurement
+    to protect, and a first draw in a new environment is a legitimate act.
+    """
+    lo, hi = min(valores), max(valores)
+    p_lo, p_hi = JACCARD_SORT_PUBLICADO
+    fora = abs(lo - p_lo) > JACCARD_SORT_TOL or abs(hi - p_hi) > JACCARD_SORT_TOL
+    if fora and alvo.exists() and not permitir_redesenho:
+        raise SystemExit(
+            f"{figura}: jaccard_sort computes {lo:.4f}-{hi:.4f} here, against "
+            f"the published {p_lo:.4f}-{p_hi:.4f}. This build's tie order is "
+            "not the one the figure documents, so redrawing would replace the "
+            "measurement rather than reproduce it. Run under numpy 2.4.6 / "
+            "Python 3.14.6, or pass --permitir-redesenho-fig3 if the "
+            "replacement is intended."
+        )
+
+
+def figura3(dados: dict, out: Path, q_dados: int,
+            permitir_redesenho: bool = False) -> None:
     """Three panels against a shared n, with INDEPENDENT vertical axes.
 
     The author's constraint of 2026-10-25: a Jaccard index and a displacement
     correlation are different statistics, so a shared vertical scale would
     imply an equivalence that does not hold. Nothing here represents the
     association with n as causal.
+
+    Refuses to overwrite an existing figure when panel (b) does not reproduce
+    the published range; pass permitir_redesenho=True to override deliberately.
     """
     plt = estilo()
     ns = np.array(list(dados), float)
@@ -278,6 +334,10 @@ def figura3(dados: dict, out: Path, q_dados: int) -> None:
         d_all.append(m); d_all_sd.append(s)
         m, s = corr_pares(desl[:, fora], posto=True)
         d_out.append(m); d_out_sd.append(s)
+
+    exigir_faixa_publicada("figura 3, painel (b)",
+                           out / "fig3_resposta_ao_tamanho.pdf",
+                           j_lit, permitir_redesenho)
 
     fig, axes = plt.subplots(1, 3, figsize=(7.0, 2.5), sharex=True)
     for ax, (y, lab) in zip(axes[:2], ((j_rand, "a"), (j_lit, "b"))):
@@ -306,7 +366,10 @@ def figura3(dados: dict, out: Path, q_dados: int) -> None:
         ax.set_xticks(ns)
         # rotated: on a log axis 700 and 1158 are close enough that the two
         # labels merged into "7001158" in all three panels
-        ax.set_xticklabels([f"{int(v)}" for v in ns], fontsize=6,
+        # 7pt, not 6: this is the tick size every other figure uses, and the
+        # figures are now included at scale 1 (scripts/19_tex.py), so 6 here
+        # printed smaller than anything else on the page.
+        ax.set_xticklabels([f"{int(v)}" for v in ns], fontsize=7,
                            rotation=45, ha="right")
         ax.minorticks_off()
         ax.set_xlabel("training size $n$")
@@ -573,6 +636,9 @@ def main() -> None:
                          "only for Figure 4 panel (a); without it the panel "
                          "is omitted and said to be.")
     ap.add_argument("--pgsg1-root", default="")
+    ap.add_argument("--permitir-redesenho-fig3", action="store_true",
+                    help="overwrite Figure 3 even when panel (b) does not "
+                         "reproduce the published range. See FIG3B_PUBLICADO.")
     a = ap.parse_args()
 
     d = Path(a.dir).expanduser()
@@ -589,8 +655,8 @@ def main() -> None:
           f"(the published ablation uses floor division, q = {PUB_Q})")
     print("\nwriting figures:")
     figura1(dados, out)
-    figura2(dados, out, q)
-    figura3(dados, out, q)
+    figura2(dados, out, q, a.permitir_redesenho_fig3)
+    figura3(dados, out, q, a.permitir_redesenho_fig3)
     print(f"\n  -> {out}/fig1_prior_degrau.pdf")
     print(f"  -> {out}/fig2_colapso_por_desempate.pdf")
     print(f"  -> {out}/fig3_resposta_ao_tamanho.pdf")

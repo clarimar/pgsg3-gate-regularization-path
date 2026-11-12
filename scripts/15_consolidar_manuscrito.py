@@ -76,6 +76,12 @@ ORDEM: list[tuple[str, list[str]]] = [
     ("05-rascunho-s9-s10-s11.md", ["9. Discussion", "10. Limitations",
                                    "11. Future work"]),
     ("09-rascunho-s12.md", ["12. Conclusions"]),
+    # The CRediT statement, supplied verbatim by the corresponding author on
+    # 2026-11-11. It sits after the last numbered section and before the
+    # references, which is where Elsevier puts it, and outside the section
+    # numbering -- it is not section 13.
+    ("18-declaracoes.md", ["CRediT authorship contribution statement",
+                           "Declaration of Generative AI and AI-assisted technologies in the writing process"]),
 ]
 # The manuscript must carry twelve contiguous sections. Section 12 was created
 # by the integral audit of 2026-10-28; before it the paper ended at Future

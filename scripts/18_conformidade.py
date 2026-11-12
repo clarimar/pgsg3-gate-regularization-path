@@ -123,7 +123,13 @@ def head(t: str) -> None:
 
 # Sections that are reproduced records and not authorial prose: their
 # spelling and their language belong to whoever wrote the names in them.
-SECOES_REPRODUZIDAS = frozenset({"References", "Authors"})
+# The CRediT statement joined them on 2026-11-11: "Conceptualization" and
+# "Visualization" are the fixed names of roles in the CRediT taxonomy, not
+# this manuscript's spelling choices, and respelling them -isation would
+# corrupt the taxonomy to satisfy a rule about authorial prose.
+SECOES_REPRODUZIDAS = frozenset({"References", "Authors",
+                                 "CRediT authorship contribution statement",
+                                 "Declaration of Generative AI and AI-assisted technologies in the writing process"})
 
 
 def separa_citacoes(texto: str) -> tuple[str, str]:
