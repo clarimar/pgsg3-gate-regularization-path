@@ -12,9 +12,10 @@ arquivos de resultado, que não vou adivinhar.
 ## Figure 1
 
 > **The near-infrared literature prior.** The prior assigns one constant value
-> to each reported absorption region — 0.6 to 680–700 nm, 1.0 to 900–1000 nm,
-> 0.8 to 1100–1200 nm — over a floor of 0.1 elsewhere, and is then divided by
-> its maximum, which is already 1. The 281 wavelengths therefore take four
+> to each of three literature-derived regions [13] — 0.6 to 680–700 nm, 1.0 to
+> 900–1000 nm, 0.8 to 1100–1200 nm — over a floor of 0.1 elsewhere, and is then
+> divided by its maximum, which is already 1. The three levels are ours; the
+> windows and their assignments are not. The 281 wavelengths therefore take four
 > distinct values, and the number of bands at each is printed above its step.
 > The third region is truncated by the instrument's range, which ends at
 > 1149 nm, and holds 17 of the bands a full 100 nm window would hold; the
@@ -105,8 +106,9 @@ arquivos de resultado, que não vou adivinhar.
 > values among 1870 bands and the selected set is not drawn from a tied block.
 > The same operation lowers the near-infrared figure of the accepted study by
 > 0.2413. The architecture, the gate, the objective and the training procedure
-> are identical between the two modalities; only the functional form of the
-> prior differs, which is what makes this a control and not a replication.
+> are identical between the two modalities, which makes this a check in a
+> second modality rather than a replication; the dataset and the modality
+> differ along with the prior.
 >
 > The decile here follows the published definition q = p // 10 = 187, the
 > convention of the code that produced the Raman run. It is not mixed with the

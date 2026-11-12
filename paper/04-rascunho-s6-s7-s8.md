@@ -32,7 +32,10 @@ with the data-derived reference in four of five partitions, still reaches an
 overlap of 0.957 to 0.975 against the literature prior's 0.9763 to 1.0000.
 Stability across seeds is therefore attainable with a prior anticorrelated
 with the reference, which is enough to show that stability does not validate
-the interpretation it is usually offered to support. Table 1 gives the
+the interpretation it is usually offered to support. The control that makes
+this visible is of a kind used elsewhere for the same purpose: randomise what
+the explanation is supposed to depend on and see whether the explanation
+changes [2]. Table 1 gives the
 verdicts for all five control hypotheses.
 
 These overlaps are not the quantity Section 4 found uninterpretable, and the
@@ -86,7 +89,11 @@ risk. If the behaviour we describe followed from the architecture, the gate, or
 the objective, it would appear again on a second modality. If it follows from
 the prior's quantisation, it should disappear when the prior's functional form
 changes and nothing else does. The code, the gate, the penalty and the training
-procedure are identical between the two arms; only the prior differs.
+procedure are identical between the two arms. The prior's functional form
+differs — and so do the dataset, the modality, the number of bands and the
+target, as Section 2.1 states. The Raman arm is therefore a check in a second
+modality, consistent with the quantisation account, and not an experiment that
+isolates it.
 
 ### 7.1 The two conditions are absent
 
@@ -109,10 +116,10 @@ operation, and the seven training sizes of its revision data drop by the same
 order. The second and third conditions are not met either.
 
 Both of the properties documented in Sections 4 and 5 are therefore absent
-under the same architecture and the same code, with only the functional form of
-the prior exchanged. This is what the quantisation account predicts, and it is
-the strongest control this work has: the behaviour is a property of how the
-prior was written down, not of the method.
+under the same architecture and the same code, with the prior's functional form
+exchanged along with the dataset and the modality. This is what the
+quantisation account predicts, and it is a check in a second modality: the
+behaviour is a property of how the prior was written down, not of the method.
 
 ### 7.2 Anchoring buys reproducibility here, and the figure means it
 
@@ -211,8 +218,9 @@ three separate limits apply.**
 *First, the partitions are not independent replicates.* The ten partitions are
 repeated splits of the same 725 fruits, with approximately 80% overlap between
 training sets (78% to 82% over the 45 pairs). Consequently, the
-partition-level Wilcoxon p-values cannot be interpreted under the usual
-independence assumption. We report them descriptively — p = 0.0020 for the
+partition-level p-values — from the Wilcoxon signed-rank test [17],
+applied to the paired per-partition differences, with the partition as the
+unit — cannot be interpreted under the usual independence assumption. We report them descriptively — p = 0.0020 for the
 floor against zero, p = 0.1055 for the plateau, and p = 0.3223 for the two
 paired against each other — but draw no population-level inference from them.
 They are the output of tests whose inferential interpretation is compromised
@@ -268,7 +276,7 @@ measurements in either direction.
 
 **This is not evidence that the gate recovers true chemical relevance.** The
 reference is the vector of absolute coefficients of a partial least squares
-model calibrated on the same training partition. It is an operational
+model [18] calibrated on the same training partition. It is an operational
 reference — a second statistical estimate from the same data, not an
 independent determination of which wavelengths carry dry-matter information.
 Agreement between the gate and that reference means the two methods weight

@@ -1,7 +1,14 @@
 # Tabela 1 em inglês — proposta de tradução
 
 Data: 2026-10-29
-Status: **PROPOSTA, NÃO APROVADA** — esta linha é lida pelo teste.
+Status: **APROVADA E APLICADA em 2026-11-09** — esta linha é lida pelo teste.
+
+O autor aprovou em 2026-11-09: *"traduzir integralmente para o inglês,
+preservando conteúdo, identificadores e classificações"*. A tabela abaixo é
+a que o consolidador emite desde então; a portuguesa continua em
+`00-estrutura.md`, que é documento de apparatus, e o consolidador recusa a
+construção se as duas deixarem de ter os mesmos rótulos, os mesmos vereditos
+e as mesmas razões `k/n`.
 
 ## Por que este arquivo existe
 
@@ -37,6 +44,30 @@ artigo fala em `we`. Não sei se o sujeito é você ou eu, e a escolha muda o qu
 a linha afirma. Traduzi como `than was assumed`, que é neutro e não atribui;
 se o sujeito é a autoria, `than we assumed` é o certo. Decisão sua.
 
+**Decidido em 2026-11-09:** *"manter o sujeito explicitamente identificado na
+formulação original da hipótese. Não substituir por um sujeito inferido"*. Das
+três formas, só uma preserva um sujeito explícito:
+
+| forma | sujeito | estado |
+| --- | --- | --- |
+| `than was assumed` | nenhum — a voz passiva o apaga | recusada: apaga o sujeito |
+| `than we assumed` | `we`, inferido do resto do artigo | recusada: sujeito inferido |
+| `than I assumed` | primeira pessoa do singular, como no original | **aplicada** |
+
+`than I assumed` é a tradução literal de `supus` e é a única que mantém o
+sujeito que o original identifica. **Duas coisas que o autor precisa ver antes
+de fechar**, e que são o motivo de ele ter pedido para conferir a redação:
+
+1. É a **única** forma de primeira pessoa em toda a Tabela 1 e em todo o
+   manuscrito, que de resto fala em `we`. Medido: uma ocorrência nas vinte
+   linhas, nenhuma de primeira pessoa do plural.
+2. A **formulação pré-registrada** de H11a não tem sujeito nenhum —
+   `docs/pre-registro-H10-H11.md:133` diz *"A fração do decil de resíduo que
+   cai dentro do platô do prior é < 0,5 em ≥ 4 das 5 partições"*, impessoal.
+   O `supus` está na coluna de interpretação, escrita depois. Então o sujeito
+   explícito que esta linha preserva é o da **interpretação** do autor, não o
+   da hipótese pré-registrada.
+
 ---
 
 ## Table 1
@@ -55,7 +86,7 @@ se o sujeito é a autoria, `than we assumed` é o certo. Decisão sua.
 | H9-shuffled | the same | supported, 5/5 | stability with ρ(prior, reference) negative |
 | H10a | there is within-plateau ordering | not supported, 3/5 | the sign is inconsistent |
 | H10b | the literature prior orders better than blocks | supported, 5/5 | **a narrow reading:** blocks is negative, not the literature prior positive |
-| H11a | the residual decile leaves the plateau | supported, 5/5 | **the criterion covered less than was assumed:** the decile went to the floor |
+| H11a | the residual decile leaves the plateau | supported, 5/5 | **the criterion covered less than I assumed:** the decile went to the floor |
 | H11b | the residual distinguishes the arms | supported, 4/5 | `shuffled` beats the literature prior in 3 of 4 |
 | H12a | the decile is not trapped in a tie (Raman) | supported, 3/3 | the defect is absent with a continuous prior |
 | H12b | no collapse under tie-breaking (Raman) | supported, 3/3 | the same |

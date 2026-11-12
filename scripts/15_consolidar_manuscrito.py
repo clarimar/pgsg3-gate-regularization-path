@@ -54,6 +54,11 @@ ORDEM: list[tuple[str, list[str]]] = [
     # because that is where they are read; at submission they also go as a
     # separate editable file, which the guide requires by name -- the source
     # is `10-highlights.md`, and the word is in the file name on purpose.
+    # The title page comes first because that is where it goes on the page.
+    # Added 2026-11-10, when the author supplied the authors, affiliations,
+    # corresponding author and ORCIDs; until then the converter printed a
+    # visible marker in its place and said what was missing.
+    ("16-pagina-de-titulo.md", ["Authors"]),
     ("10-highlights.md", ["Highlights"]),
     ("02-resumo-C.md", ["__PROSA__"]),
     # The guide does not say where keywords go in the manuscript; after the
@@ -79,6 +84,11 @@ ORDEM: list[tuple[str, list[str]]] = [
 SECOES_ESPERADAS = 12
 LEGENDAS = "06-legendas-figuras.md"
 ESTRUTURA = "00-estrutura.md"
+# Table 1 in English, approved and applied 2026-11-09. ESTRUTURA keeps the
+# Portuguese original, and the two are reconciled row by row below.
+TABELA1 = "13-tabela1.md"
+# The reference audit, which also holds the list itself once it is complete.
+REFERENCIAS = "12-referencias.md"
 
 
 def head(t: str) -> None:
@@ -221,6 +231,37 @@ def main() -> None:
                     continue
                 descartados.append((nome, titulo, len(corpo.splitlines())))
 
+    # The reference list, from the audit, and ONLY while the audit declares
+    # itself COMPLETO. A partial list emitted in silence is the failure this
+    # programme refuses, so until 2026-11-09 this section did not exist at
+    # all and the converter said so in its place. The numbering is checked by
+    # 17_citacoes.py against the markers in the text; here the block is taken
+    # verbatim, so that the one place a reference is written is the audit.
+    refs_t = (d / REFERENCIAS).read_text()
+    estado = re.search(r"^Status:\s*\*{0,2}(\w+)", refs_t, re.M)
+    estado = estado.group(1).upper() if estado else "NAO DECLARADO"
+    if estado == "COMPLETO":
+        m = re.search(r"^## References[ \t]*$", refs_t, re.M)
+        if m is None:
+            raise SystemExit(
+                f"{REFERENCIAS}: Status says COMPLETO and there is no "
+                f"'## References' heading at the start of a line.")
+        corpo = refs_t[m.end():]
+        fim = re.search(r"^## ", corpo, re.M)
+        if fim is not None:
+            corpo = corpo[:fim.start()]
+        entradas = [l.strip() for l in corpo.splitlines()
+                    if re.match(r"^\s*\[\d+\]\s+\S", l)]
+        if not entradas:
+            raise SystemExit(
+                f"{REFERENCIAS}: Status says COMPLETO and the References "
+                f"section has no '[n] ...' entry.")
+        pecas.append("## References\n\n" + "\n\n".join(entradas) + "\n")
+        print(f"  {REFERENCIAS:<30} References, {len(entradas)} entries")
+    else:
+        print(f"  {REFERENCIAS:<30} References: NOT emitted, "
+              f"Status is {estado}")
+
     # captions, verbatim
     pl = d / LEGENDAS
     bs = blocos(pl.read_text())
@@ -235,31 +276,94 @@ def main() -> None:
         if not t.startswith("Figure") and t != "__PROSA__":
             descartados.append((LEGENDAS, t, len(c.splitlines())))
 
-    # Table 1, from the structure document, verbatim. Anchored on its own
-    # header: an earlier version of this script matched the first table whose
-    # cells happened to contain the word "critério" and silently emitted a
-    # table of parameters as Table 1. A consolidation that can ship the wrong
-    # table is worse than one that ships none.
-    est = (d / ESTRUTURA).read_text()
-    CAB = ("| | enunciado | veredito pelo critério | o que o resultado "
-           "sustenta |")
-    if CAB not in est:
+    # Table 1. The manuscript is English, so from 2026-11-09 the ENGLISH
+    # table in TABELA1 is what is emitted, by the author's decision of that
+    # day: translate it in full, preserving content, identifiers and
+    # classifications. The Portuguese one stays in ESTRUTURA, which is an
+    # apparatus document and Portuguese by design.
+    #
+    # Both are anchored on their own header: an earlier version of this
+    # script matched the first table whose cells happened to contain the word
+    # "critério" and silently emitted a table of parameters as Table 1. A
+    # consolidation that can ship the wrong table is worse than one that
+    # ships none.
+    #
+    # And the two are RECONCILED here rather than trusted: same labels in the
+    # same order, same verdict word, same k/n ratios. Translating must not
+    # move a result, and this is the one place that can see both.
+    CAB_PT = ("| | enunciado | veredito pelo critério | o que o resultado "
+              "sustenta |")
+    CAB_EN = ("| | statement | verdict by the criterion | what the result "
+              "supports |")
+
+    def _linhas_da_tabela(nome, texto, cabecalho):
+        if cabecalho not in texto:
+            raise SystemExit(
+                f"{nome}: Table 1's header is not there as expected:\n"
+                f"  {cabecalho}\nIt was renamed or reworded. Fix this "
+                f"script's anchor rather than letting it match whichever "
+                f"table comes first.")
+        fora = []
+        for linha in texto[texto.index(cabecalho):].splitlines():
+            if linha.startswith("|"):
+                fora.append(linha)
+            elif fora:
+                break
+        return fora
+
+    linhas_pt = _linhas_da_tabela(ESTRUTURA, (d / ESTRUTURA).read_text(),
+                                 CAB_PT)
+    linhas = _linhas_da_tabela(TABELA1, (d / TABELA1).read_text(), CAB_EN)
+
+    def _celulas(linha):
+        return [c.strip() for c in linha.strip().strip("|").split("|")]
+
+    def _rotulo_veredito(fileiras):
+        fora = []
+        for linha in fileiras:
+            cel = _celulas(linha)
+            if all(c.startswith("---") for c in cel):
+                continue
+            fora.append((cel[0], cel[2]))
+        return fora[1:]          # sem o cabeçalho
+
+    pares_pt = _rotulo_veredito(linhas_pt)
+    pares_en = _rotulo_veredito(linhas)
+    if len(pares_pt) != len(pares_en):
         raise SystemExit(
-            f"{ESTRUTURA}: Table 1's header is not there as expected:\n"
-            f"  {CAB}\nIt was renamed or reworded. Fix this script's anchor "
-            f"rather than letting it match whichever table comes first.")
-    inicio = est.index(CAB)
-    linhas = []
-    for linha in est[inicio:].splitlines():
-        if linha.startswith("|"):
-            linhas.append(linha)
-        elif linhas:
-            break
+            f"Table 1: {ESTRUTURA} has {len(pares_pt)} hypothesis rows and "
+            f"{TABELA1} has {len(pares_en)}. The translation must carry every "
+            f"row, so one of the two lost or gained one.")
+    VEREDITO = {"não suportada": "not supported", "suportada": "supported"}
+    for (rot_pt, ver_pt), (rot_en, ver_en) in zip(pares_pt, pares_en):
+        if rot_pt != rot_en:
+            raise SystemExit(
+                f"Table 1: row labels disagree -- {ESTRUTURA} says "
+                f"{rot_pt!r} where {TABELA1} says {rot_en!r}. Identifiers "
+                f"are not translated.")
+        esperado = next((v for k, v in VEREDITO.items()
+                         if ver_pt.lower().startswith(k)), None)
+        if esperado is None:
+            raise SystemExit(
+                f"Table 1, {rot_pt}: {ESTRUTURA} has a verdict this script "
+                f"does not know how to reconcile: {ver_pt!r}")
+        if not ver_en.lower().startswith(esperado):
+            raise SystemExit(
+                f"Table 1, {rot_pt}: the verdict changed in translation -- "
+                f"{ver_pt!r} became {ver_en!r}. A verdict is a result.")
+        if (re.findall(r"\d+\s*/\s*\d+", ver_pt)
+                != re.findall(r"\d+\s*/\s*\d+", ver_en)):
+            raise SystemExit(
+                f"Table 1, {rot_pt}: the k/n ratio changed in translation -- "
+                f"{ver_pt!r} became {ver_en!r}.")
     tabela = "\n".join(linhas)
     pecas.append("## Table 1\n\n" + tabela + "\n")
     hipoteses = sum(1 for x in linhas if re.match(r"\| *\**H\d", x))
-    print(f"  {ESTRUTURA:<30} Table 1, {len(linhas)} rows, "
-          f"{hipoteses} hypotheses")
+    # The source printed is the one the manuscript carries, not the one it
+    # was translated from: a report that named the wrong file would be a
+    # report that cannot be used to check the build.
+    print(f"  {TABELA1:<30} Table 1, {len(linhas)} rows, "
+          f"{hipoteses} hypotheses, reconciled against {ESTRUTURA}")
 
     saida = Path(a.out).expanduser()
     # Provenance in the file itself, but DETERMINISTIC. An earlier version put

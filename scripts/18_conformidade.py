@@ -121,6 +121,11 @@ def head(t: str) -> None:
     print(f"\n{SEP}\n{t}\n{SEP}")
 
 
+# Sections that are reproduced records and not authorial prose: their
+# spelling and their language belong to whoever wrote the names in them.
+SECOES_REPRODUZIDAS = frozenset({"References", "Authors"})
+
+
 def separa_citacoes(texto: str) -> tuple[str, str]:
     """(authorial prose, verbatim quotation), split on blockquote markers.
 
@@ -128,10 +133,26 @@ def separa_citacoes(texto: str) -> tuple[str, str]:
     too, and captions ARE authorial, so the split is applied to the body only
     -- the caller passes the body, and the captions come back through the
     authorial side.
+
+    THE REFERENCE LIST goes to the quoted side as well, from 2026-11-09. A
+    reference is reproduced, not written: the author names, the article
+    titles and the journal names are other people's strings and correcting
+    their spelling would corrupt the record. The first run with a list
+    proved the point twice over -- it reported `laboratory` as an American
+    -our/-or form, from the journal name *Chemometrics and Intelligent
+    Laboratory Systems*, and a Portuguese marker from the author name *de
+    Lima das Chagas*. Both are correct as they stand and neither is this
+    manuscript's prose.
     """
     autoral, citado = [], []
+    em_referencias = False
     for linha in texto.splitlines():
-        (citado if linha.lstrip().startswith(">") else autoral).append(linha)
+        if re.match(r"^## ", linha):
+            em_referencias = linha.strip().removeprefix("## ") in SECOES_REPRODUZIDAS
+        if em_referencias or linha.lstrip().startswith(">"):
+            citado.append(linha)
+        else:
+            autoral.append(linha)
     return "\n".join(autoral), "\n".join(citado)
 
 
@@ -147,15 +168,18 @@ def ocorrencias(padrao: str, texto: str) -> list[str]:
     return saida
 
 
-def onde(palavra: str) -> list[str]:
+def onde(palavra: str, fonte: Path = MANUSCRITO) -> list[str]:
     """Where to find an outlier: the consolidated manuscript first, because
     that is where the count came from, then the drafts, because that is where
     it is edited. A draft hit that is not in the manuscript is a Portuguese
-    apparatus line, and the first list is what says so."""
+    apparatus line, and the first list is what says so.
+
+    The scanned file is passed in rather than read from the module, so that
+    --src reports the lines of the file it actually scanned."""
     locais = []
-    for i, linha in enumerate(MANUSCRITO.read_text().splitlines(), 1):
+    for i, linha in enumerate(fonte.read_text().splitlines(), 1):
         if re.search(rf"\b{re.escape(palavra)}\b", linha, re.I):
-            locais.append(f"MANUSCRITO.md:{i} (in the manuscript)")
+            locais.append(f"{fonte.name}:{i} (in the manuscript)")
     for p in sorted(PAPER.glob("*.md")):
         if p.name == "MANUSCRITO.md":
             continue
@@ -186,11 +210,22 @@ def main() -> int:
     ap.add_argument("--strict", action="store_true",
                     help="also fail when a check could not be made at all, "
                          "not only when it found a defect")
+    # --src, added 2026-11-09. Until then the only way to exercise this
+    # script's verdict was to run it on the real manuscript, and the test
+    # that guards the exit code did exactly that -- it asserted that a DEFECT
+    # was printed, using the Portuguese Table 1 as its fixture. When the
+    # table was translated the defect went away and the test failed, having
+    # been measuring the manuscript rather than the script. A test about a
+    # verdict has to be able to construct the case it checks.
+    ap.add_argument("--src", default=str(MANUSCRITO),
+                    help="the consolidated manuscript to scan "
+                         "(default: paper/MANUSCRITO.md)")
     a = ap.parse_args()
-    if not MANUSCRITO.is_file():
-        print(f"missing: {MANUSCRITO} -- run 15_consolidar_manuscrito.py first")
+    fonte = Path(a.src)
+    if not fonte.is_file():
+        print(f"missing: {fonte} -- run 15_consolidar_manuscrito.py first")
         return 1
-    texto = MANUSCRITO.read_text()
+    texto = fonte.read_text()
     corpo, legendas = corpo_e_legendas(texto)
     defeitos: list[str] = []
 
@@ -232,7 +267,7 @@ def main() -> int:
                   f"{dict(em_citado) or 'none'}   (exempt: a quotation is "
                   f"reproduced, not spelled)")
             for w in fora:
-                for loc in onde(w):
+                for loc in onde(w, fonte):
                     print(f"      {w} at {loc}")
             if em_autoral:
                 defeitos.append(
@@ -265,6 +300,19 @@ def main() -> int:
     for linha in texto.splitlines():
         if linha.startswith("## "):
             atual = linha[3:].strip()
+        # Two sections are exempt here, for the same reason they are exempt
+        # from the spelling check: they are RECORDS, reproduced rather than
+        # written, and the Portuguese in them belongs to names.
+        #
+        #   References -- "de Lima das Chagas" is a person's name.
+        #   Authors    -- "Pontifícia Universidade Católica de Goiás" is an
+        #                 institution's legal name and "Setor Leste
+        #                 Universitário" is a street address. Translating
+        #                 either would make the affiliation wrong, and the
+        #                 guide asks for the affiliation, not a rendering of
+        #                 it. Added 2026-11-10 with the title page.
+        if atual in SECOES_REPRODUZIDAS:
+            continue
         achados = re.findall(MARCADORES_PT, linha, re.I)
         if achados:
             por_secao[atual] += len(achados)

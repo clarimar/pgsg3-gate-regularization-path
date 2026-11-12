@@ -119,10 +119,10 @@ hypergeometric and the expected overlap is
 &nbsp;&nbsp;&nbsp;&nbsp;E[J] = Σₖ [ C(q,k) C(L−q, q−k) / C(L,q) ] · k / (2q − k),
 
 which is **0.7012** for L = 34, q = 28 and **0.7445** for L = 34, q = 29. The
-familiar approximation q/(2L − q) gives 0.7000 and 0.7436, within 0.0012 of the
+approximation q/(2L − q) gives 0.7000 and 0.7436, within 0.0012 of the
 exact values.
 
-Under the deterministic rule actually used, `numpy.argsort` is not a stable
+Under the deterministic rule actually used, `numpy.argsort` [16] is not a stable
 sort, so the order within a tied block follows the partition, which is a
 function of the whole array — including the values the metric does not select.
 The figure is therefore neither 1 (which an index-ordered rule would give) nor
@@ -156,8 +156,8 @@ formality: the next paragraph is the reason for it.
 A note on that chance value, since the two candidates differ by less than our
 sampling spread and the choice is therefore easy to get wrong without
 consequence. We report the exact hypergeometric expectation
-E[J] = sum_k P(k) k/(2q-k), and not the ratio q/(2L-q) that the band-selection
-literature uses. The ratio is J evaluated at the expected overlap q^2/L, and
+E[J] = sum_k P(k) k/(2q-k), and not the ratio q/(2L-q), which we had used
+ourselves as if it were exact. The ratio is J evaluated at the expected overlap q²/L, and
 since J(k) = k/(2q-k) is strictly convex in k, Jensen's inequality makes it a
 strict lower bound: low by 0.0012 at q = 28 and 0.0009 at q = 29 for a plateau
 of 34. The gap changes no verdict reported here, but it is systematic and in
@@ -285,7 +285,7 @@ need only the stored gates and the prior.
 
 ### 4.4 What the earlier study already established
 
-The study from which these data come anticipated the possibility that a prior
+The study from which these data come [4] anticipated the possibility that a prior
 which immobilises the gate would make reproducibility trivial, and tested it: it
 measured the across-seed agreement of the learned displacement d = g_final − g₀
 rather than of the final gate, obtaining ρ(d) = 0.9462 in NIR and 0.976 in

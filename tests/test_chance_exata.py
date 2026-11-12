@@ -42,10 +42,33 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+import re
 
 RAIZ = Path(__file__).resolve().parents[1]
 
 LIMITE_RESUMO = 250  # Chemolab, guide for authors: "does not exceed 250 words"
+
+
+
+def _num_ref(trecho: str) -> str:
+    """O número da referência cuja entrada contém `trecho`.
+
+    Os testes citavam números literais e quebraram em toda renumeração --
+    três vezes, e a numeração é por ordem de primeira aparição, de modo que
+    inserir uma citação cedo desloca tudo. O número passa a ser lido da
+    lista, e o que o teste fixa é a entrada, que é o que importa.
+    """
+    import re as _re
+    texto = (RAIZ / "paper" / "12-referencias.md").read_text()
+    m = _re.search(r"^## References[ \t]*$", texto, _re.M)
+    corpo = texto[m.end():]
+    f = _re.search(r"^## ", corpo, _re.M)
+    if f:
+        corpo = corpo[:f.start()]
+    achados = [n for n, e in _re.findall(r"^\[(\d+)\]\s+(.+)$", corpo, _re.M)
+               if trecho in e]
+    assert len(achados) == 1, f"{trecho!r}: {len(achados)} entradas"
+    return achados[0]
 
 
 def _resumo_prosa(nome: str = "02-resumo-C.md") -> str:
@@ -592,7 +615,7 @@ def test_tres_niveis_de_evidencia_separados():
     i = re.sub(r"\s+", " ",
                (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md").read_text())
     assert "one widely reproduced way of encoding a prior" not in i
-    assert "that we used in our own earlier work violates them" in i
+    assert "that we used in our own earlier work [4] violates them" in i
     assert "How often other encodings do is not something we measured" in i
 
 
@@ -694,7 +717,15 @@ def test_15_consolida_sem_perder_nem_inventar():
     # a Tabela 1 e ancorada no cabecalho dela, nao na primeira que casar
     assert "veredito pelo critério | o que o resultado " in src
     assert "can ship the wrong" in src
-    assert "rather than letting it match whichever table comes first" in src
+    # A mensagem da âncora foi reenquadrada em 2026-11-09, quando a
+    # Tabela 1 passou a vir da fonte em inglês. As quebras de string
+    # são juntadas antes de procurar a frase: um teste sobre o texto de
+    # uma mensagem não deve falhar por onde o autor do script quebrou a
+    # linha.
+    import re as _re
+    junto = _re.sub(r'"\s*\n\s*f?"', "", src)
+    assert ("rather than letting it match whichever table comes first"
+            in junto)
     # os dois resumos sao sinalizados, nao resolvidos por delecao
     assert "TWO ABSTRACTS EXIST" in src
     assert "the drafts are not the place to " in src
@@ -886,7 +917,7 @@ def test_resumo_C_carrega_as_quatro_exigencias():
     # 3. the displacement control, and why it is immune
     assert "neither the top-k selection nor the tie-breaking" in t
     # 4. the eight refutations declared, not buried
-    assert "eight of which our criteria did not support" in t
+    assert "six of which our criteria did not support" in t
     # The rewrite of 2026-10-28 compressed the abstract to fit two new
     # contributions and dropped requirements 1 and 2 in the process. This
     # test caught it. The two assertions above are the guard; this comment
@@ -1005,7 +1036,7 @@ def test_s9_pac_bayes_nao_extrai_previsao():
     """The committed plan binds this: formal resemblance, no prediction. We
     made the opposite error once and the section records it."""
     t = (RAIZ / "paper" / "05-rascunho-s9-s10-s11.md").read_text()
-    assert "resemblance is formal and we draw nothing from" in t
+    assert "resemblance is\nformal and we draw nothing from it" in t
     assert "we made that error ourselves" in t
     assert "is not a bound and therefore predicts nothing" in t
 
@@ -2222,9 +2253,15 @@ def test_12_audita_os_pontos_que_exigem_citacao():
     assert "doi:10.17632/46htwnp833.3" in t and "Mendeley Data, V3, 2024" in t
     assert "doi:10.1038/s41586-020-2649-2" in t
     assert "Nature 585 (2020) 357–362" in t
-    # a lista NAO entra no manuscrito enquanto estiver incompleta
+    # A lista entra no manuscrito SOMENTE enquanto o estado declarado for
+    # COMPLETO. Ate 2026-11-09 o consolidador nem conhecia este arquivo, e o
+    # teste exigia que nao o conhecesse; agora ele o le e emite a secao, com
+    # a condicao explicita, porque uma lista parcial emitida em silencio e o
+    # que este programa recusa.
     src = (RAIZ / "scripts" / "15_consolidar_manuscrito.py").read_text()
-    assert "12-referencias.md" not in src
+    assert 'REFERENCIAS = "12-referencias.md"' in src
+    assert 'if estado == "COMPLETO":' in src
+    assert "References: NOT emitted" in src
 
 
 @pytest.mark.numerico
@@ -2358,35 +2395,92 @@ def test_cada_figura_e_citada_e_as_legendas_estao_em_ingles():
 
 
 @pytest.mark.semantico
-def test_12_oferece_rota_sem_bibliografia_para_a_frase_da_secao_2_5():
-    """The audit's most exposed point has a way out that needs no reference,
-    and the file must carry both routes rather than only the one that waits on
-    the authors. Two sentences assert what others do with q/(2L-q) and cite
-    nobody. Route A keeps them and needs a source. Route B says only what this
-    repository demonstrates: F004 records, in a correction of 2026-10-24, that
-    THIS programme used the ratio as if it were exact.
+def test_12_aplica_as_tres_decisoes_que_fecham_sem_bibliografia():
+    """Three of the author's four decisions of 2026-11-09 close without a
+    single reference, and all three are applied here.
 
-    Route B weakens the claim, and the file must say so: the paper stops
-    saying the literature is wrong and says we were wrong and corrected it.
-    A test that guarded the proposal without guarding that sentence would let
-    the weakening be presented as a free win.
+    BANDS. The three near-infrared windows are the authors' choice and are
+    no longer presented as taken from a source, in Section 2.2 and in Figure
+    1's caption, and the sentence that generalised to "the ordinary way to
+    encode published band assignments" lost its attribution. Nothing in the
+    paper rests on the windows being right, which the text now says.
+
+    THE RATIO. Route B: Section 2.5 and 4.2.1 stop asserting what others do
+    with q/(2L-q) and say what F004 records -- that this work had done it
+    itself, treating the ratio as exact. The heading changed with them, and
+    the word "familiar" went, because it was the last unsourced claim about
+    general practice.
+
+    THE REVISION DATA. Section 2.4, where it enters, declares it: the
+    authors' own unpublished material, run under the published protocol,
+    from a manuscript not accepted and not to be resubmitted, used as a
+    preliminary observation and not as published or independent evidence.
+
+    The abstract is NOT touched, by the author's instruction. It never
+    claimed publication: "from our own earlier work" had already gone in the
+    compression, and what remains is "at the revision convention of q = 29".
+    This test asserts that too, because an edit made for the right reason in
+    the wrong file is still an edit he refused.
     """
-    import re
     t = re.sub(r"\s+", " ", (RAIZ / "paper" / "12-referencias.md").read_text())
-    assert "Nada foi alterado no texto" in t
-    assert "Rota A — citar quem usa a razão" in t
-    assert "Rota B — afirmar só o que este repositório demonstra" in t
-    assert "which we had used ourselves as if it were exact" in t
-    assert "That expression is not the expected Jaccard index" in t
-    assert "enfraquece a frase" in t
-    assert "nós erramos e corrigimos" in t
-    # e o texto do manuscrito continua como estava, nas duas frases
-    s3 = re.sub(r"\s+", " ",
+    for marca in ("Bandas NIR — REVERTIDA", "rota B aplicada",
+                  "`pgsg_1` R2 — aplicada"):
+        assert marca in t, marca
+
+    s2 = re.sub(r"\s+", " ",
                 (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md").read_text())
-    assert "is often quoted as q / (2L − q)" in s3
     s4 = re.sub(r"\s+", " ",
                 (RAIZ / "paper" / "01-rascunho-resumo-e-s4.md").read_text())
-    assert "that the band-selection literature uses" in s4
+    leg = re.sub(r"\s+", " ",
+                 (RAIZ / "paper" / "06-legendas-figuras.md").read_text())
+
+    # 1. REVERTIDA em 2026-11-09, depois de ler os PDFs. A decisao do autor
+    # era condicional -- "se foram definidos pelos autores" -- e a condicao e
+    # falsa: a secao 4.4 de [2], publicada, chama as tres janelas de
+    # literature-derived e cita a sua propria referencia [5], que e o
+    # Saranwong de 2004. As janelas tem fonte, e a atribuicao volta com ela.
+    # O que permanece da decisao: os tres NIVEIS sao nossos, e o artigo diz
+    # que nada nele depende das janelas serem as certas.
+    n_sar = _num_ref("Saranwong")
+    assert ("three literature-derived regions relevant to dry-matter "
+            f"content [{n_sar}]") in s2
+    assert "The three levels are ours; the three windows and their" in s2
+    assert "assignments are not." in s2
+    assert "level set larger than the selected set" in s2
+    assert "methodological choice of ours" not in s2
+    assert "the ordinary way to encode published band assignments" not in s2
+    assert "three regions the authors selected" not in leg
+    t12 = re.sub(r"\s+", " ",
+                 (RAIZ / "paper" / "12-referencias.md").read_text())
+    assert "Saranwong" in t12 and "literature-derived" in t12
+
+    # 2. rota B: a atribuicao e nossa nos dois lugares, e o titulo acompanha
+    assert "how we had computed it" in s2
+    assert "how it is usually computed" not in s2
+    assert "is often quoted as q / (2L" not in s2
+    assert ("that is what we had done ourselves, treating it as the exact "
+            "value") in s2
+    assert "which we had used ourselves as if it were exact" in s4
+    assert "that the band-selection literature uses" not in s4
+    assert "familiar approximation" not in s4
+
+    # 3. os dados da revisao, declarados onde entram
+    assert ("The stored metrics and gate vectors of that revision are the "
+            "authors' own unpublished material") in s2
+    assert "not accepted and will not be resubmitted" in s2
+    assert "not offered as published or as independent evidence" in s2
+    # e a 5 continua chamando as associacoes de exploratorias, que e o que a
+    # frase da 2.4 afirma sobre ela
+    s5 = re.sub(r"\s+", " ",
+                (RAIZ / "paper" / "08-rascunho-s5.md").read_text())
+    assert "Both associations are **exploratory**" in s5
+
+    # e o resumo nao foi tocado
+    resumo = (RAIZ / "paper" / "02-resumo-C.md").read_text()
+    prosa = " ".join(resumo.split("\n---\n", 1)[1].split())
+    assert "at the revision convention of q = 29" in prosa
+    assert "our own earlier work" not in prosa
+    assert len(prosa.split()) == 249, len(prosa.split())
 
 
 @pytest.mark.semantico
@@ -2552,43 +2646,92 @@ def test_18_mede_o_idioma_do_artefato_por_secao():
 
 
 @pytest.mark.semantico
-def test_13_propoe_a_tabela1_em_ingles_sem_aplicar():
-    """The Table 1 translation, proposed on 2026-10-29 and NOT applied. Every
+def test_13_aplica_a_tabela1_em_ingles_e_concilia_com_o_original():
+    """The Table 1 translation, approved and applied on 2026-11-09: translate
+    it in full, preserving content, identifiers and classifications. Every
     verdict in that table is one of the author's formulations and four are
     corrections he imposed against readings of mine, so translating is
-    restating them in another language and is his to approve.
+    restating them in another language and was his to approve.
 
-    Three things the proposal must carry: the four binding formulations, in
+    What the applied table must carry: the four binding formulations, in
     English and marked; the translation choices that change the weight of a
-    sentence rather than its words; and the one point I cannot resolve -- H11a
-    is in the first person singular where the rest of the paper says "we", and
-    the subject decides what the row claims.
+    sentence rather than its words; and H11a's subject, which the author
+    settled by keeping the one the original explicitly identifies -- first
+    person singular, "than I assumed". Not the subject-less "than was
+    assumed", which erases it, and not "than we assumed", which infers it
+    from the rest of the paper.
 
-    While it is unapproved, the consolidator must still take Table 1 from
-    00-estrutura.md, and this test pins that down: a proposal wired into the
-    build would be an applied change wearing a proposal's label.
+    The consolidator now emits the English table and RECONCILES it against
+    the Portuguese original row by row, which is what makes "preserving
+    identifiers and classifications" a check rather than a promise. This test
+    exercises that reconciliation on a tampered copy, because the rule is
+    worth nothing if it cannot refuse.
     """
     import re
-    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "13-tabela1.md").read_text())
-    assert "PROPOSTA, NÃO APROVADA" in t
-    assert "nada aqui foi aplicado ao manuscrito" in t
+    import shutil
+    import subprocess
+    import sys
+    bruto = (RAIZ / "paper" / "13-tabela1.md").read_text()
+    t = re.sub(r"\s+", " ", bruto)
+    assert "APROVADA E APLICADA em 2026-11-09" in t
     # as quatro formulacoes vinculantes, em ingles
     assert "no tally, by construction" in t
     assert "defines no per-partition tally" in t
     assert "passed trivially and does not count as confirmation" in t
     assert "a narrow reading" in t
-    assert "the criterion covered less than was assumed" in t
+    # o sujeito de H11a: explicito, nem apagado nem inferido
+    assert "the criterion covered less than I assumed" in t
+    assert "the criterion covered less than was assumed:" not in t
+    assert "than we assumed:" not in t
+    # e as duas coisas que o autor precisa ver: e a unica primeira pessoa do
+    # manuscrito, e a formulacao pre-registrada de H11a nao tem sujeito
+    assert "única** forma de primeira pessoa" in t or \
+           "única forma de primeira pessoa" in t
+    assert "pre-registro-H10-H11.md:133" in t
+    pre = (RAIZ / "docs" / "pre-registro-H10-H11.md").read_text()
+    assert "A fração do decil de resíduo que cai" in pre
+    assert "supus" not in pre
     # as vinte hipoteses, nenhuma perdida
-    linhas = [l for l in (RAIZ / "paper" / "13-tabela1.md").read_text()
-              .split("## Table 1", 1)[1].splitlines()
+    linhas = [l for l in bruto.split("## Table 1", 1)[1].splitlines()
               if l.startswith("| H")]
     assert len(linhas) == 20, len(linhas)
-    # o ponto que nao e meu para resolver
-    assert "primeira pessoa do singular" in t and "Decisão sua" in t
-    # e o consolidador continua lendo a tabela portuguesa
+    # o consolidador le a tabela inglesa e declara de onde ela vem
     src = (RAIZ / "scripts" / "15_consolidar_manuscrito.py").read_text()
-    assert "13-tabela1.md" not in src
+    assert 'TABELA1 = "13-tabela1.md"' in src
     assert 'ESTRUTURA = "00-estrutura.md"' in src
+    assert "reconciled against" in src
+
+    # e a conciliacao recusa uma tabela adulterada. Tres adulteracoes, uma
+    # por regra, cada uma numa copia propria do repositorio de rascunhos.
+    def _recusa(troca_de, troca_para, esperado, tmp):
+        destino = tmp / "rascunhos"
+        shutil.copytree(RAIZ / "paper", destino)
+        alvo = destino / "13-tabela1.md"
+        texto = alvo.read_text()
+        assert texto.count(troca_de) == 1, troca_de
+        alvo.write_text(texto.replace(troca_de, troca_para, 1))
+        r = subprocess.run(
+            [sys.executable, "scripts/15_consolidar_manuscrito.py",
+             "--dir", str(destino), "--out", str(tmp / "saida")],
+            cwd=RAIZ, capture_output=True, text=True)
+        assert r.returncode != 0, "a adulteração passou: " + r.stdout[-400:]
+        assert esperado in (r.stdout + r.stderr), r.stdout + r.stderr
+
+    import tempfile
+    with tempfile.TemporaryDirectory() as d1:
+        _recusa("| H11a |", "| H11z |", "Identifiers", Path(d1))
+    with tempfile.TemporaryDirectory() as d2:
+        _recusa("| H11a | the residual decile leaves the plateau | "
+                "supported, 5/5 |",
+                "| H11a | the residual decile leaves the plateau | "
+                "not supported, 5/5 |",
+                "the verdict changed in translation", Path(d2))
+    with tempfile.TemporaryDirectory() as d3:
+        _recusa("| H11a | the residual decile leaves the plateau | "
+                "supported, 5/5 |",
+                "| H11a | the residual decile leaves the plateau | "
+                "supported, 4/5 |",
+                "the k/n ratio changed in translation", Path(d3))
 
 
 @pytest.mark.estrutural
@@ -2611,27 +2754,111 @@ def test_codigo_de_saida_nao_contradiz_o_veredito_impresso():
     """
     import subprocess
     import sys
-    # the manuscript currently HAS a defect: Table 1 in Portuguese
-    r = subprocess.run([sys.executable, "scripts/18_conformidade.py"],
-                       cwd=RAIZ, capture_output=True, text=True)
-    assert "DEFECT" in r.stdout
-    assert r.returncode == 1, (
-        f"a printed DEFECT must not exit 0; got {r.returncode}")
+    import tempfile
+    # The defect is CONSTRUCTED. The first version of this test ran the
+    # script on the real manuscript and asserted that a DEFECT was printed,
+    # using the Portuguese Table 1 as its fixture; when the table was
+    # translated on 2026-11-09 the defect went away and this test failed,
+    # having been measuring the manuscript instead of the script. A test
+    # about a verdict must be able to build the case it checks, which is why
+    # 18_conformidade.py took a --src.
+    with tempfile.TemporaryDirectory() as d:
+        # Sem extensão de propósito: um literal em forma de arquivo
+        # seria lido como fonte guardada e entraria na matriz de
+        # rastreabilidade, que é o defeito que
+        # test_16_nao_lista_como_fonte_o_que_nao_e_arquivo
+        # existe para impedir -- e impediu, nesta mesma rodada.
+        copia = Path(d) / "manuscrito_com_defeito"
+        copia.write_text(
+            (RAIZ / "paper" / "MANUSCRITO.md").read_text()
+            + "\n## Seção de teste\n\nEsta seção está em português, com "
+              "veredito, critério, hipótese e partição.\n")
+        r = subprocess.run([sys.executable, "scripts/18_conformidade.py",
+                            "--src", str(copia)],
+                           cwd=RAIZ, capture_output=True, text=True)
+        assert "DEFECT" in r.stdout, r.stdout[-600:]
+        assert r.returncode == 1, (
+            f"a printed DEFECT must not exit 0; got {r.returncode}")
+        # e a mensagem nomeia o arquivo lido, nao o padrao
+        assert "manuscrito_com_defeito:" in r.stdout
+    # e o manuscrito de verdade esta limpo desde que a Tabela 1 foi traduzida
+    rl = subprocess.run([sys.executable, "scripts/18_conformidade.py"],
+                        cwd=RAIZ, capture_output=True, text=True)
+    assert "DEFECT" not in rl.stdout, rl.stdout[-600:]
+    assert rl.returncode == 0, rl.stdout[-600:]
     # and the two gates are documented as different, not as the same
     s18 = (RAIZ / "scripts" / "18_conformidade.py").read_text()
     assert "A DEFECT ALWAYS FAILS, with or without the flag" in s18
     assert "could not be made at all" in s18
-    # the citation script: an incomplete list is a state, so no flag means 0
-    r17 = subprocess.run([sys.executable, "scripts/17_citacoes.py"],
-                         cwd=RAIZ, capture_output=True, text=True)
-    assert "INCOMPLETO" in r17.stdout
-    assert r17.returncode == 0
-    r17s = subprocess.run([sys.executable, "scripts/17_citacoes.py", "--strict"],
-                          cwd=RAIZ, capture_output=True, text=True)
-    assert r17s.returncode == 1
+    # The citation script. Its case is CONSTRUCTED too. The first version
+    # asserted that the real run printed INCOMPLETO and exited 0 -- using the
+    # state of the reference list as its fixture. When the list was completed
+    # on 2026-11-09 that broke, having measured the paper and not the script.
+    # Fifth occurrence of this class, and the reason --dir now exists.
+    import shutil
+    with tempfile.TemporaryDirectory() as d:
+        copia = Path(d) / "rascunhos"
+        shutil.copytree(RAIZ / "paper", copia)
+        refs = copia / "12-referencias.md"
+        # (a) incomplete is a STATE: no flag means 0, --strict means 1
+        refs.write_text(refs.read_text().replace(
+            "Status: **COMPLETO**", "Status: **INCOMPLETO**", 1))
+        r17 = subprocess.run([sys.executable, "scripts/17_citacoes.py",
+                              "--dir", str(copia)],
+                             cwd=RAIZ, capture_output=True, text=True)
+        assert "INCOMPLETO" in r17.stdout
+        assert r17.returncode == 0
+        r17s = subprocess.run([sys.executable, "scripts/17_citacoes.py",
+                               "--strict", "--dir", str(copia)],
+                              cwd=RAIZ, capture_output=True, text=True)
+        assert r17s.returncode == 1
+        # (b) a PROBLEM is a DEFECT: it fails with no flag at all
+        n_wold = _num_ref("PLS-regression")
+        refs.write_text(refs.read_text().replace(f"\n[{n_wold}] S. Wold",
+                                                 "\n[99] S. Wold", 1))
+        r17p = subprocess.run([sys.executable, "scripts/17_citacoes.py",
+                               "--dir", str(copia)],
+                              cwd=RAIZ, capture_output=True, text=True)
+        assert "PROBLEM" in r17p.stdout, r17p.stdout[-400:]
+        assert r17p.returncode == 1
+    # e a lista real esta completa e consistente desde 2026-11-09
+    rr = subprocess.run([sys.executable, "scripts/17_citacoes.py", "--strict"],
+                        cwd=RAIZ, capture_output=True, text=True)
+    assert "COMPLETO" in rr.stdout and "PROBLEM" not in rr.stdout
+    assert rr.returncode == 0, rr.stdout[-400:]
     # but a PROBLEM there fails without the flag too
     s17 = (RAIZ / "scripts" / "17_citacoes.py").read_text()
     assert "if problemas:\n        return 1" in s17
+
+
+def _tex_recem_construido(tmp):
+    """Build the manuscript and its .tex into a directory of this test's own,
+    and return the .tex text.
+
+    Added 2026-11-02 after two tests failed in the author's run and passed in
+    mine. They asserted on paper/MANUSCRITO.tex, which IS tracked in his
+    repository and is NOT in mine: there the file exists and can be stale --
+    pytest runs before the generator in any sensible command order -- and here
+    it is absent, so the tests skipped or passed vacuously. The verification
+    could not see the defect it was meant to catch.
+
+    A test about what the converter produces must run the converter. This is
+    the third time a test in this suite has been caught reading a generated
+    file instead of generating it.
+    """
+    import subprocess
+    import sys
+    md = tmp / "manuscrito_temporario"
+    tex = tmp / "tex_temporario"
+    r = subprocess.run(
+        [sys.executable, "scripts/15_consolidar_manuscrito.py",
+         "--out", str(md)], cwd=RAIZ, capture_output=True, text=True)
+    assert md.is_file(), r.stdout + r.stderr
+    r = subprocess.run(
+        [sys.executable, "scripts/19_tex.py", "--src", str(md),
+         "--out", str(tex)], cwd=RAIZ, capture_output=True, text=True)
+    assert tex.is_file(), r.stdout + r.stderr
+    return tex.read_text()
 
 
 def _mod19(nome: str = "19_tex.py"):
@@ -2717,8 +2944,8 @@ def test_19_declara_o_que_falta_em_vez_de_disfarcar():
     import sys
     import tempfile
     with tempfile.TemporaryDirectory() as tmp:
-        md = Path(tmp) / "M.md"
-        tex = Path(tmp) / "M.tex"
+        md = Path(tmp) / "manuscrito_temporario"
+        tex = Path(tmp) / "tex_temporario"
         r = subprocess.run(
             [sys.executable, "scripts/15_consolidar_manuscrito.py",
              "--out", str(md)], cwd=RAIZ, capture_output=True, text=True)
@@ -2728,9 +2955,30 @@ def test_19_declara_o_que_falta_em_vez_de_disfarcar():
              "--out", str(tex)], cwd=RAIZ, capture_output=True, text=True)
         assert tex.is_file(), r.stdout + r.stderr
         t = tex.read_text()
-    assert "Title page pending" in t
-    assert "no reference list yet" in t
-    assert "paper/12-referencias.md" in t
+    # A PÁGINA DE TÍTULO EXISTE desde 2026-11-10, fornecida pelo autor, e o
+    # marcador que dizia que ela faltava tem de ter saído -- dizê-lo era
+    # verdade e passaria a ser mentira. As duas pontas são conferidas: o
+    # arquivo construído traz os autores e os ORCIDs, e a fonte do conversor
+    # guarda o marcador para um manuscrito que ainda não os tenha.
+    assert "Title page pending" not in t
+    assert "Guilherme Coelho" in t and "Clarimar Jos" in t
+    assert "0000-0003-3045-4057" in t and "0000-0002-5163-2986" in t
+    assert "Corresponding author" in t
+    s19_tp = (RAIZ / "scripts" / "19_tex.py").read_text()
+    assert "Title page pending" in s19_tp
+    # The reference list EXISTS from 2026-11-09, so the placeholder that said
+    # it did not must be gone from the output -- saying so was right while it
+    # was true and would be a lie now. The converter reads which of the two
+    # is the case instead of being told, so both branches are checked: the
+    # built file carries the entries, and the source still holds the honest
+    # placeholder for a manuscript that has none.
+    assert "no reference list yet" not in t
+    assert "\\section*{References}" in t
+    assert "Chemometrics and Intelligent Laboratory Systems 277 (2026) 105833" in t
+    assert t.count("\\item ") >= 9
+    s19 = (RAIZ / "scripts" / "19_tex.py").read_text()
+    assert "The manuscript has no reference list yet." in s19
+    assert "paper/12-referencias.md" in s19
     assert "\\begin{document}" in t and "\\end{document}" in t
     # e a Tabela 1 sai como esta, sem o conversor decidir a traducao
     assert "a converter is not the place" in t
@@ -2765,10 +3013,690 @@ def test_15_carrega_o_titulo_do_artigo():
     import sys
     import tempfile
     with tempfile.TemporaryDirectory() as tmp:
-        md = Path(tmp) / "M.md"
+        md = Path(tmp) / "manuscrito_temporario"
         r = subprocess.run(
             [sys.executable, "scripts/15_consolidar_manuscrito.py",
              "--out", str(md)], cwd=RAIZ, capture_output=True, text=True)
         assert md.is_file(), r.stdout + r.stderr
         gerado = md.read_text()
     assert "## Title" in gerado and t in gerado
+
+
+@pytest.mark.estrutural
+def test_16_nao_lista_como_fonte_o_que_nao_e_arquivo():
+    """The author's matrix of 2026-11-02 listed M.md as a guarded source in two
+    rows. It was the name of a temporary file those tests wrote in order to
+    build what they check -- not a repository file, and not something any test
+    guards. (Written here without quotation marks on purpose: the extractor
+    reads string literals from the whole source segment, docstring included,
+    and the first version of this test cited the very name it forbids.)
+
+    The matrix exists to say which repository files a test protects, so every
+    cited name must be a tracked file or a declared build artefact. That rule
+    lives HERE and not in the generator. It lived there for an afternoon, and
+    it made the matrix depend on which build artefacts happened to be present:
+    paper/MANUSCRITO.tex exists after a build and not in a fresh clone, so the
+    same tests produced two different matrices and `--check` failed in a
+    pristine checkout -- the one place it most needs to hold. The generator
+    now lists what the tests cite, and this test says what they may cite.
+
+    The rule also catches a mistyped path in a test that claims to guard a
+    file which is not there, which would otherwise read as coverage. And one
+    file is listed once: the same script cited as "17_citacoes.py" and as
+    "scripts/17_citacoes.py" appeared twice in one row.
+    """
+    import ast as _ast
+    import importlib.util
+    cam = RAIZ / "scripts" / "16_matriz_rastreabilidade.py"
+    esp = importlib.util.spec_from_file_location("m16b", cam)
+    m16 = importlib.util.module_from_spec(esp)
+    esp.loader.exec_module(m16)
+
+    ARTEFATOS = {"MANUSCRITO.md", "MANUSCRITO.tex",
+                 "matriz-rastreabilidade.md"}
+    import subprocess
+    r = subprocess.run(["git", "ls-files"], cwd=RAIZ,
+                       capture_output=True, text=True)
+    if r.returncode == 0:
+        # Tracked files UNION what is on disk: a patch that adds a new paper
+        # file leaves it untracked until the author commits, and the first
+        # version of this guard failed on the very file the patch that
+        # introduced it had just created.
+        rastreados = {x.rsplit("/", 1)[-1] for x in r.stdout.split() if x}
+        rastreados |= set(m16._arquivos_do_repositorio())
+        for f in sorted((RAIZ / "tests").glob("test_*.py")):
+            texto = f.read_text()
+            for no2 in _ast.walk(_ast.parse(texto)):
+                if not (isinstance(no2, _ast.FunctionDef)
+                        and no2.name.startswith("test_")):
+                    continue
+                marcas = [d.attr for d in no2.decorator_list
+                          if isinstance(d, _ast.Attribute)]
+                if not any(c in marcas for c in
+                           ("semantico", "estrutural", "numerico")):
+                    continue
+                for nome in m16.fontes_citadas(no2, texto):
+                    base = nome.rsplit("/", 1)[-1]
+                    assert base in rastreados or base in ARTEFATOS, (
+                        f"{no2.name} cites {nome}, which is neither a tracked "
+                        f"file nor a declared build artefact")
+
+    fonte = (
+        'def test_x():\n'
+        '    b = "17_citacoes.py"\n'
+        '    c = "scripts/17_citacoes.py"\n'
+        '    d = "paper/02-resumo-C.md"\n')
+    no = _ast.parse(fonte).body[0]
+    fontes = m16.fontes_citadas(no, fonte)
+    assert fontes.count("17_citacoes.py") == 1
+    assert "scripts/17_citacoes.py" not in fontes      # a grafia mais curta
+    assert "paper/02-resumo-C.md" in fontes            # a unica que aparece
+    # e a matriz publicada nao lista fonte que nao seja arquivo. Só a TERCEIRA
+    # coluna e lida: a segunda e a decisao, e a decisao deste teste cita
+    # aquele nome entre aspas para registrar o defeito -- uma asserção sobre a
+    # linha inteira acusaria o proprio registro do conserto.
+    publicada = (RAIZ / "docs" / "matriz-rastreabilidade.md").read_text()
+    for linha in publicada.splitlines():
+        campos = [c.strip() for c in linha.split("|")]
+        if len(campos) < 5 or campos[1].startswith(("---", "teste")):
+            continue
+        for nome in re.findall(
+                r"[-\w./]+\.(?:md|py|toml|csv|json|npz|tex|bib)", campos[3]):
+            base = nome.rsplit("/", 1)[-1]
+            assert (base in m16._arquivos_do_repositorio()
+                    or base in ARTEFATOS), (nome, linha[:80])
+
+
+@pytest.mark.estrutural
+def test_raiz_do_repositorio_nao_acumula_arquivo_solto():
+    """Two files named `source` and `test` were committed to the repository
+    root on 2026-11-02, swept in by `git add -A`. They are not in any patch
+    this programme produced -- they came from a stray shell redirection -- and
+    they entered the record of a scientific repository without anyone looking
+    at them.
+
+    The root of this repository holds a declared set: the README, the package
+    configuration, the ignore file, and eight directories. Anything else at the
+    top level is an accident until someone says otherwise, and an accident in
+    a record whose point is traceability is worth one assertion.
+
+    Adding a root entry on purpose means adding it here, which is the same
+    rule the test categories and the consolidator's ORDEM follow: the set is
+    declared, never inferred.
+    """
+    import subprocess
+    ESPERADO = {
+        ".gitignore", "README.md", "pyproject.toml",
+        "data", "docs", "findings", "paper", "results", "scripts", "src",
+        "tests",
+    }
+    # The INDEX, not HEAD: a file staged for the next commit is already on its
+    # way into the record, and this catches it one step earlier. A file that is
+    # merely present and untracked is not the repository's problem.
+    r = subprocess.run(["git", "ls-files"],
+                       cwd=RAIZ, capture_output=True, text=True)
+    if r.returncode != 0:            # not a checkout: nothing to assert
+        pytest.skip("not a git checkout")
+    presentes = {x.split("/", 1)[0] for x in r.stdout.split() if x}
+    sobra = presentes - ESPERADO
+    assert not sobra, (
+        f"files tracked at the repository root that are not declared: "
+        f"{sorted(sobra)}. If one belongs there, add it to ESPERADO; if it is "
+        f"an accident, `git rm --cached` it.")
+
+
+@pytest.mark.semantico
+def test_bib_so_tem_entrada_verificada_e_bibtex_nao_ve_o_resto():
+    """paper/referencias.bib carries only what was read at a source, and the
+    four groups that remain open must be invisible to bibtex.
+
+    THE PER-CENT SIGN DOES NOT COMMENT IN BIBTEX. The first version of this
+    file "commented out" the four stubs with a leading %, which is a LaTeX
+    comment and nothing at all to bibtex: it read all four and emitted a
+    bibitem for each with empty fields -- precisely the accident the stubs
+    exist to prevent, committed in the act of preventing it. What bibtex looks
+    for is the at-sign, so the stubs carry none.
+
+    The same applies to prose: an at-sign anywhere outside an entry starts one.
+    Three in the header of that first version produced three error messages in
+    the bibtex log.
+
+    So the check is mechanical: every at-sign in the file begins a verified
+    entry, no entry body carries a FALTA marker, and the five verified keys
+    agree with the records audited in 12-referencias.md.
+    """
+    import re
+    bib = (RAIZ / "paper" / "referencias.bib").read_text()
+
+    # toda arroba do arquivo abre uma entrada, e nao ha nenhuma na prosa
+    arrobas = [m.start() for m in re.finditer(r"@", bib)]
+    entradas = [m.start() for m in re.finditer(r"^@\w+\{", bib, re.M)]
+    assert arrobas == entradas, (
+        "an at-sign outside an entry: bibtex reads it as the start of one")
+    # O numero total nao e fixado: ele cresce a cada escopo aprovado, e ja
+    # quebrou este teste tres vezes. O que se exige e que a lista do .bib e a
+    # do manuscrito tenham o mesmo tamanho -- um registro vivo aqui que nao
+    # esteja la, ou o contrario, e o defeito que importa.
+    import re as _re
+    refs = (RAIZ / "paper" / "12-referencias.md").read_text()
+    m = _re.search(r"^## References[ \t]*$", refs, _re.M)
+    corpo = refs[m.end():]
+    f = _re.search(r"^## ", corpo, _re.M)
+    na_lista = _re.findall(r"^\[(\d+)\]\s+\S", corpo[:f.start()] if f else corpo,
+                           _re.M)
+    assert len(entradas) == len(na_lista), (
+        f"{len(entradas)} entries in the .bib, {len(na_lista)} in the list")
+
+    # nenhum corpo vivo carrega campo de preenchimento
+    for m in re.finditer(r"^@(\w+)\{([^,]+),", bib, re.M):
+        i = bib.index("{", m.start())
+        nivel = 0
+        for j in range(i, len(bib)):
+            nivel += (bib[j] == "{") - (bib[j] == "}")
+            if nivel == 0:
+                break
+        assert "[FALTA" not in bib[i:j + 1], m.group(2)
+
+    # O que continua em aberto esta presente e sem a arroba. Tres dos quatro
+    # grupos deixaram de estar em aberto em 2026-11-09: modalidades e
+    # fundador foram lidos nos PDFs, e as bandas NIR ganharam fonte pela
+    # lista de referencias do primeiro. Sobra o trabalho em submissao, cuja
+    # citacao e decisao dos autores e nao foi tomada.
+    assert re.search(r"^% \w+\{incerteza,", bib, re.M)
+    for chave in ("modalidades", "fundador", "bandas-nir"):
+        assert not re.search(rf"^% \w+\{{{re.escape(chave)},", bib, re.M), chave
+
+    # as quatro novas, com a procedencia declarada em cada uma
+    for chave in ("coelho2026pgsg", "coelho2027gatetopology",
+                  "saranwong2004mango", "wold2001pls"):
+        assert re.search(rf"^@\w+\{{{chave},", bib, re.M), chave
+    for chave in ("saranwong2004mango", "wold2001pls", "anderson2020mango",
+                  "workman2012nir", "mcallester1999pacbayes"):
+        i = bib.index(chave)
+        j = bib.index("\n}", i)
+        assert "SECOND-HAND PROVENANCE" in bib[i:j], chave
+    # e as quatro lidas na fonte dizem onde foram lidas
+    for chave, onde in (("jain2019attention", "ACL Anthology"),
+                        ("adebayo2018sanity", "conference page"),
+                        ("kuncheva2007stability", "author's own site"),
+                        ("nogueira2018stability", "JMLR page"),
+                        ("jaccard1912flora", "Read the article PDF"),
+                        ("bartlett2002rademacher", "JMLR site"),
+                        ("wilcoxon1945ranking", "scipy.stats.wilcoxon")):
+        i = bib.index(chave)
+        j = bib.index("\n}", i)
+        assert onde in bib[i:j], chave
+    # a Kuncheva e a antecedente, e o bib diz em que difere
+    i = bib.index("kuncheva2007stability")
+    j = bib.index("\n}", i)
+    assert "E[r] = k^2/n" in bib[i:j]
+    assert "same in kind, and differs in its argument" in bib[i:j]
+    # o artigo do conjunto manga e o deposito sao registros distintos
+    assert "anderson2024mango" in bib and "anderson2020mango" in bib
+    assert "different record from anderson2024mango" in bib
+    assert "10.1016/j.chemolab.2026.105833" in bib
+    assert "10.1016/j.chemolab.2026.105926" in bib
+    # e o corrigendum nao e entrada, porque o editor nao respondeu
+    assert "corrigendum to coelho2026pgsg is NOT a reference" in bib
+    # a unica entrada incompleta diz que e, e diz qual campo falta
+    i = bib.index("kullback1951information")
+    j = bib.index("\n}", i)
+    # normalizado: o campo note e reenquadrado e a frase atravessa linhas
+    kl = re.sub(r"\s+", " ", bib[i:j])
+    assert "INCOMPLETE ON PURPOSE" in kl
+    assert "THE PAGE RANGE WAS NOT READ" in kl
+    assert "pages" not in kl
+
+    # e as cinco verificadas batem com o registro da auditoria
+    ref = (RAIZ / "paper" / "12-referencias.md").read_text()
+    for doi in ("10.17632/46htwnp833.3", "10.1038/s41586-020-2649-2",
+                "10.1016/j.measurement.2025.118884"):
+        assert doi in bib and doi in ref, doi
+    assert "2605.02003" in bib and "2605.02003" in ref
+    assert "SubstrateMixRaman" in bib and "SubstrateMixRaman" in ref
+
+
+@pytest.mark.estrutural
+def test_19_numera_pela_profundidade_e_recusa_desencontro():
+    """The numbers LaTeX prints must be the numbers the manuscript wrote.
+
+    The manuscript writes 4.2, 4.2.1 and 4.3 all with three hashes, and the
+    converter mapped hashes to levels: 4.2.1 became a subsection, LaTeX
+    renumbered it 4.3, and every number after it shifted by one in every
+    section that has a third level. The cross-references in the text are words
+    -- "Section 4.3" -- not \\ref, so nothing complained: the document compiled
+    and pointed the reader at the wrong subsection. The referee of 2026-11-02
+    found it as a missing 4.2.1.
+
+    The level now comes from the depth of the heading's own number, and the
+    build simulates the counters and refuses when they disagree with what is
+    written. A conversion that renumbers a manuscript in silence is worse than
+    one that fails.
+    """
+    m = _mod19("19_tex.py")
+    bom = [("4. T", ["### 4.1 a", "### 4.2 b", "### 4.2.1 c", "### 4.3 d"]),
+           ("9. U", ["### 9.1 a", "### 9.2 b", "### 9.2.1 c", "### 9.3 d"])]
+    assert m.confere_numeracao(bom) == []
+    ruim = [("4. T", ["### 4.1 a", "### 4.3 b"])]          # salta 4.2
+    assert m.confere_numeracao(ruim)
+    ruim2 = [("4. T", ["### 4.1 a", "### 4.1.2 c"])]       # 4.1.1 esperado
+    assert m.confere_numeracao(ruim2)
+    # e o documento real traz os tres niveis como subsubsection -- construido
+    # aqui, nao lido do artefato versionado, que pode estar velho
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        t = _tex_recem_construido(Path(tmp))
+    assert t.count("\\subsubsection{") == 3, t.count("\\subsubsection{")
+
+
+@pytest.mark.estrutural
+def test_19_nao_leva_a_regua_do_markdown_para_a_legenda():
+    """Figure 5's caption ended with a dash in the 31-page PDF. It was the
+    Markdown rule "---" that separates the caption blocks, joined into the
+    caption text along with the prose. The referee of 2026-11-02 saw it as a
+    residual character, which is what it was.
+
+    The rule lives in "19_tex.py", which is where the repair is."""
+    import re
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        texto = _tex_recem_construido(Path(tmp))
+    legendas = re.findall(r"\\caption\{(.*?)\}\n\\end\{figure\}",
+                          texto, re.S)
+    assert len(legendas) == 5
+    for i, c in enumerate(legendas, 1):
+        assert not c.rstrip().endswith("---"), f"Figure {i}"
+
+
+@pytest.mark.semantico
+def test_14_corrige_a_alegacao_causal_e_descreve_o_cruzamento():
+    """The two scientific corrections of the 2026-11-02 referee report,
+    approved by the author on 2026-11-09 and applied. Neither touches a
+    number; both reduce a statement to what the design supports.
+
+    FIRST: the Raman arm was called a control that isolates the prior, while
+    Section 2.1 lists the dataset, the modality, the number of bands and the
+    target as differing too -- and Section 7 itself states the condition that
+    violates, "and nothing else does". It is now a check in a second
+    modality, in all three places that claimed otherwise: the opening of
+    Section 7, the close of 7.1, and Figure 4's caption. The three were found
+    by reading, not by searching for one phrase, so the test checks all
+    three.
+
+    SECOND: Section 2.3 described two alternative configurations and said no
+    penalty is applied under prior initialisation, while Section 3.1 reports
+    rho across four orders of magnitude of lambda under that very
+    initialisation -- which requires the penalty to be present. The sweep
+    script's own --init flag confirms a crossing. The author's condition on
+    the rewrite, checked here: the text must name the two crossed factors and
+    must not suggest that only two configurations were evaluated.
+
+    The superseded wording stays QUOTED in the record, so that what changed
+    is legible without the git history, and absent from the drafts. Both are
+    asserted: a record that keeps the old phrase and a draft that also keeps
+    it would pass a test that only looked for the new one.
+    """
+    import re
+    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "14-parecer-2026-11-02.md"
+                             ).read_text())
+    assert "APROVADAS E APLICADAS em 2026-11-09" in t
+    # o que era meu, e esta corrigido
+    assert "era pior do que o parecer viu" in t
+    assert "profundidade do número" in t
+    # a prova interna das duas correcoes, preservada no registro
+    assert "only the prior differs" in t and "and nothing else does" in t
+    assert "no penalty is applied" in t
+    assert "across four orders of magnitude of λ" in t
+    assert "--init {prior, zero}" in t
+
+    # Os rascunhos sao lidos com o espaco em branco normalizado: o texto e
+    # reenquadrado em 79 colunas, e uma frase aprovada nao deixa de valer
+    # porque passou a quebrar em outro ponto. A primeira versao deste teste
+    # contou uma ocorrencia de duas por exigir a quebra de linha.
+    def _texto(nome: str) -> str:
+        # O marcador de citacao das legendas e retirado antes de normalizar:
+        # sem isso, uma frase que atravessa duas linhas do bloco vira
+        # "... a check in a > second modality ..." e nao casa.
+        bruto = (RAIZ / "paper" / nome).read_text()
+        bruto = re.sub(r"(?m)^>\s?", "", bruto)
+        return re.sub(r"\s+", " ", bruto)
+
+    # 1. os tres lugares do controle Raman
+    s7 = _texto("04-rascunho-s6-s7-s8.md")
+    assert "only the prior differs" not in s7
+    assert "strongest control" not in s7
+    assert "as Section 2.1 states" in s7
+    assert s7.count("a check in a second modality") == 2
+    assert "not an experiment that isolates it" in s7
+    leg = _texto("06-legendas-figuras.md")
+    assert "makes this a control and not a replication" not in leg
+    assert "a check in a second modality rather than a replication" in leg
+
+    # 2. a §2.3, com as duas exigencias do autor
+    s2 = _texto("03-rascunho-s1-s2-s3.md")
+    assert "no penalty is applied" not in s2
+    assert "four configurations are trained and not two" in s2
+    for fator in ("the **initialisation**", "the **penalty**"):
+        assert fator in s2
+    assert "`θ₀ = logit(s)` against `θ₀ = 0`" in s2
+    assert "anchored at λ = 0" in s2
+    # e a secao 3 continua falando dos dois papeis, que e o que ela mede
+    assert "two ways" in s2 and "the two roles of the prior" in s2
+
+
+
+
+@pytest.mark.estrutural
+def test_artefato_versionado_nao_pode_ficar_desatualizado(tmp_path):
+    """A generated file kept under version control can go stale, and a stale
+    one is worse than an absent one: it reads as the manuscript.
+
+    Measured on 2026-11-02: the committed "paper/MANUSCRITO.md" differed from
+    a fresh build in 53 lines. It carried no title, no highlights, no
+    keywords and the 304-word abstract -- every line the front matter added,
+    missing. It went stale because generated files were deliberately kept out
+    of the patches, after one of them made a patch inapplicable; nothing then
+    noticed that the committed copy had stopped matching the drafts.
+
+    So: an artefact this repository tracks must equal what the generator
+    produces from the drafts as they stand, and the failure message names the
+    command that repairs it. An artefact it does not track is outside the
+    rule -- there is nothing to go stale -- and is declared in .gitignore so
+    that a wildcard add does not put it back silently.
+
+    WHAT THIS COMPARES is the file in the working tree, not the bytes at
+    HEAD. Comparing HEAD would be the stricter reading of "committed", and it
+    cannot pass: the repair regenerates the working tree, so the guard would
+    stay red until the commit, and a patch whose own tests fail is not a
+    patch. The defect this catches is drafts edited without rebuilding the
+    artefact, which is what actually happened, and in that state the working
+    tree and HEAD agree.
+    """
+    import subprocess
+    import sys
+
+    def rastreado(caminho: str) -> bool:
+        r = subprocess.run(["git", "ls-files", "--error-unmatch", caminho],
+                           cwd=RAIZ, capture_output=True, text=True)
+        return r.returncode == 0
+
+    r = subprocess.run(["git", "rev-parse", "--git-dir"], cwd=RAIZ,
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        pytest.skip("not a git checkout: there is nothing tracked to compare")
+
+    gi = (RAIZ / ".gitignore").read_text()
+
+    # 1. the consolidated manuscript. The temporary file is given a name with
+    # no extension on purpose: a file-shaped literal would be read as a
+    # guarded source and listed in the traceability matrix, which is the
+    # defect test_16_nao_lista_como_fonte_o_que_nao_e_arquivo exists to stop.
+    if rastreado("paper/MANUSCRITO.md"):
+        novo = tmp_path / "manuscrito_fresco"
+        c = subprocess.run(
+            [sys.executable, "scripts/15_consolidar_manuscrito.py",
+             "--out", str(novo)], cwd=RAIZ, capture_output=True, text=True)
+        assert novo.is_file(), c.stdout + c.stderr
+        atual = (RAIZ / "paper" / "MANUSCRITO.md").read_text()
+        assert atual == novo.read_text(), (
+            "paper/MANUSCRITO.md is not what the drafts now produce. "
+            "Repair: run scripts/15_consolidar_manuscrito.py and commit the "
+            "result, or stop tracking the artefact with git rm --cached")
+    else:
+        assert "MANUSCRITO.md" in gi, (
+            "paper/MANUSCRITO.md is untracked and .gitignore does not name "
+            "it, so the next wildcard add tracks it again")
+
+    # 2. the LaTeX reading copy. Pure output of the converter, rebuilt by
+    # every adjustment to it, and its diff is read by nobody -- so the
+    # repository holds the source and not this.
+    assert not rastreado("paper/MANUSCRITO.tex"), (
+        "paper/MANUSCRITO.tex is tracked. It is the converter's output and "
+        "goes stale at every change to it: run git rm --cached "
+        "paper/MANUSCRITO.tex")
+    assert "MANUSCRITO.tex" in gi
+
+    # 3. and a rule written twice is a rule that was edited once. The
+    # results block for aggregate outputs appeared in duplicate.
+    linhas = [x.strip() for x in gi.splitlines() if x.strip()
+              and not x.strip().startswith("#")]
+    assert len(linhas) == len(set(linhas)), (
+        "duplicate pattern in .gitignore: " + ", ".join(
+            sorted({x for x in linhas if linhas.count(x) > 1})))
+
+
+@pytest.mark.numerico
+def test_15_concilia_a_contagem_declarada_com_a_tabela1():
+    """The manuscript said eight of twenty pre-registered hypotheses were not
+    supported. The verdict column of Table 1 -- which the same sentence cites
+    as the list of verdicts -- has six, and so do the pre-registrations. The
+    number never matched: the commit that wrote "eight" already had six in
+    the table.
+
+    Resolved by the author on 2026-11-09, by the third route: the abstract
+    says six, which is the literal count by the criterion and keeps it at 249
+    words; and 2.6, which has no word limit and is where Table 1 is
+    introduced, carries both counts -- the six the criterion did not support,
+    and the two that met their criterion only formally (H5c) or on a narrow
+    reading (H10b).
+
+    So this is no longer a record of a discrepancy. It is the arithmetic: the
+    number the text states is COUNTED from the table the consolidator emits,
+    not written in here, so that editing one without the other fails.
+    """
+    import re
+
+    def _vereditos(arquivo: str, cabecalho: str) -> list[tuple[str, str]]:
+        texto = (RAIZ / "paper" / arquivo).read_text()
+        assert cabecalho in texto, f"{arquivo}: Table 1's header moved"
+        linhas = []
+        for linha in texto[texto.index(cabecalho):].splitlines():
+            if linha.startswith("|"):
+                celulas = [c.strip() for c in
+                           linha.strip().strip("|").split("|")]
+                if not all(c.startswith("---") for c in celulas):
+                    linhas.append(celulas)
+            elif linhas:
+                break
+        return [(r[0], r[2]) for r in linhas[1:]]
+
+    pt = _vereditos("00-estrutura.md",
+                    "| | enunciado | veredito pelo critério | o que o "
+                    "resultado sustenta |")
+    en = _vereditos("13-tabela1.md",
+                    "| | statement | verdict by the criterion | what the "
+                    "result supports |")
+    assert len(pt) == len(en) == 20
+
+    nao_pt = [r for r, v in pt if v.lower().startswith("não suportada")]
+    nao_en = [r for r, v in en if v.lower().startswith("not supported")]
+    assert nao_pt == nao_en == ["H5a", "H7-blocks", "H8", "H9-blocks",
+                                "H10a", "H13b"]
+    assert len([v for _, v in pt if v.lower().startswith("suportada")]) == 14
+
+    # as razoes k/n sao as mesmas nas duas linguas: traduzir nao mexe em
+    # resultado, e uma divergencia aqui seria mais grave que a contagem
+    for (rotulo, vpt), (_, ven) in zip(pt, en):
+        assert (re.findall(r"\d+\s*/\s*\d+", vpt)
+                == re.findall(r"\d+\s*/\s*\d+", ven)), rotulo
+
+    # A ARITMETICA: o numero vem da contagem, nao esta escrito neste teste.
+    NUMERAL = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+               6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten"}
+    quantos = NUMERAL[len(nao_pt)]
+    resumo = (RAIZ / "paper" / "02-resumo-C.md").read_text()
+    assert f"{quantos} of which our criteria did not support" in resumo
+    s2 = re.sub(r"\s+", " ",
+                (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md").read_text())
+    assert f"{quantos.capitalize()} were not supported." in s2
+
+    # e a 2.6 carrega a segunda contagem, com a tabela nomeada como o lugar
+    # onde o veredito e a leitura aparecem juntos
+    assert ("Two more met their criterion only formally or on a narrow "
+            "reading, and Table 1 records both the verdict and that reading."
+            ) in s2
+    # As duas que a segunda contagem conta sao as que a tabela qualifica, e
+    # a tabela e que diz quais: H5c pelo "(formal)" no veredito, H10b pela
+    # leitura estreita na coluna de interpretacao. Nenhuma outra linha
+    # carrega qualquer das duas marcas, e e isso que faz a contagem fechar
+    # em duas em vez de ser um numero escrito aqui.
+    tabela_en = (RAIZ / "paper" / "13-tabela1.md").read_text()
+    fileiras = [[c.strip() for c in l.strip().strip("|").split("|")]
+                for l in tabela_en.split("## Table 1", 1)[1].splitlines()
+                if l.startswith("| H")]
+    formais = [r[0] for r in fileiras if "(formal)" in r[2]]
+    estreitas = [r[0] for r in fileiras if "narrow reading" in r[3]]
+    assert formais == ["H5c"], formais
+    assert estreitas == ["H10b"], estreitas
+    assert len(formais) + len(estreitas) == 2
+
+    # e o registro fica, com a medicao e a decisao
+    nota = re.sub(r"\s+", " ",
+                  (RAIZ / "paper" / "15-contagem-das-hipoteses.md").read_text())
+    assert "RESOLVIDO em 2026-11-09" in nota
+    for rotulo in nao_pt:
+        assert rotulo in nota
+    assert "H5c" in nota and "H10b" in nota
+    assert "d407f3a" in nota
+
+
+@pytest.mark.semantico
+def test_12_mede_a_exposicao_ao_fundador_nao_corrigido():
+    """The editor did not answer the letter about the corrigendum, so the
+    founder stays published with the errors its authors have identified.
+    Author's information of 2026-11-09. Two consequences, recorded.
+
+    FIRST, it undoes a decision of his from the same day: the corrigendum
+    cannot be a reference. An unanswered letter has no journal, volume, year
+    or DOI, so "cite the corrigendum separately" is not executable as a
+    numbered entry; if the manuscript mentions it, it does so in the text.
+    That leaves ONE bibliographic record blocking --strict, not two.
+
+    SECOND, the paper cites as the origin of its formulation a published work
+    whose errors the record has not corrected. That is integrity, not
+    bibliography, and it is the author's. What a test can hold is the
+    MEASUREMENT of this paper's exposure, because that is what any of the
+    three routes has to be decided against:
+
+      - Tecator, where the mis-identified target column was found, appears
+        nowhere in this repository. This paper's data are mango and
+        bioprocess_substrates.
+      - the one published figure this paper reproduces, 0.9418 falling to
+        0.7005 +- 0.0068, is attributed by F004 to the ACCEPTED paper, not to
+        the founder.
+      - this paper's gate-prior correlations are its own measurement,
+        recorded in F001 from this repository's lambda sweep, not a
+        reproduction of a published value.
+
+    And the ambiguity the news makes urgent: F004 calls q = 28 "the
+    definition of the published code" while attributing 0.9418 to the
+    accepted paper. Two published-or-accepted works exist in the programme
+    and that phrase does not say which. The test holds the question open
+    rather than letting a guess settle it.
+    """
+    import re
+    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "12-referencias.md").read_text())
+    assert "O corrigendum não foi respondido" in t
+    assert "deixa de ser entrada bibliográfica" in t
+    assert "a correction has been submitted" in t
+    assert "reduz o bloqueio do `--strict` a um registro só" in t
+    for saida in ("**(a) Citar o fundador como publicado, com uma frase de "
+                  "divulgação.**",
+                  "**(b) Citar o fundador como publicado, sem comentário.**",
+                  "**(c) Reduzir o que é atribuído ao fundador ao mínimo**"):
+        assert saida in t, saida
+    assert "nenhuma é minha" in t
+
+    # a medicao, conferida contra o repositorio e nao contra o registro
+    arquivos = (list((RAIZ / "paper").glob("*.md"))
+                + list((RAIZ / "findings").glob("*.md"))
+                + list((RAIZ / "docs").glob("*.md")))
+    com_tecator = [f.name for f in arquivos
+                   if "tecator" in f.read_text().lower()]
+    assert com_tecator == ["12-referencias.md"], com_tecator
+    f004 = (RAIZ / "findings"
+            / "F004-estabilidade-interpretativa-e-funcao-dos-dados.md"
+            ).read_text()
+    assert "braço NIR do artigo aceito" in f004
+    assert "J = 0,9418" in f004
+    f001 = (RAIZ / "findings" / "F001-caminho-de-regularizacao.md").read_text()
+    assert "ρ(gate, prior) vai de 0,9987 a 0,9999" in f001
+
+    # e a ambiguidade de q = 28 fica registrada como aberta
+    assert "o problema dos três destinos outra vez" in t
+    assert "a definição do código publicado" in f004
+
+
+@pytest.mark.semantico
+def test_12_aplica_seis_das_sete_e_reenquadra_a_novidade():
+    """Six of the seven proposed references, approved and applied on
+    2026-11-09. G stayed out: the one-standard-error rule's canonical source
+    is a textbook nobody here has read, and no field is written unread.
+
+    The author attached a framing to the approval, and it is the point of
+    the change rather than a side effect of it. Section 2.5 must say that
+    correcting overlap for chance has antecedents, that q/(2L-q) is an
+    approximation and not the exact Jaccard expectation, and that this
+    paper's contribution is the exact expectation under plateau ties with
+    the tie-breaking rule. Section 1 must present the novelty as a specific
+    contribution about ties and quantisation, NOT as the discovery that
+    chance correction is needed. Both are asserted here, including the
+    negative: the sentence that would claim the discovery must not appear.
+
+    Fifteen entries, fifteen cited, numbered by first appearance. Four of
+    them -- [8], [12], [13], [15] -- were read in other papers' reference
+    lists rather than in the articles, and the audit says so for each.
+    """
+    import re
+    import subprocess
+    import sys
+    t = re.sub(r"\s+", " ", (RAIZ / "paper" / "12-referencias.md").read_text())
+    s1 = re.sub(r"\s+", " ",
+                (RAIZ / "paper" / "03-rascunho-s1-s2-s3.md").read_text())
+
+    # a moldura da 2.5: antecedentes, aproximacao, e qual e a contribuicao
+    assert ("Correcting set overlap for chance is established practice in the "
+            "feature-selection literature.") in s1
+    n_kun = _num_ref("Kuncheva")
+    assert f"The consistency index of [{n_kun}]" in s1
+    assert "hypergeometric with expectation q²/L" in s1
+    assert ("The point of this section is not that a correction is needed — "
+            "that was settled —") in s1
+    assert ("it is the Jaccard index evaluated at the hypergeometric mean "
+            f"of [{n_kun}]") in s1
+
+    # a moldura da 1: a novidade e empate e quantizacao, nao a correcao
+    assert ("the need to do so is not new" in s1
+            or "the need to do so is not\nnew" in s1)
+    assert "has corrected set overlap for chance for nearly two decades" in s1
+    assert ("What this paper adds is narrower and specific to the way a "
+            "quantised prior is written down.") in s1
+    assert "the gate inherits ties inside that block" in s1
+    # e o que NAO pode aparecer: a descoberta da necessidade de corrigir
+    for falso in ("we introduce a chance correction",
+                  "no chance correction exists",
+                  "the first to correct for chance"):
+        assert falso.lower() not in s1.lower(), falso
+
+    # as seis entraram, a G nao
+    for autor in ("Jain", "Adebayo", "Kuncheva", "Nogueira", "Workman",
+                  "Anderson"):
+        assert autor in t, autor
+    assert "one-standard-error" not in t.split("## References")[1][:4000]
+
+    # todas citadas e numeradas por ordem de aparicao. O numero total nao e
+    # fixado aqui: ele cresce a cada escopo que o autor aprova, e o que o
+    # teste guarda e a consistencia, nao a contagem.
+    r = subprocess.run([sys.executable, "scripts/17_citacoes.py", "--strict"],
+                       cwd=RAIZ, capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout[-400:]
+    assert "numbering in order of appearance, no missing field" in r.stdout
+
+    # e a procedencia de segundo grau esta declarada, entrada por entrada
+    assert "vêm de listas de referências e não dos artigos citados" in t
+    # "Achieving robustness" e o ARTIGO do conjunto manga; o deposito de
+    # dados e outra entrada e nao e de segundo grau.
+    for trecho in ("Achieving robustness", "Saranwong", "Workman",
+                   "PLS-regression", "PAC-Bayesian model averaging"):
+        n_ref = _num_ref(trecho)
+        assert f"| [{n_ref}] | **segundo grau**" in t, trecho

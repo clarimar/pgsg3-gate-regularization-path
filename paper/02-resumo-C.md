@@ -49,12 +49,12 @@ We disentangle prior-based gate initialisation from prior-based
 regularisation and examine their distinct effects on learned spectral
 selections. Initialising at a step-function prior over 281 bands leaves
 the prior's saturated level operationally inert, with gradients of order
-10^-6 that the penalty cannot move. That geometry permits an artefact but
+10⁻⁶ that the penalty cannot move. That geometry permits an artefact but
 does not produce one; three conditions together do: an oversized level
 set, ties surviving training, and a deterministic tie rule. The
 near-infrared prior meets all three, a continuous Raman prior none:
 overlap of 0.9418, at the published convention of q = 28, falls to
-0.7005 +- 0.0068 under random tie-breaking, against the exact expectation,
+0.7005 ± 0.0068 under random tie-breaking, against the exact expectation,
 0.7012, for drawing 28 of 34 plateau bands twice. Outside the saturated
 plateau, the gates retained data-associated structure, aligning positively
 with a separate statistical reference across the 223 floor-level bands.
@@ -67,6 +67,6 @@ stored gates, at the revision convention of q = 29, overlap ranged from
 another, and 1.0000 with index-based tie-breaking; when ties cross the
 boundary, the overlap reflects the complete selection procedure rather
 than an identifiable property of the gates. We pre-registered twenty
-hypotheses, eight of which our criteria did not support; the tie-breaking
+hypotheses, six of which our criteria did not support; the tie-breaking
 analysis was a post hoc diagnostic, reported separately from those
 verdicts.

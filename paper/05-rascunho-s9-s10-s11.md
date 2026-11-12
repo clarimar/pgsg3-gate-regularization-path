@@ -36,10 +36,13 @@ does not survive scrutiny.
 
 ### 9.2 The objective resembles a PAC-Bayes bound and is not one
 
-The trained objective is an empirical risk plus a Kullback–Leibler divergence
-between the gate and a prior specified before seeing the data, which is the
-shape of a PAC-Bayes bound. The resemblance is formal and we draw nothing from
-it. Three things would have to change for the analogy to become an analysis:
+The trained objective is an empirical risk plus a Kullback–Leibler
+divergence [19] between the gate and a prior specified before seeing the data,
+which is the shape of a PAC-Bayes bound [20]. The resemblance is
+formal and we draw nothing from it: the quantity we add to the risk is a
+divergence between a deterministic gate and a fixed vector, and calling it a
+Kullback–Leibler divergence names its functional form, not a property of the
+objective. Three things would have to change for the analogy to become an analysis:
 the gate would have to be stochastic rather than a point estimate, so that
 there is a posterior over hypotheses for the divergence to be taken between;
 the divergence would have to be between distributions over hypotheses rather
@@ -399,8 +402,10 @@ convert the interpretive claim from unfalsifiable to testable.
 **Empirical Rademacher complexity by fitting random labels.** Section 1.2
 argues that prior-initialisation restricts reachability and not capacity. That
 argument is analytic. Fitting random labels under both initialisations would
-quantify the restriction instead of arguing it, and would test whether the
-frozen plateau has any effect on what the model can fit.
+estimate the empirical Rademacher complexity of the two function classes
+[21] and so quantify the restriction instead of arguing it, and would
+test whether the frozen plateau has any effect on what the model can fit. We
+have not run it: nothing in this paper reports such an estimate.
 
 **A stochastic gate.** The change that would make a PAC-Bayes analysis
 available rather than a formal resemblance (Section 9.2).

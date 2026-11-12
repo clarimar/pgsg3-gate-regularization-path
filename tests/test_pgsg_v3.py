@@ -12,12 +12,30 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from pgsg_3.m_model.pgsg_v3 import (  # noqa: E402
-    PGSGv3Model,
-    kl_bernoulli,
-    kl_bernoulli_np,
-)
-from pgsg_3.m_model.pgsg_v2 import PGSGv2Model  # noqa: E402
+# A ausência de `pgsg_1` precisa ser capturada AQUI, e não só no `try` abaixo.
+# O módulo `pgsg_v3` chama `ensure_pgsg1_importable()` no corpo, que é o que
+# põe o diretório do pgsg_1 no sys.path -- por isso a verificação do pgsg_1
+# não pode vir antes destes imports. Mas quando o pacote não é encontrado, é
+# este import que levanta ImportError, e o `try` de baixo nunca é alcançado:
+# em 2026-11-02, num ambiente com torch e sem pgsg_1, a coleta foi
+# interrompida e a SUÍTE INTEIRA deixou de rodar, em vez de pular este
+# módulo. A guarda existia e não podia disparar. Antes disso o
+# `importorskip("torch")` pulava o módulo primeiro e escondia o defeito.
+#
+# Um ImportError que NÃO seja a ausência do pgsg_1 continua subindo: um
+# defeito de importação do próprio pgsg_3 não é motivo para pular testes.
+try:
+    from pgsg_3.m_model.pgsg_v3 import (  # noqa: E402
+        PGSGv3Model,
+        kl_bernoulli,
+        kl_bernoulli_np,
+    )
+    from pgsg_3.m_model.pgsg_v2 import PGSGv2Model  # noqa: E402
+except ImportError as erro:  # pragma: no cover
+    if "pgsg_1" not in str(erro):
+        raise
+    pytest.skip(f"pacote pgsg_1 indisponível: {erro}",
+                allow_module_level=True)
 
 try:
     from pgsg_1.ingestion import SpectralDataset

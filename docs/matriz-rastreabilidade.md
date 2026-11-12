@@ -3,11 +3,11 @@
 Gerado por `scripts/16_matriz_rastreabilidade.py`. Não editar: a categoria de cada
 teste é declarada no próprio teste, por marcador `pytest`.
 
-271 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
+281 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
 nível do módulo, lida da fonte por AST — não é item coletado pelo pytest nem teste executado. Casos
 parametrizados somam +15 itens na coleta.
 
-## semantico (35)
+## semantico (39)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -29,7 +29,7 @@ parametrizados somam +15 itens na coleta.
 | `test_rascunho_nao_afirma_ausencia_total_de_empate` | The draft said the unanchored arm has no ties and the two rules agree | `08-rascunho-s5.md` |
 | `test_resumo_C_carrega_as_quatro_exigencias` | The four binding requirements the author attached to approving | `02-resumo-C.md` |
 | `test_estrutura_concilia_com_o_ADR_0003` | Item 2 of 'O que falta antes da prosa' said the editor route was | `00-estrutura.md` |
-| `test_prior_nao_e_descrito_como_min_max` | The literature prior is not min-max normalised: make_literature_prior | `03-rascunho-s1-s2-s3.md`, `F002-o-que-as-metricas-interpretativas-medem.md`, `paper/03-rascunho-s1-s2-s3.md` |
+| `test_prior_nao_e_descrito_como_min_max` | The literature prior is not min-max normalised: make_literature_prior | `03-rascunho-s1-s2-s3.md`, `F002-o-que-as-metricas-interpretativas-medem.md`, `scripts/05_diagnostico_jaccard.py` |
 | `test_f008_separa_o_medido_do_inferido` | The finding must keep three things apart: what was measured here, what | `F008-a-sobreposicao-deterministica-depende-do-sort.md` |
 | `test_07_separa_exigencia_confirmada_de_nao_verificada` | The submission matter must keep the two categories apart: what was read | `07-declaracoes-submissao.md` |
 | `test_resumo_cabe_no_limite_confirmado_do_chemolab` | The journal's limit, read at the source on 2026-10-28: "You are | `02-resumo-C.md` |
@@ -38,16 +38,20 @@ parametrizados somam +15 itens na coleta.
 | `test_12_audita_os_pontos_que_exigem_citacao` | The reference audit of 2026-10-29. The manuscript has no citations at | `12-referencias.md`, `15_consolidar_manuscrito.py` |
 | `test_texto_declara_a_grade_e_o_truncamento` | F009's two text corrections, 2026-10-29. Both state a measured fact and | `03-rascunho-s1-s2-s3.md`, `06-legendas-figuras.md` |
 | `test_cada_figura_e_citada_e_as_legendas_estao_em_ingles` | Two defects found by the conformity scan of 2026-10-29, both fixed in | `01-rascunho-resumo-e-s4.md`, `06-legendas-figuras.md`, `15_consolidar_manuscrito.py` |
-| `test_12_oferece_rota_sem_bibliografia_para_a_frase_da_secao_2_5` | The audit's most exposed point has a way out that needs no reference, | `01-rascunho-resumo-e-s4.md`, `03-rascunho-s1-s2-s3.md`, `12-referencias.md` |
+| `test_12_aplica_as_tres_decisoes_que_fecham_sem_bibliografia` | Three of the author's four decisions of 2026-11-09 close without a | `01-rascunho-resumo-e-s4.md`, `02-resumo-C.md`, `03-rascunho-s1-s2-s3.md` |
 | `test_07_registra_a_conformidade_medida_sem_alterar_a_citacao_do_autor` | The language rule, measured: British throughout, one American form, and | `05-rascunho-s9-s10-s11.md`, `07-declaracoes-submissao.md` |
 | `test_12_fecha_o_conjunto_raman_por_concordancia_declarada` | The Raman dataset, identified on 2026-10-29. "bioprocess_substrates" | `12-referencias.md` |
 | `test_12_registra_o_dossie_e_os_tres_destinos` | The dossier the author asked for on 2026-10-29, and the complication it | `12-referencias.md` |
 | `test_07_registra_as_quatro_decisoes_e_a_condicao_nao_satisfeita` | The author's four decisions of 2026-10-29. Three are applied and one is | `07-declaracoes-submissao.md` |
 | `test_18_mede_o_idioma_do_artefato_por_secao` | The manuscript is English, and anything in the drafting language that | `05-rascunho-s9-s10-s11.md`, `correcao-em-provas.md` |
-| `test_13_propoe_a_tabela1_em_ingles_sem_aplicar` | The Table 1 translation, proposed on 2026-10-29 and NOT applied. Every | `00-estrutura.md`, `13-tabela1.md`, `15_consolidar_manuscrito.py` |
-| `test_19_declara_o_que_falta_em_vez_de_disfarcar` | The reading copy must say what it is not. Three things are missing from | `19_tex.py`, `M.md`, `paper/12-referencias.md` |
+| `test_13_aplica_a_tabela1_em_ingles_e_concilia_com_o_original` | The Table 1 translation, approved and applied on 2026-11-09: translate | `00-estrutura.md`, `13-tabela1.md`, `15_consolidar_manuscrito.py` |
+| `test_19_declara_o_que_falta_em_vez_de_disfarcar` | The reading copy must say what it is not. Three things are missing from | `19_tex.py`, `paper/12-referencias.md`, `scripts/15_consolidar_manuscrito.py` |
+| `test_bib_so_tem_entrada_verificada_e_bibtex_nao_ve_o_resto` | paper/referencias.bib carries only what was read at a source, and the | `12-referencias.md`, `referencias.bib` |
+| `test_14_corrige_a_alegacao_causal_e_descreve_o_cruzamento` | The two scientific corrections of the 2026-11-02 referee report, | `03-rascunho-s1-s2-s3.md`, `04-rascunho-s6-s7-s8.md`, `06-legendas-figuras.md` |
+| `test_12_mede_a_exposicao_ao_fundador_nao_corrigido` | The editor did not answer the letter about the corrigendum, so the | `12-referencias.md`, `F001-caminho-de-regularizacao.md`, `F004-estabilidade-interpretativa-e-funcao-dos-dados.md` |
+| `test_12_aplica_seis_das_sete_e_reenquadra_a_novidade` | Six of the seven proposed references, approved and applied on | `03-rascunho-s1-s2-s3.md`, `12-referencias.md`, `scripts/17_citacoes.py` |
 
-## estrutural (21)
+## estrutural (26)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -55,7 +59,7 @@ parametrizados somam +15 itens na coleta.
 | `test_15_recusa_resumo_partido_em_vez_de_truncar` | On 2026-10-28 the abstract was rewritten with a line beginning '--', | `15_consolidar_manuscrito.py` |
 | `test_16_reconcilia_a_unidade_de_contagem` | Author 2026-10-28: the report must declare its unit of count and not | `16_matriz_rastreabilidade.py` |
 | `test_16_chama_a_reconciliacao_de_estatica` | Author 2026-10-28: the AST count of parametrised cases is adequate for | `16_matriz_rastreabilidade.py` |
-| `test_16_check_confronta_a_matriz_com_os_testes` | Author's condition 2: being generated does not make the stored matrix | `16_matriz_rastreabilidade.py`, `docs/matriz-rastreabilidade.md`, `scripts/16_matriz_rastreabilidade.py` |
+| `test_16_check_confronta_a_matriz_com_os_testes` | Author's condition 2: being generated does not make the stored matrix | `16_matriz_rastreabilidade.py`, `docs/matriz-rastreabilidade.md` |
 | `test_16_declara_a_categoria_e_nao_a_infere` | The matrix must take each test's category from a declared pytest | `16_matriz_rastreabilidade.py`, `pyproject.toml` |
 | `test_15_consolida_sem_perder_nem_inventar` | The consolidated manuscript is a build step over the drafts. It must | `08-rascunho-s5.md`, `15_consolidar_manuscrito.py` |
 | `test_14_veredicto_de_uma_linha_nao_pode_ser_truncado` | The author's partition run of 2026-10-27 was piped through `tail -20` | `14_etapa_b_por_procedimento.py` |
@@ -68,12 +72,17 @@ parametrizados somam +15 itens na coleta.
 | `test_17_varre_os_rascunhos_que_a_ordem_declara` | The scanner takes its file list from the consolidator's ORDEM, not from | `00-estrutura.md`, `02-resumo-C.md`, `06-legendas-figuras.md` |
 | `test_18_nao_chama_de_mistura_o_que_e_ingles_britanico` | The guide: "write in American or British English but not a combination | `18_conformidade.py` |
 | `test_18_separa_prosa_autoral_de_citacao_literal` | The author's decision of 2026-10-29: a verbatim quotation is reproduced | `18_conformidade.py` |
-| `test_codigo_de_saida_nao_contradiz_o_veredito_impresso` | Found in the author's run of 2026-11-02: 18_conformidade.py printed | `17_citacoes.py`, `18_conformidade.py`, `scripts/17_citacoes.py` |
+| `test_codigo_de_saida_nao_contradiz_o_veredito_impresso` | Found in the author's run of 2026-11-02: 18_conformidade.py printed | `12-referencias.md`, `17_citacoes.py`, `18_conformidade.py` |
 | `test_19_recusa_caractere_nao_mapeado_em_vez_de_emitir` | The LaTeX build maps every non-ASCII character explicitly and stops on | `19_tex.py` |
 | `test_19_pesa_colunas_pela_media_e_pela_palavra_mais_longa` | Column widths proportional to the LONGEST cell is the obvious rule and | `19_tex.py` |
-| `test_15_carrega_o_titulo_do_artigo` | The consolidated manuscript had no title: its only top-level heading | `00-estrutura.md`, `15_consolidar_manuscrito.py`, `M.md` |
+| `test_15_carrega_o_titulo_do_artigo` | The consolidated manuscript had no title: its only top-level heading | `00-estrutura.md`, `15_consolidar_manuscrito.py` |
+| `test_16_nao_lista_como_fonte_o_que_nao_e_arquivo` | The author's matrix of 2026-11-02 listed M.md as a guarded source in two | `16_matriz_rastreabilidade.py`, `17_citacoes.py`, `MANUSCRITO.md` |
+| `test_raiz_do_repositorio_nao_acumula_arquivo_solto` | Two files named `source` and `test` were committed to the repository | `README.md`, `pyproject.toml` |
+| `test_19_numera_pela_profundidade_e_recusa_desencontro` | The numbers LaTeX prints must be the numbers the manuscript wrote. | `19_tex.py` |
+| `test_19_nao_leva_a_regua_do_markdown_para_a_legenda` | Figure 5's caption ended with a dash in the 31-page PDF. It was the | `19_tex.py` |
+| `test_artefato_versionado_nao_pode_ficar_desatualizado` | A generated file kept under version control can go stale, and a stale | `MANUSCRITO.md`, `MANUSCRITO.tex`, `scripts/15_consolidar_manuscrito.py` |
 
-## numerico (9)
+## numerico (10)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -86,6 +95,7 @@ parametrizados somam +15 itens na coleta.
 | `test_f007_corrige_o_espacamento_e_separa_proveniencia` | The two corrections the author required on 2026-10-26, recorded in the | `F007-o-controle-de-deslocamento-e-o-plato.md` |
 | `test_17_resolve_marcadores_e_ordem_de_aparicao` | The three arithmetic checks the guide's reference rules reduce to: | `17_citacoes.py` |
 | `test_f009_mede_a_grade_e_separa_o_que_nao_afeta` | F009, measured from the stored wavelength grid on 2026-10-29: the grid | `F009-a-grade-de-ondas-e-a-terceira-regiao-do-prior.md`, `gates_n1158.npz` |
+| `test_15_concilia_a_contagem_declarada_com_a_tabela1` | The manuscript said eight of twenty pre-registered hypotheses were not | `00-estrutura.md`, `02-resumo-C.md`, `03-rascunho-s1-s2-s3.md` |
 
 ## UNCLASSIFIED (206)
 

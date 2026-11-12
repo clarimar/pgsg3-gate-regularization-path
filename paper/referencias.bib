@@ -1,0 +1,368 @@
+% References for "When Spectral Attention Stability Reflects the Prior Rather
+% Than the Data".
+%
+% WHAT IS HERE, AND WHAT IS NOT
+% -----------------------------
+% Five entries, every field read at its source on 2026-10-29 and recorded with
+% its provenance in paper/12-referencias.md. Nothing in this file was written
+% from memory: an invented reference is worse than a missing one, because the
+% absence is visible and the invention is not.
+%
+% The four groups the manuscript still needs are at the end of this file as
+% stubs that BibTeX cannot see: an entry whose fields are placeholders must
+% not be citable by accident. The first version of this file "commented" them
+% with a leading per-cent sign, which does nothing in BibTeX -- it is not a
+% comment character there, and bibtex happily read all four, emitting a
+% bibitem for each with empty fields. The at-sign is what BibTeX looks for,
+% so the stubs below carry none: put it back when the fields are filled.
+%
+% The same applies to this very note: an at-sign anywhere outside an entry is
+% read as the start of one, and three of them in the first draft of this
+% header produced three error messages in the bibtex log. None is written
+% here as a character.
+%
+% This file is not wired into the document. The manuscript has no citation
+% markers yet -- the places that require one are audited in
+% paper/12-referencias.md -- and inserting them is an attribution decision,
+% not a conversion step.
+
+% ---------------------------------------------------------------------------
+% Verified: every field read at the source
+% ---------------------------------------------------------------------------
+
+@misc{anderson2024mango,
+  author    = {Anderson, Nicholas and Walsh, Kerry and Subedi, Phul and
+               Walsh, Jeremy},
+  title     = {Mango {DMC} and spectra {Anderson} et al. 2020},
+  publisher = {Mendeley Data},
+  version   = {3},
+  year      = {2024},
+  doi       = {10.17632/46htwnp833.3},
+  note      = {Near-infrared absorbance spectra, 309--1149 nm, with dry
+               matter content. The record offers no preformatted citation;
+               these fields are its metadata}
+}
+
+@article{harris2020numpy,
+  author  = {Harris, Charles R. and Millman, K. Jarrod and
+             van der Walt, St{\'e}fan J. and Gommers, Ralf and
+             Virtanen, Pauli and Cournapeau, David and Wieser, Eric and
+             Taylor, Julian and Berg, Sebastian and Smith, Nathaniel J. and
+             Kern, Robert and Picus, Matti and Hoyer, Stephan and
+             van Kerkwijk, Marten H. and Brett, Matthew and
+             Haldane, Allan and Fern{\'a}ndez del R{\'i}o, Jaime and
+             Wiebe, Mark and Peterson, Pearu and
+             G{\'e}rard-Marchant, Pierre and Sheppard, Kevin and
+             Reddy, Tyler and Weckesser, Warren and Abbasi, Hameer and
+             Gohlke, Christoph and Oliphant, Travis E.},
+  title   = {Array programming with {NumPy}},
+  journal = {Nature},
+  volume  = {585},
+  number  = {7825},
+  pages   = {357--362},
+  year    = {2020},
+  doi     = {10.1038/s41586-020-2649-2}
+}
+
+@article{lange2026raman,
+  author  = {Lange, Christoph and Altmann, Madeline and Stors, Daniel and
+             Seidel, Simon and Moynahan, Kyle and Cai, Linda and
+             Born, Stefan and Neubauer, Peter and
+             Cruz Bournazou, M. Nicolas},
+  title   = {Deep learning for {Raman} spectroscopy: Benchmarking models for
+             upstream bioprocess monitoring},
+  journal = {Measurement},
+  volume  = {258},
+  pages   = {118884},
+  year    = {2026},
+  doi     = {10.1016/j.measurement.2025.118884},
+  note    = {Describes the reference dataset of 6960 annotated spectra and
+             the eight substrates, glucose among them}
+}
+
+@misc{lange2025substratemix,
+  author       = {Lange, Christoph},
+  title        = {{SubstrateMixRaman}},
+  howpublished = {Hugging Face Datasets, \texttt{chlange/SubstrateMixRaman}},
+  year         = {2025},
+  note         = {CC BY 4.0; 6960 rows, 1878 columns, eight targets. Its
+                  identification with the manuscript's local
+                  \texttt{bioprocess\_substrates} rests on three measured
+                  agreements and not on the name, which appears in no source;
+                  see paper/12-referencias.md}
+}
+
+@misc{koddenbrock2026ramanbench,
+  author = {Koddenbrock, Mario and Lange, Christoph and Legner, Robin and
+            Jaeger, Martin and K{\"o}gler, Martin and
+            Cruz Bournazou, Mariano N. and Neubauer, Peter and
+            Bie{\ss}mann, Felix and Rodner, Erik},
+  title  = {{RamanBench}: A Large-Scale Benchmark for Machine Learning on
+            {Raman} Spectroscopy},
+  year   = {2026},
+  eprint = {2605.02003},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  note   = {The access route the repository names, not the source of the
+            dataset}
+}
+
+% ---------------------------------------------------------------------------
+% READ AT SOURCE on 2026-11-09, from the PDFs of the published articles
+% ---------------------------------------------------------------------------
+
+@article{coelho2026pgsg,
+  author  = {Coelho, Guilherme and de Lima das Chagas, Ang{\'e}lica and
+             Carneiro, Lilian Carla and Coelho, Clarimar Jos{\'e}},
+  title   = {Prior-guided spectral gating for interpretable deep learning in
+             near-infrared spectroscopy},
+  journal = {Chemometrics and Intelligent Laboratory Systems},
+  volume  = {277},
+  pages   = {105833},
+  year    = {2026},
+  doi     = {10.1016/j.chemolab.2026.105833},
+  note    = {Read on the article's first page. Received 26 May 2026,
+             accepted 19 July 2026, online 30 July 2026. Its datasets are
+             Tecator and Gasoline, and its prior comes from variable-
+             importance measures, not from literature band assignments --
+             which is why the literature-prior practice is cited to
+             coelho2027gatetopology and not to this one}
+}
+
+@article{coelho2027gatetopology,
+  author  = {Coelho, Guilherme and Coelho, Clarimar Jos{\'e}},
+  title   = {Gate topology and reproducibility of {Prior-Guided} {Spectral}
+             {Gating} across near-infrared and {Raman} spectroscopy},
+  journal = {Chemometrics and Intelligent Laboratory Systems},
+  volume  = {280},
+  pages   = {105926},
+  year    = {2027},
+  doi     = {10.1016/j.chemolab.2026.105926},
+  note    = {Read on the article's first page. Accepted 13 October 2026,
+             online 31 October 2026. Its data are the mango set, n = 1448,
+             and Raman glucose, n = 6472 -- this manuscript's data. It
+             specifies PGSGv2Model, carries the q = floor(p/10) = 28
+             convention and reports the 0.9418 pairwise Jaccard}
+}
+
+@article{saranwong2004mango,
+  author  = {Saranwong, Sirinnapa and Sornsrivichai, Jingtair and
+             Kawano, Sumio},
+  title   = {Prediction of ripe-stage eating quality of mango fruit from its
+             harvest quality measured nondestructively by near infrared
+             spectroscopy},
+  journal = {Postharvest Biology and Technology},
+  volume  = {31},
+  pages   = {253--261},
+  year    = {2004},
+  note    = {SECOND-HAND PROVENANCE: read in the reference list of
+             coelho2027gatetopology, where it is [5] and is the source of
+             the three NIR windows, and NOT in the article itself, which a
+             web search did not recover. The page range is the one that
+             article prints and should be checked before submission}
+}
+
+@article{wold2001pls,
+  author  = {Wold, Svante and Sj{\"o}str{\"o}m, Michael and
+             Eriksson, Lennart},
+  title   = {{PLS}-regression: a basic tool of chemometrics},
+  journal = {Chemometrics and Intelligent Laboratory Systems},
+  volume  = {58},
+  number  = {2},
+  pages   = {109--130},
+  year    = {2001},
+  note    = {SECOND-HAND PROVENANCE: read in the reference list of
+             coelho2026pgsg, where it is [4]. Cited for the PLS reference
+             against which the gate is compared}
+}
+
+@inproceedings{jain2019attention,
+  author    = {Jain, Sarthak and Wallace, Byron C.},
+  title     = {Attention is not Explanation},
+  booktitle = {Proceedings of the 2019 Conference of the North American
+               Chapter of the Association for Computational Linguistics:
+               Human Language Technologies, Volume 1 (Long and Short Papers)},
+  publisher = {Association for Computational Linguistics},
+  address   = {Minneapolis, Minnesota},
+  pages     = {3543--3556},
+  year      = {2019},
+  doi       = {10.18653/v1/N19-1357},
+  note      = {Read on the ACL Anthology}
+}
+
+@inproceedings{adebayo2018sanity,
+  author    = {Adebayo, Julius and Gilmer, Justin and Muelly, Michael and
+               Goodfellow, Ian and Hardt, Moritz and Kim, Been},
+  title     = {Sanity Checks for Saliency Maps},
+  booktitle = {Advances in Neural Information Processing Systems 31},
+  year      = {2018},
+  note      = {Read on the conference page, with the author order. Cited for
+               the randomisation control: an explanation that survives
+               randomising the model and the labels is independent of both}
+}
+
+@inproceedings{kuncheva2007stability,
+  author    = {Kuncheva, Ludmila I.},
+  title     = {A stability index for feature selection},
+  booktitle = {Proceedings of the 25th {IASTED} International
+               Multi-Conference: Artificial Intelligence and Applications},
+  pages     = {390--395},
+  year      = {2007},
+  note      = {Read the PDF on the author's own site, including Definition 1
+               and the hypergeometric expectation E[r] = k^2/n of the
+               intersection of a fixed subset with a random one. Venue and
+               pages confirmed against a second, independent source. This is
+               the antecedent of this manuscript's chance level: the
+               correction is the same in kind, and differs in its argument}
+}
+
+@article{nogueira2018stability,
+  author  = {Nogueira, Sarah and Sechidis, Konstantinos and Brown, Gavin},
+  title   = {On the stability of feature selection algorithms},
+  journal = {Journal of Machine Learning Research},
+  volume  = {18},
+  number  = {174},
+  pages   = {1--54},
+  year    = {2018},
+  note    = {Read on the JMLR page}
+}
+
+@article{anderson2020mango,
+  author  = {Anderson, Nicholas T. and Walsh, Kerry B. and
+             Subedi, Phul P. and Hayes, Chris H.},
+  title   = {Achieving robustness across season, location and cultivar for a
+             {NIRS} model for intact mango fruit dry matter content},
+  journal = {Postharvest Biology and Technology},
+  volume  = {168},
+  pages   = {111202},
+  year    = {2020},
+  note    = {SECOND-HAND PROVENANCE: read in the reference list of
+             coelho2027gatetopology, where it is [4]. This is the ARTICLE of
+             the dataset and is a different record from anderson2024mango,
+             which is the data deposit}
+}
+
+@book{workman2012nir,
+  author    = {Workman, Jerry, Jr. and Weyer, Lois},
+  title     = {Practical Guide and Spectral Atlas for Interpretive
+               Near-Infrared Spectroscopy},
+  edition   = {2},
+  publisher = {CRC Press},
+  year      = {2012},
+  note      = {SECOND-HAND PROVENANCE: read in the reference list of
+               coelho2027gatetopology, where it is [2]. Cited beside
+               saranwong2004mango for the C--H overtone regions}
+}
+
+@article{jaccard1912flora,
+  author  = {Jaccard, Paul},
+  title   = {The distribution of the flora in the alpine zone},
+  journal = {New Phytologist},
+  volume  = {11},
+  number  = {2},
+  pages   = {37--50},
+  year    = {1912},
+  doi     = {10.1111/j.1469-8137.1912.tb05611.x},
+  note    = {Read the article PDF: author, journal, volume, issue, pages and
+             year as printed; the DOI from the publisher's record. Cited where
+             the metric is introduced, beside the chance-correction literature}
+}
+
+@inproceedings{mcallester1999pacbayes,
+  author    = {McAllester, David A.},
+  title     = {{PAC}-Bayesian model averaging},
+  booktitle = {Proceedings of the 12th Annual Conference on Computational
+               Learning Theory},
+  publisher = {ACM},
+  pages     = {164--170},
+  year      = {1999},
+  doi       = {10.1145/307400.307435},
+  note      = {SECOND-HAND PROVENANCE: the entry comes from the reference list
+               of Guedj's primer on PAC-Bayesian learning; the DOI is the ACM
+               record's. Cited in Section 9.2, where the objective is said to
+               RESEMBLE a PAC-Bayes bound and explicitly not to be one}
+}
+
+@article{bartlett2002rademacher,
+  author  = {Bartlett, Peter L. and Mendelson, Shahar},
+  title   = {Rademacher and {Gaussian} complexities: risk bounds and
+             structural results},
+  journal = {Journal of Machine Learning Research},
+  volume  = {3},
+  pages   = {463--482},
+  year    = {2002},
+  note    = {Read the PDF on the JMLR site, header line and author block.
+             Cited in Section 11 as future work: no such estimate is reported
+             in this paper, and the text says so}
+}
+
+@article{wilcoxon1945ranking,
+  author  = {Wilcoxon, Frank},
+  title   = {Individual comparisons by ranking methods},
+  journal = {Biometrics Bulletin},
+  volume  = {1},
+  pages   = {80--83},
+  year    = {1945},
+  doi     = {10.2307/3001968},
+  note    = {Read in the documentation of scipy.stats.wilcoxon, which is the
+             function this programme's code calls, and which also confirms
+             that it is the SIGNED-RANK test on paired differences -- the
+             variant and the unit now named in Section 8}
+}
+
+@book{hastie2009elements,
+  author    = {Hastie, Trevor and Tibshirani, Robert and
+               Friedman, Jerome H.},
+  title     = {The Elements of Statistical Learning: Data Mining, Inference,
+               and Prediction},
+  edition   = {2},
+  publisher = {Springer},
+  year      = {2009},
+  isbn      = {0387848576},
+  note      = {Read in a bibliographic record: authors, title and subtitle,
+               edition, publisher, year and ISBN. The series is not printed
+               there and is therefore not written here. Cited for the
+               one-standard-error rule in Section 2.2}
+}
+
+@article{kullback1951information,
+  author  = {Kullback, Solomon and Leibler, Richard A.},
+  title   = {On information and sufficiency},
+  journal = {Annals of Mathematical Statistics},
+  volume  = {22},
+  number  = {1},
+  year    = {1951},
+  doi     = {10.1214/aoms/1177729694},
+  note    = {INCOMPLETE ON PURPOSE: title, authors, journal, volume, issue,
+             year and DOI come from Project Euclid's canonical URL. THE PAGE
+             RANGE WAS NOT READ -- three sources refused with a browser check
+             -- and is therefore not written. Fill it before submission}
+}
+
+% ---------------------------------------------------------------------------
+% STILL OPEN -- invisible to BibTeX, on purpose
+%
+% The at-sign is what BibTeX looks for, so the entry below carries none: with
+% it, and even with a per-cent sign in front, bibtex read the stubs and
+% produced bibitems with empty fields. Fill the marked fields, put the
+% at-sign back, and strip the per-cent signs from the line starts.
+% ---------------------------------------------------------------------------
+
+% unpublished{incerteza,
+%   author = {Coelho, Guilherme and Coelho, Clarimar Jose},
+%   title  = {Prior Specification Bounds What Spectral Attention Can Learn},
+%   note   = {Submitted; the authors read on its first page. NOT cited in the
+%             manuscript: citing work under submission is the authors' call
+%             and has not been made. It bears on Sections 3 and 9, where the
+%             saturated gate the penalty cannot move is the same phenomenon},
+%   year   = {[FALTA: nao publicado]}
+% }
+
+% The pgsg_1 R2 revision, which produced the seven training sizes, belongs to
+% a REJECTED manuscript that will not be resubmitted (findings/F004). Section
+% 2.4 declares it as the authors' own unpublished material, by the author's
+% decision of 2026-11-09, and it is not a reference.
+%
+% The corrigendum to coelho2026pgsg is NOT a reference either: the editor did
+% not answer the letter, so it has no journal, volume, year or DOI. If the
+% manuscript mentions it, it does so in the text.

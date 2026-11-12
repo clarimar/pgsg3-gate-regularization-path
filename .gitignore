@@ -33,12 +33,16 @@ results/**/*.pt
 *.blg
 *.synctex.gz
 
+# a copia de leitura em LaTeX e produto do 19_tex.py: reconstruida a cada
+# ajuste do conversor, e ninguem le o diff dela. O MANUSCRITO.md FICA
+# versionado -- o diff do texto consolidado tem valor -- e um teste recusa
+# a versao comitada quando ela deixa de ser o que os rascunhos produzem.
+paper/MANUSCRITO.tex
+paper/MANUSCRITO.pdf
+
 # clones e snapshots de outros trabalhos, que vivem em repos proprios
 pgsg4-bayesian-gating/
 *.zip
-
-# agregados de experimento: nao versionar, como os .csv e .npz
-results/**/*.json
 
 # agregados de experimento: nao versionar, como os .csv e .npz
 results/**/*.json

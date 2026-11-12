@@ -17,19 +17,36 @@ A §1 não carrega números, por desenho.
 
 Spectral models that expose a per-band gate are attractive because the gate
 invites a reading: the bands it raises are the bands the model found
-informative. When a prior derived from the literature is used to guide that
-gate, the reading acquires a second claim — that the guidance makes the
+informative. The same reading has been questioned where learned weights are
+offered as explanations elsewhere — attention weights that do not track other
+measures of importance, and whose very different configurations give the same
+prediction [1] — and saliency maps that survive randomising the model and the
+labels, which is to say that they are independent of both [2]. The mechanism
+examined here was introduced for near-infrared regression at small sample
+sizes [3] and carried to a second modality, with a literature-derived prior,
+in [4]. When a prior derived from the literature is used to guide that
+gate [4], the reading acquires a second claim — that the guidance makes the
 selection reproducible, so that independent runs identify the same chemistry.
 The usual evidence for this claim is the overlap of the top-k gated bands
-across runs that differ only in their random seed, reported as a Jaccard index
-and compared, when it is compared at all, against an intuition of what chance
-would give.
+across runs that differ only in their random seed, reported as a Jaccard
+index [5].
 
-This paper examines the conditions under which that overlap means what it is
-taken to mean. The conditions are geometric, they are checkable before any
-model is trained, and the way of encoding a prior that we used in our own
-earlier work violates them. How often other encodings do is not something we
-measured, and we do not assert it.
+**That overlap has to be read against chance, and the need to do so is not
+new.** The feature-selection literature has corrected set overlap for chance
+for nearly two decades: the consistency index of [6] subtracts the
+hypergeometric expectation of the intersection of two random subsets of equal
+size, and [7] places that correction, and others, on a stated set of
+properties. What this paper adds is narrower and specific to the way a
+quantised prior is written down. When the prior assigns one value to a block
+of bands, the gate inherits ties inside that block, and the top-k cut then
+falls inside a tied set whose members a sorting rule — not the data — orders.
+Under that condition the relevant chance level is not the expectation of the
+intersection but the exact expectation of the Jaccard index over the tied
+block, and the figure the overlap takes depends on the tie-breaking rule. The
+conditions are geometric, they are checkable before any model is trained, and
+the way of encoding a prior that we used in our own earlier work [4] violates
+them. How often other encodings do is not something we measured, and we do not
+assert it.
 
 ### 1.1 What the interpretive claim would have to assert
 
@@ -120,10 +137,11 @@ learning can be seen. Section 8 reports it.
 
 ### 2.1 Datasets
 
-**Near-infrared.** The mango dry-matter dataset, version 3, harvest 4
-(DOI 10.17632/46htwnp833.3), with p = 281 wavelengths spanning 309 to 1149 nm
+**Near-infrared.** The mango dry-matter dataset, version 3, harvest 4 [8],
+whose calibration across seasons, locations and cultivars is reported in [9],
+with p = 281 wavelengths spanning 309 to 1149 nm
 in steps of 3 nm. Splits are grouped by
-fruit: the collection holds 725 fruits of which 723 were measured twice, so a
+fruit: the collection holds 725 fruits of which 723 were measured twice [4], so a
 random split over spectra would place two measurements of one fruit on opposite
 sides of the partition and inflate held-out performance. All partitions
 reported here are grouped.
@@ -147,8 +165,9 @@ to break the circle. This is a limitation of the source data rather than of the
 splitting procedure, and we report the verified properties rather than the
 conclusion they would support under the extra assumption.
 
-**Raman.** The `bioprocess_substrates` collection, glucose as the regression
-target, with p = 1870 Raman shifts. The source records 6960 spectra; 488 carry
+**Raman.** The `bioprocess_substrates` collection [10,11], glucose as the
+regression target, with p = 1870 Raman shifts; the collection is also one of
+the sets gathered by a public Raman benchmark [12]. The source records 6960 spectra; 488 carry
 no glucose value and are dropped at ingestion, leaving 6472 analysed. The
 exclusion criterion is a missing (`NaN`) target and nothing else, and the count
 is recorded by the loader rather than reconstructed afterwards. Splits are not
@@ -158,9 +177,14 @@ available, and this is a limitation rather than a choice (Section 10).
 ### 2.2 Priors
 
 The near-infrared prior is assembled by assigning one constant value to each
-reported absorption region — 0.6 to 680–700 nm (chlorophyll), 1.0 to
-900–1000 nm (second C–H overtone), 0.8 to 1100–1200 nm (first C–H overtone) —
-over a floor of 0.1 elsewhere, and is then divided by its maximum. On the
+of three literature-derived regions relevant to dry-matter content [13] —
+0.6 to 680–700 nm (chlorophyll), 1.0 to 900–1000 nm (second C–H overtone),
+0.8 to 1100–1200 nm (first C–H overtone), the last two being the overtone
+regions catalogued in [14] — over a floor of 0.1 elsewhere, and is then
+divided by its maximum. The three levels are ours; the three windows and their
+assignments are not. Nothing in this paper rests on the windows being the right
+ones: what follows depends only on the prior having a level set larger than the
+selected set, which Section 4 makes precise. On the
 281-wavelength axis this gives four distinct values, 0.1 on 223 bands, 0.6 on
 7, 0.8 on 17, and 1.0 on the 34 bands falling inside the 900–1000 nm window,
 which is 12.1% of the spectrum.
@@ -172,8 +196,7 @@ the identity map here, since the largest assigned value is already 1; all it
 would ever do is fix the top level. The block of 34 numerically equal entries
 exists because a single constant was assigned to a region 100 nm wide. Any
 prior written in the form *these regions matter this much* has level sets as
-large as the regions it names, and that is the ordinary way to encode published
-band assignments. The condition examined in this paper is therefore not a quirk
+large as the regions it names, whatever fixes the regions. The condition examined in this paper is therefore not a quirk
 of one normalisation scheme: it is violated whenever the largest named region
 contains more bands than the selected set.
 
@@ -186,17 +209,22 @@ that difference is what makes the Raman arm a control rather than a replication.
 ### 2.3 Gate and objective
 
 The gate is a per-band sigmoid, `g = σ(θ)`, multiplying the spectrum before a
-light multilayer perceptron, trained end to end. Two ways of letting the prior
-`s` enter are compared throughout and must not be confused:
+light multilayer perceptron, trained end to end; the architecture is the one
+specified in [4], unmodified. The prior `s` enters in two
+places, and the two are **crossed** rather than being alternatives, so that
+four configurations are trained and not two:
 
-- **prior in the initialisation**, `θ₀ = logit(s)`, under which the prior sets
-  the starting point and no penalty is applied;
-- **penalty only**, `θ₀ = 0` with a term `λ · KL(g ‖ s)` summed over bands,
-  under which the prior constrains the solution without placing any parameter
-  at the start.
+- the **initialisation**, `θ₀ = logit(s)` against `θ₀ = 0`;
+- the **penalty**, a term `λ · KL(g ‖ s)` summed over bands, with λ on a
+  logarithmic grid anchored at λ = 0 — which reproduces the earlier model
+  exactly — and refined between 0.1 and 1, where the transition occurs.
 
-The second is what we recommend, and the distinction is the subject of
-Section 3.
+Each initialisation is therefore trained across the whole λ grid. Section 3
+compares the four: λ is what the zero-initialised arm varies in order to
+constrain the solution, and it is also what the prior-initialised arm varies in
+order to show that the penalty cannot move a gate that starts saturated. The
+two must not be confused, and the one we recommend is the penalty applied from
+`θ₀ = 0`.
 
 ### 2.4 Selection metric, and the two decile conventions in use
 
@@ -208,17 +236,38 @@ numbers and different chance levels, **we declare both and never mix them**:
 | source | definition of q | q at p = 281 | exact E[J] on a 34-band plateau |
 | --- | --- | --- | --- |
 | this work, and the stored metrics of the earlier revision | `ceil(0.10 p)` | 29 | 0.7445 |
-| the published ablation of the earlier study | `floor(p / 10)` | 28 | 0.7012 |
+| the published ablation of [4] | `floor(p / 10)` | 28 | 0.7012 |
+
+The stored metrics and gate vectors of that revision are the authors' own
+unpublished material: they ran under the published protocol, but the
+manuscript they belonged to was not accepted and will not be resubmitted.
+Every figure drawn from them is therefore a preliminary observation of ours
+and is not offered as published or as independent evidence; Section 5, which
+uses the seven training sizes throughout, states that its associations are
+exploratory.
 
 Every selection figure below carries the convention of the code that produced
 it. Figures taken from the published ablation are reported at q = 28 and
 compared against 0.7012; figures recomputed on the stored gate vectors of the
 earlier revision are reported at q = 29 and compared against 0.7445.
 
-### 2.5 The chance level, and a correction to how it is usually computed
+### 2.5 The chance level, and a correction to how we had computed it
 
-A chance level for a Jaccard index over a tied block of L bands is often
-quoted as q / (2L − q). That expression is not the expected Jaccard index. If
+Correcting set overlap for chance is established practice in the
+feature-selection literature. The consistency index of [6] takes two subsets
+of equal size q drawn from L variables, notes that the intersection of a fixed
+subset with a random one is hypergeometric with expectation q²/L, and
+subtracts that expectation so that independent draws score near zero; [7]
+puts that correction and its alternatives on a stated set of properties. The
+point of this section is not that a correction is needed — that was settled —
+but that the quantity being corrected is the Jaccard index and not the
+intersection, and that for a Jaccard index the two corrections differ.
+
+A chance level for a Jaccard index over a tied block of L bands may be
+computed as q / (2L − q), and that is what we had done ourselves, treating it
+as the exact value, until the correction recorded here. That expression is not
+the expected Jaccard index: it is the Jaccard index evaluated at the
+hypergeometric mean of [6], which is not the same thing. If
 two sets of size q are drawn uniformly and independently from L bands, their
 overlap k is hypergeometric with mean q²/L, and
 
@@ -232,7 +281,9 @@ lower bound. We therefore report the exact expectation,
 E[J] = Σₖ [C(q,k) · C(L−q, q−k) / C(L,q)] · k / (2q − k),
 
 which exceeds the ratio by 0.0012 at q = 28 and by 0.0009 at q = 29 for
-L = 34. The gap is smaller than the sampling spread of the estimates reported
+L = 34. In the vocabulary of [6] and [7], the correction being made here is
+the same in kind and different in its argument: the expectation is taken of
+J(k) rather than J taken of the expectation of k. The gap is smaller than the sampling spread of the estimates reported
 below and changes none of our verdicts, but it is systematic and in the
 direction that overstates any excess above chance, so it should not be carried
 into a comparison that is closer than ours.
@@ -242,7 +293,10 @@ into a comparison that is closer than ours.
 To ask whether the gate follows the data, we need a reference that the gate did
 not help produce. We use the absolute regression coefficients of a partial
 least squares model fitted on the training partition only. The number of latent
-components H is chosen by the one-standard-error rule on a cross-validated
+components H is chosen by the one-standard-error rule [15] — the most
+parsimonious model whose error is within one standard error of the minimum,
+which keeps the reference from being tuned to the partition it will be
+compared on — on a cross-validated
 error curve computed within the training partition — grouped by fruit for the
 near-infrared data, and over plain folds for Raman, where no grouping variable
 exists — with the search capped at 120 components and further capped by the
@@ -275,7 +329,7 @@ amended after the data were seen; where a criterion turned out to measure
 something other than what it was written to measure, the original text is kept
 and the misreading is reported alongside the verdict. Table 1 lists all twenty
 hypotheses with their verdicts and, in a separate column, the interpretation we
-reached afterwards. Eight were not supported.
+reached afterwards. Six were not supported. Two more met their criterion only formally or on a narrow reading, and Table 1 records both the verdict and that reading.
 
 **The tie-breaking analysis was not part of the original pre-registered
 hypothesis set.** It was introduced as a post hoc diagnostic investigation

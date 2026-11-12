@@ -5,7 +5,7 @@ The English text is copied verbatim; the Portuguese drafting apparatus is
 left behind and listed at the end of the generator's output. Do not edit this
 file -- edit the drafts and run the generator again.
 
-Source digest: **952850516f239d84** — SHA-256 over the 11 draft files this was
+Source digest: **d593754c833e15b0** — SHA-256 over the 12 draft files this was
 built from, truncated. Two copies with the same digest were built from the same
 sources, whatever the git state. The findings in `findings/` and Table 1 below
 belong with this digest; the generator prints the git revision alongside it.
@@ -15,6 +15,26 @@ belong with this digest; the generator prints the git revision alongside it.
 ## Title
 
 When Spectral Attention Stability Reflects the Prior Rather Than the Data
+
+---
+
+## Authors
+
+**Guilherme Coelho** ^a,1^, **Clarimar José Coelho** ^b,2,∗^
+
+^a^ State University of Campinas, Cidade Universitária Zeferino Vaz – Barão
+Geraldo, Campinas, 13083–970, São Paulo, Brazil
+
+^b^ Postgraduate Program in Industrial Engineering and Artificial
+Intelligence, Pontifícia Universidade Católica de Goiás, Primeira Avenida,
+s/n – Quadra 88, Setor Leste Universitário, Goiânia, 74605–010, Goiás, Brazil
+
+^∗^ Corresponding author. Email address: clarimarc@gmail.com (Clarimar José
+Coelho)
+
+^1^ ORCID: 0000-0003-3045-4057
+
+^2^ ORCID: 0000-0002-5163-2986
 
 ---
 
@@ -30,7 +50,7 @@ When Spectral Attention Stability Reflects the Prior Rather Than the Data
 
 ## Abstract
 
-We disentangle prior-based gate initialisation from prior-based regularisation and examine their distinct effects on learned spectral selections. Initialising at a step-function prior over 281 bands leaves the prior's saturated level operationally inert, with gradients of order 10^-6 that the penalty cannot move. That geometry permits an artefact but does not produce one; three conditions together do: an oversized level set, ties surviving training, and a deterministic tie rule. The near-infrared prior meets all three, a continuous Raman prior none: overlap of 0.9418, at the published convention of q = 28, falls to 0.7005 +- 0.0068 under random tie-breaking, against the exact expectation, 0.7012, for drawing 28 of 34 plateau bands twice. Outside the saturated plateau, the gates retained data-associated structure, aligning positively with a separate statistical reference across the 223 floor-level bands. Our earlier displacement-based control depends on neither the top-k selection nor the tie-breaking and is immune to this artefact; excluding the plateau bands lowers it by 0.018 (Pearson) or 0.051 (Spearman) at the largest sample size, and what survives still responds to n. For identical stored gates, at the revision convention of q = 29, overlap ranged from 0.7443-0.7659 under one sorting implementation to 0.9452-0.9867 under another, and 1.0000 with index-based tie-breaking; when ties cross the boundary, the overlap reflects the complete selection procedure rather than an identifiable property of the gates. We pre-registered twenty hypotheses, eight of which our criteria did not support; the tie-breaking analysis was a post hoc diagnostic, reported separately from those verdicts.
+We disentangle prior-based gate initialisation from prior-based regularisation and examine their distinct effects on learned spectral selections. Initialising at a step-function prior over 281 bands leaves the prior's saturated level operationally inert, with gradients of order 10⁻⁶ that the penalty cannot move. That geometry permits an artefact but does not produce one; three conditions together do: an oversized level set, ties surviving training, and a deterministic tie rule. The near-infrared prior meets all three, a continuous Raman prior none: overlap of 0.9418, at the published convention of q = 28, falls to 0.7005 ± 0.0068 under random tie-breaking, against the exact expectation, 0.7012, for drawing 28 of 34 plateau bands twice. Outside the saturated plateau, the gates retained data-associated structure, aligning positively with a separate statistical reference across the 223 floor-level bands. Our earlier displacement-based control depends on neither the top-k selection nor the tie-breaking and is immune to this artefact; excluding the plateau bands lowers it by 0.018 (Pearson) or 0.051 (Spearman) at the largest sample size, and what survives still responds to n. For identical stored gates, at the revision convention of q = 29, overlap ranged from 0.7443-0.7659 under one sorting implementation to 0.9452-0.9867 under another, and 1.0000 with index-based tie-breaking; when ties cross the boundary, the overlap reflects the complete selection procedure rather than an identifiable property of the gates. We pre-registered twenty hypotheses, six of which our criteria did not support; the tie-breaking analysis was a post hoc diagnostic, reported separately from those verdicts.
 
 ---
 
@@ -45,19 +65,36 @@ spectroscopy; Raman spectroscopy; reproducibility
 
 Spectral models that expose a per-band gate are attractive because the gate
 invites a reading: the bands it raises are the bands the model found
-informative. When a prior derived from the literature is used to guide that
-gate, the reading acquires a second claim — that the guidance makes the
+informative. The same reading has been questioned where learned weights are
+offered as explanations elsewhere — attention weights that do not track other
+measures of importance, and whose very different configurations give the same
+prediction [1] — and saliency maps that survive randomising the model and the
+labels, which is to say that they are independent of both [2]. The mechanism
+examined here was introduced for near-infrared regression at small sample
+sizes [3] and carried to a second modality, with a literature-derived prior,
+in [4]. When a prior derived from the literature is used to guide that
+gate [4], the reading acquires a second claim — that the guidance makes the
 selection reproducible, so that independent runs identify the same chemistry.
 The usual evidence for this claim is the overlap of the top-k gated bands
-across runs that differ only in their random seed, reported as a Jaccard index
-and compared, when it is compared at all, against an intuition of what chance
-would give.
+across runs that differ only in their random seed, reported as a Jaccard
+index [5].
 
-This paper examines the conditions under which that overlap means what it is
-taken to mean. The conditions are geometric, they are checkable before any
-model is trained, and the way of encoding a prior that we used in our own
-earlier work violates them. How often other encodings do is not something we
-measured, and we do not assert it.
+**That overlap has to be read against chance, and the need to do so is not
+new.** The feature-selection literature has corrected set overlap for chance
+for nearly two decades: the consistency index of [6] subtracts the
+hypergeometric expectation of the intersection of two random subsets of equal
+size, and [7] places that correction, and others, on a stated set of
+properties. What this paper adds is narrower and specific to the way a
+quantised prior is written down. When the prior assigns one value to a block
+of bands, the gate inherits ties inside that block, and the top-k cut then
+falls inside a tied set whose members a sorting rule — not the data — orders.
+Under that condition the relevant chance level is not the expectation of the
+intersection but the exact expectation of the Jaccard index over the tied
+block, and the figure the overlap takes depends on the tie-breaking rule. The
+conditions are geometric, they are checkable before any model is trained, and
+the way of encoding a prior that we used in our own earlier work [4] violates
+them. How often other encodings do is not something we measured, and we do not
+assert it.
 
 ### 1.1 What the interpretive claim would have to assert
 
@@ -150,10 +187,11 @@ learning can be seen. Section 8 reports it.
 
 ### 2.1 Datasets
 
-**Near-infrared.** The mango dry-matter dataset, version 3, harvest 4
-(DOI 10.17632/46htwnp833.3), with p = 281 wavelengths spanning 309 to 1149 nm
+**Near-infrared.** The mango dry-matter dataset, version 3, harvest 4 [8],
+whose calibration across seasons, locations and cultivars is reported in [9],
+with p = 281 wavelengths spanning 309 to 1149 nm
 in steps of 3 nm. Splits are grouped by
-fruit: the collection holds 725 fruits of which 723 were measured twice, so a
+fruit: the collection holds 725 fruits of which 723 were measured twice [4], so a
 random split over spectra would place two measurements of one fruit on opposite
 sides of the partition and inflate held-out performance. All partitions
 reported here are grouped.
@@ -177,8 +215,9 @@ to break the circle. This is a limitation of the source data rather than of the
 splitting procedure, and we report the verified properties rather than the
 conclusion they would support under the extra assumption.
 
-**Raman.** The `bioprocess_substrates` collection, glucose as the regression
-target, with p = 1870 Raman shifts. The source records 6960 spectra; 488 carry
+**Raman.** The `bioprocess_substrates` collection [10,11], glucose as the
+regression target, with p = 1870 Raman shifts; the collection is also one of
+the sets gathered by a public Raman benchmark [12]. The source records 6960 spectra; 488 carry
 no glucose value and are dropped at ingestion, leaving 6472 analysed. The
 exclusion criterion is a missing (`NaN`) target and nothing else, and the count
 is recorded by the loader rather than reconstructed afterwards. Splits are not
@@ -188,9 +227,14 @@ available, and this is a limitation rather than a choice (Section 10).
 ### 2.2 Priors
 
 The near-infrared prior is assembled by assigning one constant value to each
-reported absorption region — 0.6 to 680–700 nm (chlorophyll), 1.0 to
-900–1000 nm (second C–H overtone), 0.8 to 1100–1200 nm (first C–H overtone) —
-over a floor of 0.1 elsewhere, and is then divided by its maximum. On the
+of three literature-derived regions relevant to dry-matter content [13] —
+0.6 to 680–700 nm (chlorophyll), 1.0 to 900–1000 nm (second C–H overtone),
+0.8 to 1100–1200 nm (first C–H overtone), the last two being the overtone
+regions catalogued in [14] — over a floor of 0.1 elsewhere, and is then
+divided by its maximum. The three levels are ours; the three windows and their
+assignments are not. Nothing in this paper rests on the windows being the right
+ones: what follows depends only on the prior having a level set larger than the
+selected set, which Section 4 makes precise. On the
 281-wavelength axis this gives four distinct values, 0.1 on 223 bands, 0.6 on
 7, 0.8 on 17, and 1.0 on the 34 bands falling inside the 900–1000 nm window,
 which is 12.1% of the spectrum.
@@ -202,8 +246,7 @@ the identity map here, since the largest assigned value is already 1; all it
 would ever do is fix the top level. The block of 34 numerically equal entries
 exists because a single constant was assigned to a region 100 nm wide. Any
 prior written in the form *these regions matter this much* has level sets as
-large as the regions it names, and that is the ordinary way to encode published
-band assignments. The condition examined in this paper is therefore not a quirk
+large as the regions it names, whatever fixes the regions. The condition examined in this paper is therefore not a quirk
 of one normalisation scheme: it is violated whenever the largest named region
 contains more bands than the selected set.
 
@@ -216,17 +259,22 @@ that difference is what makes the Raman arm a control rather than a replication.
 ### 2.3 Gate and objective
 
 The gate is a per-band sigmoid, `g = σ(θ)`, multiplying the spectrum before a
-light multilayer perceptron, trained end to end. Two ways of letting the prior
-`s` enter are compared throughout and must not be confused:
+light multilayer perceptron, trained end to end; the architecture is the one
+specified in [4], unmodified. The prior `s` enters in two
+places, and the two are **crossed** rather than being alternatives, so that
+four configurations are trained and not two:
 
-- **prior in the initialisation**, `θ₀ = logit(s)`, under which the prior sets
-  the starting point and no penalty is applied;
-- **penalty only**, `θ₀ = 0` with a term `λ · KL(g ‖ s)` summed over bands,
-  under which the prior constrains the solution without placing any parameter
-  at the start.
+- the **initialisation**, `θ₀ = logit(s)` against `θ₀ = 0`;
+- the **penalty**, a term `λ · KL(g ‖ s)` summed over bands, with λ on a
+  logarithmic grid anchored at λ = 0 — which reproduces the earlier model
+  exactly — and refined between 0.1 and 1, where the transition occurs.
 
-The second is what we recommend, and the distinction is the subject of
-Section 3.
+Each initialisation is therefore trained across the whole λ grid. Section 3
+compares the four: λ is what the zero-initialised arm varies in order to
+constrain the solution, and it is also what the prior-initialised arm varies in
+order to show that the penalty cannot move a gate that starts saturated. The
+two must not be confused, and the one we recommend is the penalty applied from
+`θ₀ = 0`.
 
 ### 2.4 Selection metric, and the two decile conventions in use
 
@@ -238,17 +286,38 @@ numbers and different chance levels, **we declare both and never mix them**:
 | source | definition of q | q at p = 281 | exact E[J] on a 34-band plateau |
 | --- | --- | --- | --- |
 | this work, and the stored metrics of the earlier revision | `ceil(0.10 p)` | 29 | 0.7445 |
-| the published ablation of the earlier study | `floor(p / 10)` | 28 | 0.7012 |
+| the published ablation of [4] | `floor(p / 10)` | 28 | 0.7012 |
+
+The stored metrics and gate vectors of that revision are the authors' own
+unpublished material: they ran under the published protocol, but the
+manuscript they belonged to was not accepted and will not be resubmitted.
+Every figure drawn from them is therefore a preliminary observation of ours
+and is not offered as published or as independent evidence; Section 5, which
+uses the seven training sizes throughout, states that its associations are
+exploratory.
 
 Every selection figure below carries the convention of the code that produced
 it. Figures taken from the published ablation are reported at q = 28 and
 compared against 0.7012; figures recomputed on the stored gate vectors of the
 earlier revision are reported at q = 29 and compared against 0.7445.
 
-### 2.5 The chance level, and a correction to how it is usually computed
+### 2.5 The chance level, and a correction to how we had computed it
 
-A chance level for a Jaccard index over a tied block of L bands is often
-quoted as q / (2L − q). That expression is not the expected Jaccard index. If
+Correcting set overlap for chance is established practice in the
+feature-selection literature. The consistency index of [6] takes two subsets
+of equal size q drawn from L variables, notes that the intersection of a fixed
+subset with a random one is hypergeometric with expectation q²/L, and
+subtracts that expectation so that independent draws score near zero; [7]
+puts that correction and its alternatives on a stated set of properties. The
+point of this section is not that a correction is needed — that was settled —
+but that the quantity being corrected is the Jaccard index and not the
+intersection, and that for a Jaccard index the two corrections differ.
+
+A chance level for a Jaccard index over a tied block of L bands may be
+computed as q / (2L − q), and that is what we had done ourselves, treating it
+as the exact value, until the correction recorded here. That expression is not
+the expected Jaccard index: it is the Jaccard index evaluated at the
+hypergeometric mean of [6], which is not the same thing. If
 two sets of size q are drawn uniformly and independently from L bands, their
 overlap k is hypergeometric with mean q²/L, and
 
@@ -262,7 +331,9 @@ lower bound. We therefore report the exact expectation,
 E[J] = Σₖ [C(q,k) · C(L−q, q−k) / C(L,q)] · k / (2q − k),
 
 which exceeds the ratio by 0.0012 at q = 28 and by 0.0009 at q = 29 for
-L = 34. The gap is smaller than the sampling spread of the estimates reported
+L = 34. In the vocabulary of [6] and [7], the correction being made here is
+the same in kind and different in its argument: the expectation is taken of
+J(k) rather than J taken of the expectation of k. The gap is smaller than the sampling spread of the estimates reported
 below and changes none of our verdicts, but it is systematic and in the
 direction that overstates any excess above chance, so it should not be carried
 into a comparison that is closer than ours.
@@ -272,7 +343,10 @@ into a comparison that is closer than ours.
 To ask whether the gate follows the data, we need a reference that the gate did
 not help produce. We use the absolute regression coefficients of a partial
 least squares model fitted on the training partition only. The number of latent
-components H is chosen by the one-standard-error rule on a cross-validated
+components H is chosen by the one-standard-error rule [15] — the most
+parsimonious model whose error is within one standard error of the minimum,
+which keeps the reference from being tuned to the partition it will be
+compared on — on a cross-validated
 error curve computed within the training partition — grouped by fruit for the
 near-infrared data, and over plain folds for Raman, where no grouping variable
 exists — with the search capped at 120 components and further capped by the
@@ -305,7 +379,7 @@ amended after the data were seen; where a criterion turned out to measure
 something other than what it was written to measure, the original text is kept
 and the misreading is reported alongside the verdict. Table 1 lists all twenty
 hypotheses with their verdicts and, in a separate column, the interpretation we
-reached afterwards. Eight were not supported.
+reached afterwards. Six were not supported. Two more met their criterion only formally or on a narrow reading, and Table 1 records both the verdict and that reading.
 
 **The tie-breaking analysis was not part of the original pre-registered
 hypothesis set.** It was introduced as a post hoc diagnostic investigation
@@ -420,10 +494,10 @@ hypergeometric and the expected overlap is
 &nbsp;&nbsp;&nbsp;&nbsp;E[J] = Σₖ [ C(q,k) C(L−q, q−k) / C(L,q) ] · k / (2q − k),
 
 which is **0.7012** for L = 34, q = 28 and **0.7445** for L = 34, q = 29. The
-familiar approximation q/(2L − q) gives 0.7000 and 0.7436, within 0.0012 of the
+approximation q/(2L − q) gives 0.7000 and 0.7436, within 0.0012 of the
 exact values.
 
-Under the deterministic rule actually used, `numpy.argsort` is not a stable
+Under the deterministic rule actually used, `numpy.argsort` [16] is not a stable
 sort, so the order within a tied block follows the partition, which is a
 function of the whole array — including the values the metric does not select.
 The figure is therefore neither 1 (which an index-ordered rule would give) nor
@@ -457,8 +531,8 @@ formality: the next paragraph is the reason for it.
 A note on that chance value, since the two candidates differ by less than our
 sampling spread and the choice is therefore easy to get wrong without
 consequence. We report the exact hypergeometric expectation
-E[J] = sum_k P(k) k/(2q-k), and not the ratio q/(2L-q) that the band-selection
-literature uses. The ratio is J evaluated at the expected overlap q^2/L, and
+E[J] = sum_k P(k) k/(2q-k), and not the ratio q/(2L-q), which we had used
+ourselves as if it were exact. The ratio is J evaluated at the expected overlap q²/L, and
 since J(k) = k/(2q-k) is strictly convex in k, Jensen's inequality makes it a
 strict lower bound: low by 0.0012 at q = 28 and 0.0009 at q = 29 for a plateau
 of 34. The gap changes no verdict reported here, but it is systematic and in
@@ -586,7 +660,7 @@ need only the stored gates and the prior.
 
 ### 4.4 What the earlier study already established
 
-The study from which these data come anticipated the possibility that a prior
+The study from which these data come [4] anticipated the possibility that a prior
 which immobilises the gate would make reproducibility trivial, and tested it: it
 measured the across-seed agreement of the learned displacement d = g_final − g₀
 rather than of the final gate, obtaining ρ(d) = 0.9462 in NIR and 0.976 in
@@ -719,7 +793,10 @@ with the data-derived reference in four of five partitions, still reaches an
 overlap of 0.957 to 0.975 against the literature prior's 0.9763 to 1.0000.
 Stability across seeds is therefore attainable with a prior anticorrelated
 with the reference, which is enough to show that stability does not validate
-the interpretation it is usually offered to support. Table 1 gives the
+the interpretation it is usually offered to support. The control that makes
+this visible is of a kind used elsewhere for the same purpose: randomise what
+the explanation is supposed to depend on and see whether the explanation
+changes [2]. Table 1 gives the
 verdicts for all five control hypotheses.
 
 These overlaps are not the quantity Section 4 found uninterpretable, and the
@@ -775,7 +852,11 @@ risk. If the behaviour we describe followed from the architecture, the gate, or
 the objective, it would appear again on a second modality. If it follows from
 the prior's quantisation, it should disappear when the prior's functional form
 changes and nothing else does. The code, the gate, the penalty and the training
-procedure are identical between the two arms; only the prior differs.
+procedure are identical between the two arms. The prior's functional form
+differs — and so do the dataset, the modality, the number of bands and the
+target, as Section 2.1 states. The Raman arm is therefore a check in a second
+modality, consistent with the quantisation account, and not an experiment that
+isolates it.
 
 ### 7.1 The two conditions are absent
 
@@ -798,10 +879,10 @@ operation, and the seven training sizes of its revision data drop by the same
 order. The second and third conditions are not met either.
 
 Both of the properties documented in Sections 4 and 5 are therefore absent
-under the same architecture and the same code, with only the functional form of
-the prior exchanged. This is what the quantisation account predicts, and it is
-the strongest control this work has: the behaviour is a property of how the
-prior was written down, not of the method.
+under the same architecture and the same code, with the prior's functional form
+exchanged along with the dataset and the modality. This is what the
+quantisation account predicts, and it is a check in a second modality: the
+behaviour is a property of how the prior was written down, not of the method.
 
 ### 7.2 Anchoring buys reproducibility here, and the figure means it
 
@@ -902,8 +983,9 @@ three separate limits apply.**
 *First, the partitions are not independent replicates.* The ten partitions are
 repeated splits of the same 725 fruits, with approximately 80% overlap between
 training sets (78% to 82% over the 45 pairs). Consequently, the
-partition-level Wilcoxon p-values cannot be interpreted under the usual
-independence assumption. We report them descriptively — p = 0.0020 for the
+partition-level p-values — from the Wilcoxon signed-rank test [17],
+applied to the paired per-partition differences, with the partition as the
+unit — cannot be interpreted under the usual independence assumption. We report them descriptively — p = 0.0020 for the
 floor against zero, p = 0.1055 for the plateau, and p = 0.3223 for the two
 paired against each other — but draw no population-level inference from them.
 They are the output of tests whose inferential interpretation is compromised
@@ -959,7 +1041,7 @@ measurements in either direction.
 
 **This is not evidence that the gate recovers true chemical relevance.** The
 reference is the vector of absolute coefficients of a partial least squares
-model calibrated on the same training partition. It is an operational
+model [18] calibrated on the same training partition. It is an operational
 reference — a second statistical estimate from the same data, not an
 independent determination of which wavelengths carry dry-matter information.
 Agreement between the gate and that reference means the two methods weight
@@ -995,10 +1077,13 @@ does not survive scrutiny.
 
 ### 9.2 The objective resembles a PAC-Bayes bound and is not one
 
-The trained objective is an empirical risk plus a Kullback–Leibler divergence
-between the gate and a prior specified before seeing the data, which is the
-shape of a PAC-Bayes bound. The resemblance is formal and we draw nothing from
-it. Three things would have to change for the analogy to become an analysis:
+The trained objective is an empirical risk plus a Kullback–Leibler
+divergence [19] between the gate and a prior specified before seeing the data,
+which is the shape of a PAC-Bayes bound [20]. The resemblance is
+formal and we draw nothing from it: the quantity we add to the risk is a
+divergence between a deterministic gate and a fixed vector, and calling it a
+Kullback–Leibler divergence names its functional form, not a property of the
+objective. Three things would have to change for the analogy to become an analysis:
 the gate would have to be stochastic rather than a point estimate, so that
 there is a posterior over hypotheses for the divergence to be taken between;
 the divergence would have to be between distributions over hypotheses rather
@@ -1362,8 +1447,10 @@ convert the interpretive claim from unfalsifiable to testable.
 **Empirical Rademacher complexity by fitting random labels.** Section 1.2
 argues that prior-initialisation restricts reachability and not capacity. That
 argument is analytic. Fitting random labels under both initialisations would
-quantify the restriction instead of arguing it, and would test whether the
-frozen plateau has any effect on what the model can fit.
+estimate the empirical Rademacher complexity of the two function classes
+[21] and so quantify the restriction instead of arguing it, and would
+test whether the frozen plateau has any effect on what the model can fit. We
+have not run it: nothing in this paper reports such an estimate.
 
 **A stochastic gate.** The change that would make a PAC-Bayes analysis
 available rather than a formal resemblance (Section 9.2).
@@ -1437,14 +1524,61 @@ cheap to ask.
 
 ---
 
+## References
+
+[1] S. Jain, B.C. Wallace, Attention is not explanation, in: Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers), Association for Computational Linguistics, Minneapolis, 2019, pp. 3543–3556. https://doi.org/10.18653/v1/N19-1357
+
+[2] J. Adebayo, J. Gilmer, M. Muelly, I. Goodfellow, M. Hardt, B. Kim, Sanity checks for saliency maps, in: Advances in Neural Information Processing Systems 31, 2018.
+
+[3] G. Coelho, A. de Lima das Chagas, L.C. Carneiro, C.J. Coelho, Prior-guided spectral gating for interpretable deep learning in near-infrared spectroscopy, Chemometrics and Intelligent Laboratory Systems 277 (2026) 105833. https://doi.org/10.1016/j.chemolab.2026.105833
+
+[4] G. Coelho, C.J. Coelho, Gate topology and reproducibility of Prior-Guided Spectral Gating across near-infrared and Raman spectroscopy, Chemometrics and Intelligent Laboratory Systems 280 (2027) 105926. https://doi.org/10.1016/j.chemolab.2026.105926
+
+[5] P. Jaccard, The distribution of the flora in the alpine zone, New Phytologist 11 (2) (1912) 37–50. https://doi.org/10.1111/j.1469-8137.1912.tb05611.x
+
+[6] L.I. Kuncheva, A stability index for feature selection, in: Proceedings of the 25th IASTED International Multi-Conference: Artificial Intelligence and Applications, 2007, pp. 390–395.
+
+[7] S. Nogueira, K. Sechidis, G. Brown, On the stability of feature selection algorithms, Journal of Machine Learning Research 18 (174) (2018) 1–54.
+
+[8] N. Anderson, K. Walsh, P. Subedi, J. Walsh, Mango DMC and spectra Anderson et al. 2020, Mendeley Data, version 3, 2024. https://doi.org/10.17632/46htwnp833.3
+
+[9] N.T. Anderson, K.B. Walsh, P.P. Subedi, C.H. Hayes, Achieving robustness across season, location and cultivar for a NIRS model for intact mango fruit dry matter content, Postharvest Biology and Technology 168 (2020) 111202.
+
+[10] C. Lange, M. Altmann, D. Stors, S. Seidel, K. Moynahan, L. Cai, S. Born, P. Neubauer, M.N. Cruz Bournazou, Deep learning for Raman spectroscopy: benchmarking models for upstream bioprocess monitoring, Measurement 258 (2026) 118884.
+
+[11] C. Lange, SubstrateMixRaman, Hugging Face Datasets, chlange/SubstrateMixRaman, 2025.
+
+[12] M. Koddenbrock, C. Lange, R. Legner, M. Jaeger, M. Kögler, M.N. Cruz Bournazou, P. Neubauer, F. Bießmann, E. Rodner, RamanBench: a large-scale benchmark for machine learning on Raman spectroscopy, arXiv:2605.02003, 2026.
+
+[13] S. Saranwong, J. Sornsrivichai, S. Kawano, Prediction of ripe-stage eating quality of mango fruit from its harvest quality measured nondestructively by near infrared spectroscopy, Postharvest Biology and Technology 31 (2004) 253–261.
+
+[14] J. Workman Jr., L. Weyer, Practical Guide and Spectral Atlas for Interpretive Near-Infrared Spectroscopy, second ed., CRC Press, 2012.
+
+[15] T. Hastie, R. Tibshirani, J.H. Friedman, The Elements of Statistical Learning: Data Mining, Inference, and Prediction, second ed., Springer, 2009.
+
+[16] C.R. Harris, K.J. Millman, S.J. van der Walt, et al., Array programming with NumPy, Nature 585 (2020) 357–362.
+
+[17] F. Wilcoxon, Individual comparisons by ranking methods, Biometrics Bulletin 1 (1945) 80–83. https://doi.org/10.2307/3001968
+
+[18] S. Wold, M. Sjöström, L. Eriksson, PLS-regression: a basic tool of chemometrics, Chemometrics and Intelligent Laboratory Systems 58 (2) (2001) 109–130.
+
+[19] S. Kullback, R.A. Leibler, On information and sufficiency, Annals of Mathematical Statistics 22 (1) (1951). https://doi.org/10.1214/aoms/1177729694
+
+[20] D.A. McAllester, PAC-Bayesian model averaging, in: Proceedings of the 12th Annual Conference on Computational Learning Theory, ACM, 1999, pp. 164–170. https://doi.org/10.1145/307400.307435
+
+[21] P.L. Bartlett, S. Mendelson, Rademacher and Gaussian complexities: risk bounds and structural results, Journal of Machine Learning Research 3 (2002) 463–482.
+
+---
+
 ## Figure captions
 
 ## Figure 1
 
 > **The near-infrared literature prior.** The prior assigns one constant value
-> to each reported absorption region — 0.6 to 680–700 nm, 1.0 to 900–1000 nm,
-> 0.8 to 1100–1200 nm — over a floor of 0.1 elsewhere, and is then divided by
-> its maximum, which is already 1. The 281 wavelengths therefore take four
+> to each of three literature-derived regions [13] — 0.6 to 680–700 nm, 1.0 to
+> 900–1000 nm, 0.8 to 1100–1200 nm — over a floor of 0.1 elsewhere, and is then
+> divided by its maximum, which is already 1. The three levels are ours; the
+> windows and their assignments are not. The 281 wavelengths therefore take four
 > distinct values, and the number of bands at each is printed above its step.
 > The third region is truncated by the instrument's range, which ends at
 > 1149 nm, and holds 17 of the bands a full 100 nm window would hold; the
@@ -1535,8 +1669,9 @@ cheap to ask.
 > values among 1870 bands and the selected set is not drawn from a tied block.
 > The same operation lowers the near-infrared figure of the accepted study by
 > 0.2413. The architecture, the gate, the objective and the training procedure
-> are identical between the two modalities; only the functional form of the
-> prior differs, which is what makes this a control and not a replication.
+> are identical between the two modalities, which makes this a check in a
+> second modality rather than a replication; the dataset and the modality
+> differ along with the prior.
 >
 > The decile here follows the published definition q = p // 10 = 187, the
 > convention of the code that produced the Raman run. It is not mixed with the
@@ -1577,25 +1712,25 @@ cheap to ask.
 
 ## Table 1
 
-| | enunciado | veredito pelo critério | o que o resultado sustenta |
+| | statement | verdict by the criterion | what the result supports |
 | --- | --- | --- | --- |
-| H0 | existe λ com descolamento e estabilidade | suportada | **sem contagem por construção:** o critério é existencial — "existe uma faixa de λ" com ρ < 0,95, R² a 1 DP do melhor e Jaccard ≥ 0,90 (`docs/protocolo_hipoteses.md`) — e não define tally por partição. Acrescentar *k/n* aqui imporia uma unidade que o pré-registro não tem |
-| H5a | o máximo interior transporta | não suportada, 2/5 | a curva satura em vez de picar |
-| H5b | o gate ancorado supera o prior sozinho | suportada, 5/5 | — |
-| H5c | a posição de λ\* é estável | suportada, 5/5 **(formal)** | **passou trivialmente e não conta como confirmação:** a vizinhança de λ=1 foi definida como {0,7; 1; 10} e λ=10 é ao mesmo tempo vizinho de grade e borda, logo o teste não distingue *estável em 1* de *encostado no teto*. Falha de redação do critério (F001) |
-| H6 | a penalidade melhora o R² | suportada, 4/5 | efeito de regularizador, não de conteúdo |
-| H7-blocks | o conteúdo do prior importa | não suportada, 1/5 | cláusula de refutação acionada |
-| H7-shuffled | idem, contra embaralhado | suportada, 4/5 | contiguidade importa |
-| H8 | ancoragem sozinha compra pouco | não suportada, 0/5 | ancoragem compra muito |
-| H9-blocks | reprodutibilidade independe do conteúdo | não suportada, 3/5 | nenhum controle supera a literatura |
-| H9-shuffled | idem | suportada, 5/5 | estabilidade com ρ(prior,ref) negativo |
-| H10a | há ordenação intra-platô | não suportada, 3/5 | sinal inconsistente |
-| H10b | a literatura ordena melhor que blocos | suportada, 5/5 | **leitura estreita:** blocks é negativo, não a literatura positiva |
-| H11a | o decil de resíduo sai do platô | suportada, 5/5 | **o critério cobria menos do que supus:** o decil foi para o piso |
-| H11b | o resíduo distingue os braços | suportada, 4/5 | `shuffled` supera a literatura em 3/4 |
-| H12a | decil não preso a empate (Raman) | suportada, 3/3 | defeito ausente com prior contínuo |
-| H12b | sem colapso por desempate (Raman) | suportada, 3/3 | idem |
-| H12c | a literatura supera blocos (Raman) | suportada, 2/3 | reversão significativa na partição 2 |
-| H13a | o parcial é positivo | suportada, 5/5 | e é igual nos três braços |
-| H13b | a literatura supera blocos no parcial | não suportada, 0/5 | **critério mal desenhado:** condiciona na variável que distingue os braços |
-| H13c | o achado do piso recorre | suportada, 5/5 | **critério primário cumprido em cinco partições retidas.** Não é replicação independente: as partições 10–14 compartilham ~80% dos frutos com as de 5–9 (F003, correção de 2026-10-25) |
+| H0 | there is a λ with both decoupling and stability | supported | **no tally, by construction:** the criterion is existential — "there exists a range of λ" with ρ < 0.95, R² within 1 SD of the best and Jaccard ≥ 0.90 (`docs/protocolo_hipoteses.md`) — and it defines no per-partition tally. Adding *k/n* here would impose a unit the pre-registration does not have |
+| H5a | the interior maximum transfers | not supported, 2/5 | the curve saturates instead of peaking |
+| H5b | the anchored gate beats the prior alone | supported, 5/5 | — |
+| H5c | the position of λ\* is stable | supported, 5/5 **(formal)** | **passed trivially and does not count as confirmation:** the neighbourhood of λ = 1 was defined as {0.7, 1, 10}, and λ = 10 is at once a grid neighbour and the boundary, so the test does not distinguish stable at 1 from pressed against the ceiling. A drafting failure in the criterion (F001) |
+| H6 | the penalty improves R² | supported, 4/5 | an effect of regularisation, not of content |
+| H7-blocks | the prior's content matters | not supported, 1/5 | refutation clause triggered |
+| H7-shuffled | the same, against the shuffled prior | supported, 4/5 | contiguity matters |
+| H8 | anchoring alone buys little | not supported, 0/5 | anchoring buys a great deal |
+| H9-blocks | reproducibility does not depend on content | not supported, 3/5 | no control beats the literature prior |
+| H9-shuffled | the same | supported, 5/5 | stability with ρ(prior, reference) negative |
+| H10a | there is within-plateau ordering | not supported, 3/5 | the sign is inconsistent |
+| H10b | the literature prior orders better than blocks | supported, 5/5 | **a narrow reading:** blocks is negative, not the literature prior positive |
+| H11a | the residual decile leaves the plateau | supported, 5/5 | **the criterion covered less than I assumed:** the decile went to the floor |
+| H11b | the residual distinguishes the arms | supported, 4/5 | `shuffled` beats the literature prior in 3 of 4 |
+| H12a | the decile is not trapped in a tie (Raman) | supported, 3/3 | the defect is absent with a continuous prior |
+| H12b | no collapse under tie-breaking (Raman) | supported, 3/3 | the same |
+| H12c | the literature prior beats blocks (Raman) | supported, 2/3 | a significant reversal in partition 2 |
+| H13a | the partial is positive | supported, 5/5 | and it is the same in all three arms |
+| H13b | the literature prior beats blocks on the partial | not supported, 0/5 | **a badly designed criterion:** it conditions on the variable that distinguishes the arms |
+| H13c | the floor finding recurs | supported, 5/5 | **primary criterion met in five held-out partitions.** Not an independent replication: partitions 10–14 share about 80% of their fruits with 5–9 (F003, correction of 2026-10-25) |

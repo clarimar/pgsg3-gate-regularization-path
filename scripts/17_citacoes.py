@@ -97,9 +97,18 @@ def entradas(texto: str) -> list[tuple[int, str]]:
     Returns (number, text). A list that does not exist yields nothing, which
     is a state and not an error: the caller decides what that means.
     """
-    if "## References" not in texto:
+    # The heading is matched at the START OF A LINE, and the first such
+    # match wins. A plain `in`/`split` was fooled on 2026-11-09 by this very
+    # file's own prose, which quotes the phrase inline while explaining that
+    # no such section existed: the body then began mid-sentence and the list
+    # read as empty while the markers read as pointing at nothing.
+    m = re.search(r"^## References[ \t]*$", texto, re.M)
+    if m is None:
         return []
-    corpo = texto.split("## References", 1)[1].split("\n## ", 1)[0]
+    corpo = texto[m.end():]
+    fim = re.search(r"^## ", corpo, re.M)
+    if fim is not None:
+        corpo = corpo[:fim.start()]
     saida = []
     for linha in corpo.splitlines():
         m = re.match(r"^\s*\[(\d+)\]\s+(.+)$", linha.strip())
@@ -122,9 +131,18 @@ def main() -> int:
     ap.add_argument("--strict", action="store_true",
                     help="also fail when the reference list is incomplete, "
                          "which is a state and not a defect")
+    # --dir, added 2026-11-09, for the same reason 18_conformidade.py took a
+    # --src: the test that guards this script's exit code was asserting on
+    # the real manuscript, so it broke the moment the real state changed --
+    # it had been measuring the paper rather than the script. A test about a
+    # verdict must be able to build the case it checks.
+    ap.add_argument("--dir", default=str(PAPER),
+                    help="the directory holding the drafts and the reference "
+                         "audit (default: paper/)")
     a = ap.parse_args()
+    paper = Path(a.dir)
 
-    refs_p = PAPER / REFS
+    refs_p = paper / REFS
     if not refs_p.is_file():
         print(f"missing: {refs_p}")
         return 1
@@ -138,7 +156,7 @@ def main() -> int:
     todos: list[int] = []
     por_arquivo: list[tuple[str, int]] = []
     for nome in fontes:
-        p = PAPER / nome
+        p = paper / nome
         if not p.is_file():
             print(f"  MISSING SOURCE: {p}")
             return 1

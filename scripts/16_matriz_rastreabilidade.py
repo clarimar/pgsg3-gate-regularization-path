@@ -44,6 +44,7 @@ USAGE
 from __future__ import annotations
 
 import argparse
+import functools
 import ast
 import re
 import sys
@@ -110,16 +111,57 @@ def primeira_linha(doc: str | None) -> str:
     return ""
 
 
+@functools.lru_cache(maxsize=1)
+def _arquivos_do_repositorio() -> frozenset[str]:
+    """Every file name present on disk, by basename. NOT used by the matrix --
+    see fontes_citadas -- and kept because the guard in the test suite uses it
+    together with the tracked-file list."""
+    raiz = Path(__file__).resolve().parents[1]
+    nomes = set()
+    for p in raiz.rglob("*"):
+        if p.is_file() and ".git" not in p.parts:
+            nomes.add(p.name)
+    return frozenset(nomes)
+
+
 def fontes_citadas(no: ast.FunctionDef, texto: str) -> list[str]:
     """Which repository files the test reads. Taken from the literals in the
-    test body, not from its name."""
+    test body, not from its name.
+
+    ONE FILE IS LISTED ONCE: the same file cited as "17_citacoes.py" and as
+    "scripts/17_citacoes.py" appeared twice in the same row, so names are
+    compared by basename and the shortest spelling is kept.
+
+    WHAT THIS DELIBERATELY DOES NOT DO is check that the cited file exists. It
+    did, for an afternoon, to drop the "M.md" of a temporary file that two
+    tests had written. That made the matrix a function of which BUILD
+    ARTEFACTS happened to be present -- paper/MANUSCRITO.tex exists after a
+    build and not in a fresh clone -- so the same tests produced two different
+    matrices and `--check` failed in a pristine checkout. A matrix that is not
+    a function of the tests alone cannot be compared against them.
+
+    The two defects that filter addressed are handled where they belong: the
+    tests no longer write file-shaped temporary names, and
+    test_16_nao_lista_como_fonte_o_que_nao_e_arquivo requires every cited
+    literal to be a tracked file or a declared build artefact.
+    """
     seg = ast.get_source_segment(texto, no) or ""
-    achados = set()
-    for m in re.finditer(r'"([-\w./]+\.(?:md|py|toml|csv|json|npz))"', seg):
-        achados.add(m.group(1))
+    brutos = set()
+    # .tex and .bib joined the repository on 2026-11-02 with the reading copy
+    # and the bibliography; a test guarding one of them was reported as having
+    # no source at all, because the extension was not in this list.
+    for m in re.finditer(
+            r'"([-\w./]+\.(?:md|py|toml|csv|json|npz|tex|bib))"', seg):
+        brutos.add(m.group(1))
     for m in re.finditer(r'"(F\d{3}[-\w]*\.md)"', seg):
-        achados.add(m.group(1))
-    return sorted(achados)
+        brutos.add(m.group(1))
+    por_base: dict[str, str] = {}
+    for nome in brutos:
+        base = nome.rsplit("/", 1)[-1]
+        anterior = por_base.get(base)
+        if anterior is None or len(nome) < len(anterior):
+            por_base[base] = nome
+    return sorted(por_base.values())
 
 
 def main() -> None:

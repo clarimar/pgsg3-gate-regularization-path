@@ -60,7 +60,10 @@ FIGURAS = {
 # Latin letters of the Portuguese table; everything else needs a macro, and a
 # character absent from this table stops the build rather than reaching the
 # output as a byte pdfLaTeX will reject.
-ACENTOS = "áâãàçéêíóôõúüÁÂÃÀÇÉÊÍÓÔÕÚÜñÑ"
+# ö and ß joined the set on 2026-11-09, with the reference list: German
+# and Swedish author names (Kögler, Bießmann, Sjöström) reach the
+# converter for the first time, and inputenc handles both.
+ACENTOS = "áâãàçéêíóôõúüÁÂÃÀÇÉÊÍÓÔÕÚÜñÑöÖäÄåÅøØßæÆ"
 SIMBOLOS = {
     "—": "---", "–": "--", "−": "$-$", "…": "\\ldots{}",
     "±": "$\\pm$", "×": "$\\times$", "·": "$\\cdot$",
@@ -73,6 +76,11 @@ SIMBOLOS = {
     "δ": "$\\delta$", "Δ": "$\\Delta$", "ε": "$\\varepsilon$",
     "π": "$\\pi$", "τ": "$\\tau$", "φ": "$\\varphi$", "χ": "$\\chi$",
     "ω": "$\\omega$", "Θ": "$\\Theta$",
+    # U+2217, the asterisk operator, arrived on 2026-11-10 with the title
+    # page: it is the corresponding-author marker, which the author wrote as
+    # that glyph and not as a plain asterisk. Mapped and not normalised to
+    # "*", because the two are different characters and the author chose one.
+    "∗": "$\\ast$",
 }
 SUPER = {"⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4", "⁵": "5",
          "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9", "⁻": "-", "⁺": "+",
@@ -255,13 +263,25 @@ def corpo_para_tex(linhas: list[str], *, onde: str) -> list[str]:
         if not s or s == "---":
             fora.append("")
             i += 1
-        elif s.startswith("#### "):
-            fora.append("\\subsubsection{" + inline(
-                re.sub(r"^#+\s*[\d.]*\s*", "", s), onde=onde) + "}")
-            i += 1
-        elif s.startswith("### "):
-            fora.append("\\subsection{" + inline(
-                re.sub(r"^#+\s*[\d.]*\s*", "", s), onde=onde) + "}")
+        elif s.startswith("### ") or s.startswith("#### "):
+            # The LEVEL comes from the depth of the heading's own number, not
+            # from the number of hashes. The manuscript writes 4.2 and 4.2.1
+            # both as "###", and mapping by hashes made 4.2.1 a subsection:
+            # LaTeX then renumbered it 4.3 and shifted every number after it,
+            # so "Section 4.3" in the text pointed at what the page printed as
+            # 4.4. The referee of 2026-11-02 found it as a missing 4.2.1; it
+            # was worse than that, and silent.
+            m = re.match(r"^#+\s*((?:\d+\.)+\d*)\s*(.*)$", s)
+            if m:
+                profundidade = len([x for x in m.group(1).split(".") if x])
+                titulo_h = m.group(2)
+            else:
+                profundidade = 3 if s.startswith("#### ") else 2
+                titulo_h = re.sub(r"^#+\s*", "", s)
+            comando = {2: "subsection", 3: "subsubsection"}.get(
+                profundidade, "paragraph")
+            fora.append("\\" + comando + "{"
+                        + inline(titulo_h, onde=onde) + "}")
             i += 1
         elif s.startswith("|"):
             j = i
@@ -311,6 +331,49 @@ def corpo_para_tex(linhas: list[str], *, onde: str) -> list[str]:
     return fora
 
 
+def confere_numeracao(secoes: list[tuple[str, list[str]]]) -> list[str]:
+    """The numbers LaTeX will print must be the numbers the manuscript wrote.
+
+    LaTeX numbers sections from its own counters, and the manuscript carries
+    its numbers in the text -- "Section 4.2.1", "Section 9.3.2" -- as words,
+    not as references. If the two disagree, every cross-reference in the paper
+    points at the wrong place and nothing says so: the document compiles, the
+    numbers look plausible, and only a reader following a reference finds out.
+    That is what happened when 4.2.1 was emitted as a subsection.
+
+    So the counters are simulated here and compared with what is written. A
+    mismatch stops the build.
+    """
+    problemas: list[str] = []
+    sec = sub = subsub = 0
+    for titulo, corpo in secoes:
+        m = re.match(r"^(\d+)\.\s", titulo)
+        if m:
+            sec, sub, subsub = int(m.group(1)), 0, 0
+            if sec != int(m.group(1)):
+                problemas.append(titulo)
+        for linha in corpo:
+            h = re.match(r"^(#{3,4})\s*((?:\d+\.)+\d*)\s", linha.strip())
+            if not h:
+                continue
+            partes = [int(x) for x in h.group(2).split(".") if x]
+            if len(partes) == 2:
+                sub += 1
+                subsub = 0
+                esperado = [sec, sub]
+            elif len(partes) == 3:
+                subsub += 1
+                esperado = [sec, sub, subsub]
+            else:
+                problemas.append(f"{h.group(2)}: unexpected depth")
+                continue
+            if partes != esperado:
+                problemas.append(
+                    f"the manuscript writes {h.group(2)} where LaTeX will "
+                    f"print {'.'.join(str(x) for x in esperado)}")
+    return problemas
+
+
 PREAMBULO = r"""% Reading copy, generated by scripts/19_tex.py -- do not edit by hand.
 % Compiles with pdfLaTeX. For the figures to appear, put the five PDFs of
 % paper/figuras/ in a figuras/ folder beside this file; without them the
@@ -336,6 +399,7 @@ PREAMBULO = r"""% Reading copy, generated by scripts/19_tex.py -- do not edit by
 \usepackage{graphicx}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{parskip}
+\usepackage{enumitem}
 \usepackage[hidelinks]{hyperref}
 \setcounter{secnumdepth}{3}
 \setlength{\emergencystretch}{3em}
@@ -386,7 +450,59 @@ def main() -> int:
     out.append("\\title{" + inline(titulo, onde="title") + "}")
     # \author sets its argument in an unbreakable box, so the placeholder has
     # to carry its own \parbox: the first build ran it 734pt off the page.
-    out.append(r"""\author{\normalsize\itshape
+    # The title page, from the manuscript when it carries one. The author
+    # supplied the names, affiliations, corresponding author and ORCIDs on
+    # 2026-11-10; before that this printed a visible marker naming what was
+    # missing, and that marker stays for a manuscript that still has none.
+    # The converter reads which of the two is true instead of being told.
+    if "Authors" in por_titulo and por_titulo["Authors"]:
+        # Paragraphs, not lines. The first build broke every affiliation at
+        # the draft's own 79-column wrap, so "Barao" and "Geraldo" landed on
+        # different lines of the title page. A blank line is a break; a line
+        # ending is not.
+        paragrafos, atual = [], []
+        for linha in por_titulo["Authors"]:
+            if set(linha.strip()) == {"-"} and len(linha.strip()) >= 3:
+                # A Markdown horizontal rule separates the emitted blocks and
+                # is not content -- the same rule that once printed a dash at
+                # the end of Figure 5's caption.
+                continue
+            if linha.strip():
+                atual.append(linha.strip())
+            elif atual:
+                paragrafos.append(" ".join(atual)); atual = []
+        if atual:
+            paragrafos.append(" ".join(atual))
+
+        # ^x^ is superscript, and it is converted HERE and nowhere else. The
+        # drafts hold two lone carets -- q^2/L and 10^-6 -- which are
+        # exponents in running text and must keep escaping as they do; a
+        # global rule would be a rule that has to know the difference.
+        ALVO = "\x00SUP\x00"
+
+        def _supers(texto: str) -> str:
+            guardados = []
+
+            def _tira(m):
+                guardados.append(m.group(1))
+                return ALVO
+            bruto = re.sub(r"\^([^\s^]+)\^", _tira, texto)
+            escapado = inline(bruto, onde="Authors")
+            for g in guardados:
+                escapado = escapado.replace(
+                    ALVO, "\\textsuperscript{" + inline(g, onde="Authors")
+                    + "}", 1)
+            return escapado
+
+        out.append("\\author{\\normalsize")
+        out.append("  \\parbox{0.9\\textwidth}{\\centering")
+        for i, par in enumerate(paragrafos):
+            if i:
+                out.append("  \\\\[0.4em]")
+            out.append("  " + _supers(par))
+        out.append("  }}")
+    else:
+        out.append(r"""\author{\normalsize\itshape
   \parbox{0.85\textwidth}{\centering
   [Title page pending: the guide requires each author's given and family
   names, affiliations with full postal address and country, and the
@@ -413,6 +529,14 @@ def main() -> int:
     if numeros != list(range(1, len(numeros) + 1)):
         print(f"19_tex: sections are not contiguous from 1: {numeros}")
         return 1
+    desencontros = confere_numeracao(secoes)
+    if desencontros:
+        print("19_tex: the numbers LaTeX will print are not the numbers the "
+              "manuscript wrote, so every cross-reference after the first "
+              "mismatch points at the wrong place:")
+        for d in desencontros:
+            print(f"    {d}")
+        return 1
     for t, c in secoes:
         out.append("\\section{" + inline(re.sub(r"^\d+\.\s*", "", t),
                                          onde=t) + "}")
@@ -426,8 +550,12 @@ def main() -> int:
         if not m:
             continue
         k = int(m.group(1))
+        # "---" is the Markdown rule that separates the caption blocks, not
+        # caption text. It rode into Figure 5's caption and printed as a dash
+        # at the end of it, which the referee of 2026-11-02 saw as a residual
+        # character.
         texto = " ".join(re.sub(r"^\s*>\s?", "", x).strip() for x in c
-                         if x.strip() and x.strip() != ">")
+                         if x.strip() and x.strip() not in (">", "---"))
         arquivo = FIGURAS.get(k)
         out.append("\\begin{figure}[htbp]\\centering")
         seguro = arquivo.replace("_", "\\_")
@@ -446,7 +574,31 @@ def main() -> int:
 
     out.append("\\clearpage")
     out.append("\\section*{References}")
-    out.append(r"""\noindent\emph{The manuscript has no reference list yet.
+    # The list is emitted when the consolidated manuscript carries one, and
+    # the honest placeholder stays for when it does not. Until 2026-11-09 the
+    # manuscript had no references at all and this block said so; saying so
+    # was right then and would be a lie now, so the converter reads which of
+    # the two is true instead of being told.
+    if "References" in por_titulo and por_titulo["References"]:
+        out.append("\\begin{enumerate}[leftmargin=2.2em, label={[\\arabic*]}]")
+        for linha in por_titulo["References"]:
+            linha = linha.strip()
+            if not linha:
+                continue
+            if set(linha) == {"-"} and len(linha) >= 3:
+                # A Markdown horizontal rule separates the emitted blocks and
+                # is not content. The same rule once reached Figure 5's
+                # caption and printed a dash in the PDF.
+                continue
+            m = re.match(r"^\[(\d+)\]\s+(.*)$", linha)
+            if m is None:
+                raise SystemExit(
+                    "References: a line that is not '[n] ...' reached the "
+                    f"converter: {linha[:70]!r}")
+            out.append("\\item " + inline(m.group(2), onde="References"))
+        out.append("\\end{enumerate}")
+    else:
+        out.append(r"""\noindent\emph{The manuscript has no reference list yet.
 This is the state of the manuscript and not an omission of the conversion:
 the places that require a citation are audited one by one in
 \texttt{paper/12-referencias.md}, with the bibliographic records that are
