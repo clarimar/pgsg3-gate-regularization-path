@@ -132,6 +132,30 @@ SECOES_REPRODUZIDAS = frozenset({"References", "Authors",
                                  "Declaration of Generative AI and AI-assisted technologies in the writing process"})
 
 
+def sem_identificadores(texto: str) -> str:
+    """Removes URLs, DOIs and inline code spans before any spelling count.
+
+    They are NAMES, not spelling choices, wherever they sit. The repository
+    this manuscript cites is called `pgsg3-gate-regularization-path`, with a
+    -z that belongs to the repository and not to the prose; counting it made
+    the Data availability section fail the British-English rule on
+    2026-11-16.
+
+    Exempting that whole section would have been the blunt instrument: the
+    section IS authorial prose, and a real misspelling in it must still be
+    caught -- verified, by planting one and watching the check fail. Removing
+    the identifiers instead leaves the prose around them scanned as prose.
+
+    Applied to the counting text AND to the authorial/quoted split, so the
+    report adds up. Applied to only one of them, an outlier appeared in the
+    OUTLIERS line and in neither of the two lines that account for it.
+    """
+    texto = re.sub(r"`[^`\n]*`", " ", texto)
+    texto = re.sub(r"https?://\S+", " ", texto)
+    texto = re.sub(r"\bdoi:\S+", " ", texto)
+    return texto
+
+
 def separa_citacoes(texto: str) -> tuple[str, str]:
     """(authorial prose, verbatim quotation), split on blockquote markers.
 
@@ -150,6 +174,7 @@ def separa_citacoes(texto: str) -> tuple[str, str]:
     Lima das Chagas*. Both are correct as they stand and neither is this
     manuscript's prose.
     """
+    texto = sem_identificadores(texto)
     autoral, citado = [], []
     em_referencias = False
     for linha in texto.splitlines():
@@ -239,12 +264,13 @@ def main() -> int:
     # Captions are blockquotes and are authorial, so they are moved to the
     # authorial side before the split is read.
     autoral_corpo, citado = separa_citacoes(corpo)
-    autoral = autoral_corpo + "\n" + legendas
+    autoral = autoral_corpo + "\n" + sem_identificadores(legendas)
+    corpo = sem_identificadores(corpo)
     br_total, am_total = 0, 0
     detalhe: list[tuple[str, Counter, Counter]] = []
     for nome, pbr, pam in PARES:
-        br = Counter(ocorrencias(pbr, texto))
-        am = Counter(ocorrencias(pam, texto))
+        br = Counter(ocorrencias(pbr, corpo))
+        am = Counter(ocorrencias(pam, corpo))
         br_total += sum(br.values())
         am_total += sum(am.values())
         detalhe.append((nome, br, am))

@@ -3,11 +3,11 @@
 Gerado por `scripts/16_matriz_rastreabilidade.py`. Não editar: a categoria de cada
 teste é declarada no próprio teste, por marcador `pytest`.
 
-307 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
+309 funções de teste em 10 arquivos. A unidade de contagem é a **função de teste** definida no
 nível do módulo, lida da fonte por AST — não é item coletado pelo pytest nem teste executado. Casos
 parametrizados somam +15 itens na coleta.
 
-## semantico (58)
+## semantico (59)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -69,8 +69,9 @@ parametrizados somam +15 itens na coleta.
 | `test_citacoes_narrativas_nomeiam_o_autor_onde_o_colchete_e_sujeito` | Pedido do autor em 2026-11-11: referir-se aos autores "quando for o | `03-rascunho-s1-s2-s3.md` |
 | `test_mapa_de_numeros_para_chaves_e_bijetivo_e_por_titulo` | O mapa número -> chave, gravado em 2026-11-11. | `12-referencias.md`, `referencias.bib` |
 | `test_declaracao_de_ia_segue_a_politica_lida_na_fonte` | Acrescentada em 2026-11-11, com a política da Elsevier LIDA na fonte | `18-declaracoes.md`, `18_conformidade.py`, `19_tex.py` |
+| `test_disponibilidade_de_dados_existe_e_nomeia_as_duas_fontes` | Data availability, acrescentada em 2026-11-16. A Elsevier a exige e o | `15_consolidar_manuscrito.py`, `18-declaracoes.md`, `19_tex.py` |
 
-## estrutural (33)
+## estrutural (34)
 
 | teste | decisão protegida | arquivos |
 | --- | --- | --- |
@@ -107,6 +108,7 @@ parametrizados somam +15 itens na coleta.
 | `test_decisao1110_a_trava_cobre_a_figura_2_tambem` | O autor pediu a proteção para todas as figuras dependentes de | `10_figuras.py` |
 | `test_bibliografia_sai_sem_justificacao_esticada` | Inspeção do PDF definitivo, 2026-11-10. | `19_tex.py` |
 | `test_bib_modo_cite_nao_toca_o_preambulo_nem_publica_a_auditoria` | Pedido do autor em 2026-11-11: `\cite{}` contra o `.bib`, não `[6]` | `19_tex.py` |
+| `test_url_e_codigo_nao_contam_como_escolha_ortografica` | O repositório citado chama-se `pgsg3-gate-regularization-path`, com um | `18_conformidade.py` |
 
 ## numerico (10)
 

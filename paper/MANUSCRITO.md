@@ -5,7 +5,7 @@ The English text is copied verbatim; the Portuguese drafting apparatus is
 left behind and listed at the end of the generator's output. Do not edit this
 file -- edit the drafts and run the generator again.
 
-Source digest: **37d7a460ea4f45fc** — SHA-256 over the 13 draft files this was
+Source digest: **5049924e85b14e88** — SHA-256 over the 13 draft files this was
 built from, truncated. Two copies with the same digest were built from the same
 sources, whatever the git state. The findings in `findings/` and Table 1 below
 belong with this digest; the generator prints the git revision alongside it.
@@ -1634,6 +1634,19 @@ publication.
 
 ---
 
+---
+
+## Data availability
+
+The near-infrared data are the public Mango DMC dataset of Anderson et al.,
+Mendeley Data, version 3 (`doi:10.17632/46htwnp833.3`), cited as [8]. The
+Raman data are the public SubstrateMixRaman dataset (Hugging Face,
+`chlange/SubstrateMixRaman`), cited as [11] and described in [10]. The code
+and the stored gate values from which Figures 2 and 3 are drawn are at
+`https://github.com/clarimar/pgsg3-gate-regularization-path`.
+
+---
+
 ## References
 
 [1] S. Jain, B.C. Wallace, Attention is not explanation, in: Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers), Association for Computational Linguistics, Minneapolis, 2019, pp. 3543–3556. https://doi.org/10.18653/v1/N19-1357
@@ -1658,7 +1671,7 @@ publication.
 
 [11] C. Lange, SubstrateMixRaman, Hugging Face Datasets, chlange/SubstrateMixRaman, 2025.
 
-[12] M. Koddenbrock, C. Lange, R. Legner, M. Jaeger, M. Kögler, M.N. Cruz Bournazou, P. Neubauer, F. Bießmann, E. Rodner, RamanBench: a large-scale benchmark for machine learning on Raman spectroscopy, arXiv:2605.02003, 2026.
+[12] M. Koddenbrock, C. Lange, R. Legner, M. Jaeger, M. Kögler, M.N. Cruz Bournazou, P. Neubauer, F. Bießmann, E. Rodner, RamanBench: a large-scale benchmark for machine learning on Raman spectroscopy, arXiv:2605.02003, 2026. To appear in NeurIPS 2026 (Track on Evaluations and Datasets).
 
 [13] S. Saranwong, J. Sornsrivichai, S. Kawano, Prediction of ripe-stage eating quality of mango fruit from its harvest quality measured nondestructively by near infrared spectroscopy, Postharvest Biology and Technology 31 (2) (2004) 137–145. https://doi.org/10.1016/j.postharvbio.2003.08.007
 

@@ -67,3 +67,14 @@ edited all of that output, checked every bibliographic record against the
 source cited in it, and rewrote or removed whatever did not reflect their own
 analysis. The authors take full responsibility for the content of the
 publication.
+
+---
+
+## Data availability
+
+The near-infrared data are the public Mango DMC dataset of Anderson et al.,
+Mendeley Data, version 3 (`doi:10.17632/46htwnp833.3`), cited as [8]. The
+Raman data are the public SubstrateMixRaman dataset (Hugging Face,
+`chlange/SubstrateMixRaman`), cited as [11] and described in [10]. The code
+and the stored gate values from which Figures 2 and 3 are drawn are at
+`https://github.com/clarimar/pgsg3-gate-regularization-path`.

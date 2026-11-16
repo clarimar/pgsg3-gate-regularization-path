@@ -493,7 +493,7 @@ below the list.
 
 [11] C. Lange, SubstrateMixRaman, Hugging Face Datasets, chlange/SubstrateMixRaman, 2025.
 
-[12] M. Koddenbrock, C. Lange, R. Legner, M. Jaeger, M. Kögler, M.N. Cruz Bournazou, P. Neubauer, F. Bießmann, E. Rodner, RamanBench: a large-scale benchmark for machine learning on Raman spectroscopy, arXiv:2605.02003, 2026.
+[12] M. Koddenbrock, C. Lange, R. Legner, M. Jaeger, M. Kögler, M.N. Cruz Bournazou, P. Neubauer, F. Bießmann, E. Rodner, RamanBench: a large-scale benchmark for machine learning on Raman spectroscopy, arXiv:2605.02003, 2026. To appear in NeurIPS 2026 (Track on Evaluations and Datasets).
 
 [13] S. Saranwong, J. Sornsrivichai, S. Kawano, Prediction of ripe-stage eating quality of mango fruit from its harvest quality measured nondestructively by near infrared spectroscopy, Postharvest Biology and Technology 31 (2) (2004) 137–145. https://doi.org/10.1016/j.postharvbio.2003.08.007
 

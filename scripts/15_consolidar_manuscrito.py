@@ -81,7 +81,8 @@ ORDEM: list[tuple[str, list[str]]] = [
     # references, which is where Elsevier puts it, and outside the section
     # numbering -- it is not section 13.
     ("18-declaracoes.md", ["CRediT authorship contribution statement",
-                           "Declaration of Generative AI and AI-assisted technologies in the writing process"]),
+                           "Declaration of Generative AI and AI-assisted technologies in the writing process",
+                           "Data availability"]),
 ]
 # The manuscript must carry twelve contiguous sections. Section 12 was created
 # by the integral audit of 2026-10-28; before it the paper ended at Future

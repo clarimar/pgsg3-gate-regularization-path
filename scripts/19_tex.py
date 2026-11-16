@@ -746,6 +746,15 @@ def main() -> int:
         out.append("\\section*{" + decl_ia + "}")
         out += corpo_para_tex(por_titulo[decl_ia], onde=decl_ia)
 
+    # Data availability, which Elsevier requires, beside the declarations and
+    # before the references. Emitted only when present, for the same reason as
+    # the declaration above: a heading with nothing under it would be a
+    # statement the authors did not make.
+    if por_titulo.get("Data availability"):
+        out.append("\\section*{Data availability}")
+        out += corpo_para_tex(por_titulo["Data availability"],
+                              onde="Data availability")
+
     if a.bib:
         # The journal's chain wants \cite{} and a .bib. The typed list is
         # skipped here: emitting both would print the bibliography twice and

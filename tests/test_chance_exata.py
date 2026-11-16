@@ -2564,7 +2564,11 @@ def test_18_separa_prosa_autoral_de_citacao_literal():
     assert "quoted line" not in autoral
     src = (RAIZ / "scripts" / "18_conformidade.py").read_text()
     # as legendas voltam para o lado autoral
-    assert 'autoral = autoral_corpo + "\\n" + legendas' in src
+    # Desde 2026-11-16 as legendas passam pelo sem_identificadores() antes de
+    # entrar no lado autoral, como o corpo. O invariante que este teste
+    # guarda é o mesmo: a legenda é prosa dos autores e vai para o lado
+    # autoral, não para o das citações.
+    assert 'autoral = autoral_corpo + "\\n" + sem_identificadores(legendas)' in src
     # e so a prosa autoral gera defeito
     assert "form(s) in AUTHORIAL prose" in src
 
@@ -4765,3 +4769,88 @@ def test_declaracao_de_ia_segue_a_politica_lida_na_fonte():
     assert "rascunho meu e precisa da sua decisão" in fonte
     assert "Isso deixa uma pergunta em aberto, e ela é sua" in fonte
     assert "imediatamente acima das referências" in fonte
+
+
+@pytest.mark.semantico
+def test_disponibilidade_de_dados_existe_e_nomeia_as_duas_fontes():
+    """Data availability, acrescentada em 2026-11-16. A Elsevier a exige e o
+    manuscrito não a tinha.
+
+    As duas fontes foram conferidas: o NIR é o conjunto público de Anderson
+    et al., Mendeley Data versão 3, DOI 10.17632/46htwnp833.3 -- o mesmo
+    arquivo que o `PROVENANCE.json` do pgsg_4 fixa, com o mesmo SHA-256. O
+    Raman é o SubstrateMixRaman, do Hugging Face, que o pgsg_4 NÃO usa: lá o
+    Raman entra como saída já computada do pgsg_2.
+
+    As citações saem por `\\cite`, não por número fixo: se a numeração mudar,
+    a seção acompanha em vez de passar a apontar para a referência errada.
+    """
+    import re
+    fonte = (RAIZ / "paper" / "18-declaracoes.md").read_text()
+    md = re.sub(r"\s+", " ", (RAIZ / "paper" / "MANUSCRITO.md").read_text())
+    assert "## Data availability" in fonte
+    assert "doi:10.17632/46htwnp833.3" in md
+    assert "chlange/SubstrateMixRaman" in md
+    assert "github.com/clarimar/pgsg3-gate-regularization-path" in md
+    # entra na ORDEM e é emitida antes das referências
+    cons = (RAIZ / "scripts" / "15_consolidar_manuscrito.py").read_text()
+    assert '"Data availability"]),' in cons
+    conv = (RAIZ / "scripts" / "19_tex.py").read_text()
+    i_dec = conv.index("decl_ia = (")
+    i_dad = conv.index('por_titulo.get("Data availability")')
+    i_bib = conv.index("    if a.bib:")
+    assert i_dec < i_dad < i_bib
+    assert 'out.append("\\\\section*{Data availability}")' in conv
+
+    corpo = _tex_gerado()
+    assert corpo.index("\\section*{Data availability}") < \
+        corpo.index("\\section*{References}")
+    # Nos DOIS modos. Na lista digitada os marcadores saem como [n]; no
+    # modo --bib viram \cite, e é aí que a independência do número se vê.
+    def secao(texto: str) -> str:
+        i = texto.index("\\section*{Data availability}")
+        return texto[i:i + 900]
+
+    lista = secao(corpo)
+    assert "[8]" in lista and "[11]" in lista and "[10]" in lista
+
+    com_bib = secao(_tex_gerado(bib=True))
+    assert "\\cite{anderson2024mango}" in com_bib
+    assert "\\cite{lange2025substratemix}" in com_bib
+    assert "\\cite{lange2026raman}" in com_bib
+    assert "[8]" not in com_bib, "número literal sobreviveu à substituição"
+
+
+@pytest.mark.estrutural
+def test_url_e_codigo_nao_contam_como_escolha_ortografica():
+    """O repositório citado chama-se `pgsg3-gate-regularization-path`, com um
+    -z que é do repositório e não da prosa. Contá-lo fez a seção de dados
+    reprovar na regra de inglês britânico em 2026-11-16.
+
+    Isentar a seção inteira seria o instrumento errado: ela É prosa autoral, e
+    um erro real dentro dela tem de continuar sendo pego -- verificado
+    plantando um e vendo a verificação falhar. O que sai da contagem são os
+    IDENTIFICADORES: URL, DOI e trecho entre crases.
+
+    E sai dos DOIS lados. Aplicado só a um, `regularization` aparecia na linha
+    OUTLIERS e em nenhuma das duas que a explicam, e um relatório que não
+    fecha é pior que um que acusa.
+    """
+    src = (RAIZ / "scripts" / "18_conformidade.py").read_text()
+    assert "def sem_identificadores(" in src
+    assert "texto = sem_identificadores(texto)" in src      # no split
+    assert "corpo = sem_identificadores(corpo)" in src      # na contagem
+    assert "sem_identificadores(legendas)" in src           # nas legendas
+    assert "br = Counter(ocorrencias(pbr, corpo))" in src
+
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "conf1116", RAIZ / "scripts" / "18_conformidade.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    f = m.sem_identificadores
+    assert "regularization" not in f("see `pgsg3-gate-regularization-path`")
+    assert "regularization" not in f("at https://x/gate-regularization-path")
+    assert "17632" not in f("Mendeley, doi:10.17632/46htwnp833.3")
+    # mas a prosa ao redor continua lá, e com ela o que for erro de verdade
+    assert "normalization" in f("after normalization, see `a-b-c`")
